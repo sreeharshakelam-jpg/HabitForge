@@ -169,32 +169,35 @@ enum UserGoal: String, Codable, CaseIterable {
         case .fitness:
             return [
                 Habit(name: "Morning Workout", icon: "dumbbell.fill", colorHex: "#EF4444",
-                      category: .fitness, type: .timeBased, difficulty: .hard,
-                      scheduledTime: Calendar.current.date(from: DateComponents(hour: 6, minute: 0))),
+                      category: .fitness, type: .timeBased,
+                      scheduledTime: Calendar.current.date(from: DateComponents(hour: 6, minute: 0)),
+                      difficulty: .hard),
                 Habit(name: "10,000 Steps", icon: "figure.walk", colorHex: "#F97316",
                       category: .fitness, type: .quantity, difficulty: .medium,
                       targetValue: 10000, targetUnit: "steps"),
                 Habit(name: "Stretch / Mobility", icon: "figure.flexibility", colorHex: "#8B5CF6",
-                      category: .fitness, type: .duration, difficulty: .easy,
-                      durationMinutes: 10)
+                      category: .fitness, type: .duration,
+                      durationMinutes: 10, difficulty: .easy)
             ]
         case .sleep:
             return [
                 Habit(name: "Sleep by 10:30 PM", icon: "moon.stars.fill", colorHex: "#6366F1",
-                      category: .sleep, type: .timeBased, difficulty: .hard,
-                      scheduledTime: Calendar.current.date(from: DateComponents(hour: 22, minute: 30))),
+                      category: .sleep, type: .timeBased,
+                      scheduledTime: Calendar.current.date(from: DateComponents(hour: 22, minute: 30)),
+                      difficulty: .hard),
                 Habit(name: "No Screens 1hr Before Bed", icon: "iphone.slash", colorHex: "#8B5CF6",
                       category: .sleep, type: .avoidance, difficulty: .medium),
                 Habit(name: "Wake Up at 5:30 AM", icon: "sunrise.fill", colorHex: "#F59E0B",
-                      category: .sleep, type: .timeBased, difficulty: .elite,
-                      scheduledTime: Calendar.current.date(from: DateComponents(hour: 5, minute: 30)))
+                      category: .sleep, type: .timeBased,
+                      scheduledTime: Calendar.current.date(from: DateComponents(hour: 5, minute: 30)),
+                      difficulty: .elite)
             ]
         case .study:
             return [
                 Habit(name: "Read for 30 Minutes", icon: "book.fill", colorHex: "#F59E0B",
-                      category: .study, type: .duration, difficulty: .medium, durationMinutes: 30),
+                      category: .study, type: .duration, durationMinutes: 30, difficulty: .medium),
                 Habit(name: "Study Session", icon: "graduationcap.fill", colorHex: "#3B82F6",
-                      category: .study, type: .duration, difficulty: .hard, durationMinutes: 60),
+                      category: .study, type: .duration, durationMinutes: 60, difficulty: .hard),
                 Habit(name: "Review Notes", icon: "doc.text.fill", colorHex: "#22C55E",
                       category: .study, type: .completion, difficulty: .easy)
             ]
