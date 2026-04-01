@@ -3,9 +3,6 @@ workflows:
     name: FORGE iOS Build
     max_build_duration: 60
     environment:
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: com.sreeharshakelam.HabitForge
       xcode: latest
     scripts:
       - name: Install XcodeGen
@@ -16,22 +13,20 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Build IPA
+      - name: Build for Simulator
         script: |
           xcodebuild \
             -project HabitForge.xcodeproj \
             -scheme HabitForge \
-            -destination 'generic/platform=iOS' \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
             -configuration Debug \
-            -archivePath build/HabitForge.xcarchive \
-            archive
+            CODE_SIGNING_ALLOWED=NO \
+            build
 
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/HabitForge.xcarchive \
-            -exportPath build/ipa \
-            -exportOptionsPlist ExportOptions.plist
+          # Package the .app for Appetize
+          cd build/Debug-iphonesimulator
+          zip -r HabitForge.zip HabitForge.app
 
     artifacts:
-      - build/ipa/*.ipa
+      - build/Debug-iphonesimulator/HabitForge.zip
       - /tmp/xcodebuild_logs/*.log
