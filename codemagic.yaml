@@ -3,6 +3,9 @@ workflows:
     name: FORGE iOS Build
     max_build_duration: 60
     environment:
+      ios_signing:
+        distribution_type: ad_hoc
+        bundle_identifier: com.sreeharshakelam.HabitForge
       xcode: latest
     scripts:
       - name: Install XcodeGen
@@ -13,21 +16,26 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Show project structure
+      - name: Install dependencies
         script: |
-          ls -la
-          xcodebuild -list -project HabitForge.xcodeproj
+          gem install xcpretty
 
-      - name: Build iOS app
+      - name: Build and sign IPA
         script: |
           xcodebuild \
             -project HabitForge.xcodeproj \
             -scheme HabitForge \
-            -destination 'generic/platform=iOS Simulator' \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            build | xcpretty
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            -archivePath build/HabitForge.xcarchive \
+            archive
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/HabitForge.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist ExportOptions.plist
 
     artifacts:
-      - "**/*.app"
+      - build/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
