@@ -281,7 +281,7 @@ struct GoalCard: View {
             }
             .padding(ForgeSpacing.md)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? ForgeColor.accentGradient : ForgeColor.card)
+            .background(isSelected ? AnyShapeStyle(ForgeColor.accentGradient) : AnyShapeStyle(ForgeColor.card))
             .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
             .overlay(
                 RoundedRectangle(cornerRadius: ForgeRadius.lg)
