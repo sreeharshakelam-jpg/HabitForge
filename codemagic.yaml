@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     environment:
       ios_signing:
-        distribution_type: ad_hoc
+        distribution_type: development
         bundle_identifier: com.sreeharshakelam.HabitForge
       xcode: latest
     scripts:
@@ -16,17 +16,13 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Install dependencies
-        script: |
-          gem install xcpretty
-
-      - name: Build and sign IPA
+      - name: Build IPA
         script: |
           xcodebuild \
             -project HabitForge.xcodeproj \
             -scheme HabitForge \
             -destination 'generic/platform=iOS' \
-            -configuration Release \
+            -configuration Debug \
             -archivePath build/HabitForge.xcarchive \
             archive
 
