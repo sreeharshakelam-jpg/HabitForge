@@ -15,25 +15,20 @@ workflows:
 
       - name: Build for Simulator
         script: |
-          # Get the first available iPhone simulator ID
-          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 17 Pro" | head -1 | grep -E -o '[0-9A-F-]{36}')
-          echo "Using simulator: $SIMULATOR_ID"
-
           xcodebuild \
             -project HabitForge.xcodeproj \
             -scheme HabitForge \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -destination "generic/platform=iOS Simulator" \
             -configuration Debug \
             -derivedDataPath DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Package app for Appetize
+      - name: Package for Appetize
         script: |
           APP_PATH=$(find DerivedData -name "HabitForge.app" -type d | head -1)
-          echo "Found app at: $APP_PATH"
+          echo "App found at: $APP_PATH"
           zip -r HabitForge.zip "$APP_PATH"
-          echo "Zipped successfully"
 
     artifacts:
       - HabitForge.zip
