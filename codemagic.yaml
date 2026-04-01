@@ -1,17 +1,33 @@
 workflows:
   ios-workflow:
-    name: HabitForge iOS Build
+    name: FORGE iOS Build
     max_build_duration: 60
     environment:
       xcode: latest
-      cocoapods: default
     scripts:
-      - name: Build iOS
+      - name: Install XcodeGen
         script: |
-          xcodebuild build \
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        script: |
+          xcodegen generate --spec project.yml
+
+      - name: Show project structure
+        script: |
+          ls -la
+          xcodebuild -list -project HabitForge.xcodeproj
+
+      - name: Build iOS app
+        script: |
+          xcodebuild \
             -project HabitForge.xcodeproj \
             -scheme HabitForge \
-            -sdk iphonesimulator \
-            -configuration Debug
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build | xcpretty
+
     artifacts:
-      - build/ios/ipa/*.ipa
+      - "**/*.app"
+      - /tmp/xcodebuild_logs/*.log

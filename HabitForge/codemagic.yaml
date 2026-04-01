@@ -1,0 +1,17 @@
+workflows:
+  ios-workflow:
+    name: HabitForge iOS Build
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Build iOS
+        script: |
+          xcodebuild build \
+            -project HabitForge.xcodeproj \
+            -scheme HabitForge \
+            -sdk iphonesimulator \
+            -configuration Debug
+    artifacts:
+      - build/ios/ipa/*.ipa
