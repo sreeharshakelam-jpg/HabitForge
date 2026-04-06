@@ -20,17 +20,10 @@ workflows:
 
       - name: Force CFBundleIconName into Info.plist
         script: |
-          echo "=== Force-adding CFBundleIconName to Info.plist ==="
           /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" Info.plist 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" Info.plist
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" Info.plist
-          echo "=== Full Info.plist ==="
-          cat Info.plist
-          echo ""
-          echo "=== Build settings check ==="
-          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "INFOPLIST_FILE|GENERATE_INFOPLIST|INFOPLIST_KEY|ASSETCATALOG_COMPILER_APPICON" || true
-          echo "=== AppIcon assets ==="
-          find . -path "*/AppIcon.appiconset/*" -type f
+          echo "Info.plist after fix:"
+          /usr/libexec/PlistBuddy -c "Print" Info.plist
 
       - name: Set up code signing
         script: |
@@ -54,27 +47,7 @@ workflows:
             -configuration Release \
             -archivePath HabitForge.xcarchive \
             GENERATE_INFOPLIST_FILE=NO \
-            INFOPLIST_KEY_CFBundleIconName=AppIcon \
             archive
-
-      - name: Verify and fix archive plist
-        script: |
-          APP_PLIST="HabitForge.xcarchive/Products/Applications/HabitForge.app/Info.plist"
-          echo "=== Archive Info.plist ==="
-          /usr/libexec/PlistBuddy -c "Print" "$APP_PLIST"
-          echo ""
-          echo "=== CFBundleIconName ==="
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PLIST" 2>&1 || {
-            echo "KEY MISSING - injecting now"
-            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP_PLIST"
-            echo "Injected. Re-signing app..."
-            codesign --force --sign "$(security find-identity -v -p codesigning | head -1 | awk -F'"' '{print $2}')" \
-              --entitlements HabitForge.entitlements \
-              "HabitForge.xcarchive/Products/Applications/HabitForge.app"
-            echo "Re-signed successfully"
-          }
-          echo "=== Compiled assets ==="
-          find HabitForge.xcarchive -name "Assets.car" -o -name "AppIcon*" | head -10
 
       - name: Export IPA
         script: |
@@ -84,12 +57,45 @@ workflows:
             -exportOptionsPlist exportOptions.plist \
             -exportPath build/ipa
 
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
+      - name: Inspect and fix IPA then upload
+        script: |
+          cd build/ipa
+          IPA_FILE=$(ls *.ipa | head -1)
+          echo "=== IPA file: $IPA_FILE ==="
+
+          # Unzip IPA to inspect
+          mkdir -p /tmp/ipa_inspect
+          unzip -o "$IPA_FILE" -d /tmp/ipa_inspect
+
+          # Find the app inside
+          APP_PATH=$(find /tmp/ipa_inspect/Payload -name "*.app" -maxdepth 1 | head -1)
+          echo "=== App path: $APP_PATH ==="
+
+          # Show current Info.plist
+          echo "=== Info.plist INSIDE IPA ==="
+          /usr/libexec/PlistBuddy -c "Print" "$APP_PATH/Info.plist"
+
+          echo ""
+          echo "=== CFBundleIconName check ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PATH/Info.plist" 2>&1 || {
+            echo "!!! CFBundleIconName MISSING - adding it now !!!"
+            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP_PATH/Info.plist"
+            echo "Added. Rebuilding IPA..."
+
+            # Remove old IPA and repackage
+            rm "$IPA_FILE"
+            cd /tmp/ipa_inspect
+            zip -r "/Users/builder/clone/build/ipa/$IPA_FILE" Payload/
+            cd /Users/builder/clone/build/ipa
+            echo "IPA rebuilt with CFBundleIconName"
+          }
+
+          echo ""
+          echo "=== Uploading to App Store Connect ==="
+          app-store-connect publish \
+            --path "$IPA_FILE" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID"
 
     artifacts:
       - build/ipa/*.ipa
