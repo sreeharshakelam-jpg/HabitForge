@@ -18,19 +18,19 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Verify generated Info.plist has icon key
+      - name: Force CFBundleIconName into Info.plist
         script: |
-          echo "=== Checking generated Info.plist ==="
-          GENERATED_PLIST=$(find . -name "Info.plist" -path "*/HabitForge*" ! -path "./.git/*" | head -5)
-          echo "Found plists: $GENERATED_PLIST"
-          for f in $GENERATED_PLIST; do
-            echo "--- $f ---"
-            /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$f" 2>&1 || echo "KEY MISSING in $f"
-          done
-          echo "=== Checking AppIcon asset ==="
+          echo "=== Force-adding CFBundleIconName to Info.plist ==="
+          /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" Info.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" Info.plist
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" Info.plist
+          echo "=== Full Info.plist ==="
+          cat Info.plist
+          echo ""
+          echo "=== Build settings check ==="
+          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "INFOPLIST_FILE|GENERATE_INFOPLIST|INFOPLIST_KEY|ASSETCATALOG_COMPILER_APPICON" || true
+          echo "=== AppIcon assets ==="
           find . -path "*/AppIcon.appiconset/*" -type f
-          echo "=== Build settings for icon ==="
-          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -i "icon\|INFOPLIST\|ASSETCATALOG" || true
 
       - name: Set up code signing
         script: |
@@ -53,18 +53,28 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
+            GENERATE_INFOPLIST_FILE=NO \
+            INFOPLIST_KEY_CFBundleIconName=AppIcon \
             archive
 
-      - name: Verify archive Info.plist
+      - name: Verify and fix archive plist
         script: |
           APP_PLIST="HabitForge.xcarchive/Products/Applications/HabitForge.app/Info.plist"
-          echo "=== Archive Info.plist contents ==="
+          echo "=== Archive Info.plist ==="
           /usr/libexec/PlistBuddy -c "Print" "$APP_PLIST"
           echo ""
-          echo "=== CFBundleIconName value ==="
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PLIST" || echo "MISSING!"
-          echo "=== App icon files in archive ==="
-          find HabitForge.xcarchive -name "AppIcon*" -o -name "*.car" | head -20
+          echo "=== CFBundleIconName ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PLIST" 2>&1 || {
+            echo "KEY MISSING - injecting now"
+            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP_PLIST"
+            echo "Injected. Re-signing app..."
+            codesign --force --sign "$(security find-identity -v -p codesigning | head -1 | awk -F'"' '{print $2}')" \
+              --entitlements HabitForge.entitlements \
+              "HabitForge.xcarchive/Products/Applications/HabitForge.app"
+            echo "Re-signed successfully"
+          }
+          echo "=== Compiled assets ==="
+          find HabitForge.xcarchive -name "Assets.car" -o -name "AppIcon*" | head -10
 
       - name: Export IPA
         script: |
