@@ -2,10 +2,10 @@ workflows:
   ios-appstore:
     name: FORGE App Store Release
     max_build_duration: 60
+    integrations:
+      app_store_connect: Codemagic
     environment:
       xcode: latest
-      integrations:
-        app_store_connect: Codemagic
     scripts:
       - name: Install XcodeGen
         script: |
