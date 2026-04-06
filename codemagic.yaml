@@ -2,10 +2,11 @@ workflows:
   ios-appstore:
     name: FORGE App Store Release
     max_build_duration: 60
-    integrations:
-      app_store_connect: Codemagic
     environment:
       xcode: latest
+      vars:
+        APP_STORE_CONNECT_ISSUER_ID: a6826daa-63d6-42be-bb34-2938edbcdb7d
+        APP_STORE_CONNECT_KEY_IDENTIFIER: U2G5L4729F
     scripts:
       - name: Install XcodeGen
         script: |
@@ -64,9 +65,9 @@ workflows:
 
     publishing:
       app_store_connect:
-        api_key: Codemagic
-        key_id: U2G5L4729F
-        issuer_id: a6826daa-63d6-42be-bb34-2938edbcdb7d
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
 
     artifacts:
