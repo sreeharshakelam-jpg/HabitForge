@@ -1,6 +1,5 @@
 import SwiftUI
 import UserNotifications
-import HealthKit
 
 @main
 struct HabitForgeApp: App {

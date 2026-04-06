@@ -26,15 +26,11 @@ targets:
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
-        NSHealthShareUsageDescription: "FORGE uses Health data to track fitness habits."
-        NSHealthUpdateUsageDescription: "FORGE writes mindfulness data to Apple Health."
         UIUserInterfaceStyle: Dark
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
     entitlements:
       path: HabitForge.entitlements
-      properties:
-        com.apple.developer.healthkit: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sreeharshakelam.HabitForge
