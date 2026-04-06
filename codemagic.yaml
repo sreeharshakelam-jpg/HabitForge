@@ -18,19 +18,14 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Verify Info.plist after XcodeGen
+      - name: Debug build settings
         script: |
-          echo "=== Info.plist after xcodegen ==="
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" Info.plist 2>&1 || {
-            echo "CFBundleIconName MISSING after xcodegen! Adding it..."
-            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" Info.plist
-          }
-          echo "=== GENERATE_INFOPLIST_FILE setting ==="
-          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "GENERATE_INFOPLIST|INFOPLIST_FILE|ASSETCATALOG_COMPILER_APPICON" || true
-          echo "=== AppIcon files ==="
-          find Assets.xcassets/AppIcon.appiconset -type f
-          echo "=== Contents.json ==="
+          echo "=== INFOPLIST and ICON build settings ==="
+          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "GENERATE_INFOPLIST|INFOPLIST_FILE|INFOPLIST_KEY|ASSETCATALOG_COMPILER_APPICON|CFBundleIconName" || true
+          echo "=== AppIcon asset catalog ==="
           cat Assets.xcassets/AppIcon.appiconset/Contents.json
+          echo ""
+          ls -la Assets.xcassets/AppIcon.appiconset/
 
       - name: Set up code signing
         script: |
@@ -53,16 +48,18 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
-            GENERATE_INFOPLIST_FILE=NO \
             archive
 
-      - name: Verify archive before export
+      - name: Verify archive contents
         script: |
           PLIST="HabitForge.xcarchive/Products/Applications/HabitForge.app/Info.plist"
-          echo "=== CFBundleIconName in archive ==="
+          echo "=== Full Info.plist in archive ==="
+          /usr/libexec/PlistBuddy -c "Print" "$PLIST"
+          echo ""
+          echo "=== CFBundleIconName ==="
           /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$PLIST" 2>&1
-          echo "=== Assets.car exists? ==="
-          find HabitForge.xcarchive -name "Assets.car" -o -name "AppIcon*" 2>/dev/null | head -10
+          echo "=== Icon files in archive ==="
+          find HabitForge.xcarchive/Products/Applications/HabitForge.app -name "AppIcon*" -o -name "Assets.car" | head -20
 
       - name: Export IPA
         script: |
