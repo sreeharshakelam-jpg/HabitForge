@@ -1,9 +1,12 @@
 workflows:
-  ios-workflow:
-    name: FORGE iOS Build
+  ios-appstore:
+    name: FORGE App Store Release
     max_build_duration: 60
     environment:
       xcode: latest
+      app_store_connect:
+        key_id: U2G5L4729F
+        issuer_id: a6826daa-63d6-42be-bb34-2938edbcdb7d
     scripts:
       - name: Install XcodeGen
         script: |
@@ -13,23 +16,60 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Build for Simulator
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files \
+            com.sreeharshakelam.HabitForge \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+
+      - name: Update code signing settings
+        script: |
+          xcode-project use-profiles
+
+      - name: Create export options
+        script: |
+          cat > exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>B37332G6T2</string>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build and archive for App Store
         script: |
           xcodebuild \
             -project HabitForge.xcodeproj \
             -scheme HabitForge \
-            -destination "generic/platform=iOS Simulator" \
-            -configuration Debug \
-            -derivedDataPath DerivedData \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+            -configuration Release \
+            -archivePath HabitForge.xcarchive \
+            archive
 
-      - name: Package for Appetize
+      - name: Export IPA
         script: |
-          APP_PATH=$(find DerivedData -name "HabitForge.app" -type d | head -1)
-          echo "App found at: $APP_PATH"
-          zip -r HabitForge.zip "$APP_PATH"
+          xcodebuild \
+            -exportArchive \
+            -archivePath HabitForge.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath .
+
+    publishing:
+      app_store_connect:
+        api_key: U2G5L4729F
+        key_id: U2G5L4729F
+        issuer_id: a6826daa-63d6-42be-bb34-2938edbcdb7d
+        submit_to_testflight: true
 
     artifacts:
-      - HabitForge.zip
+      - "*.ipa"
       - /tmp/xcodebuild_logs/*.log
