@@ -22,8 +22,8 @@ workflows:
         script: |
           /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" Info.plist 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" Info.plist
-          echo "Info.plist after fix:"
-          /usr/libexec/PlistBuddy -c "Print" Info.plist
+          echo "Verified CFBundleIconName:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" Info.plist
 
       - name: Set up code signing
         script: |
@@ -46,7 +46,6 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
-            GENERATE_INFOPLIST_FILE=NO \
             archive
 
       - name: Export IPA
@@ -57,41 +56,11 @@ workflows:
             -exportOptionsPlist exportOptions.plist \
             -exportPath build/ipa
 
-      - name: Inspect and fix IPA then upload
+      - name: Upload to App Store Connect
         script: |
           cd build/ipa
           IPA_FILE=$(ls *.ipa | head -1)
-          echo "=== IPA file: $IPA_FILE ==="
-
-          # Unzip IPA to inspect
-          mkdir -p /tmp/ipa_inspect
-          unzip -o "$IPA_FILE" -d /tmp/ipa_inspect
-
-          # Find the app inside
-          APP_PATH=$(find /tmp/ipa_inspect/Payload -name "*.app" -maxdepth 1 | head -1)
-          echo "=== App path: $APP_PATH ==="
-
-          # Show current Info.plist
-          echo "=== Info.plist INSIDE IPA ==="
-          /usr/libexec/PlistBuddy -c "Print" "$APP_PATH/Info.plist"
-
-          echo ""
-          echo "=== CFBundleIconName check ==="
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PATH/Info.plist" 2>&1 || {
-            echo "!!! CFBundleIconName MISSING - adding it now !!!"
-            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP_PATH/Info.plist"
-            echo "Added. Rebuilding IPA..."
-
-            # Remove old IPA and repackage
-            rm "$IPA_FILE"
-            cd /tmp/ipa_inspect
-            zip -r "/Users/builder/clone/build/ipa/$IPA_FILE" Payload/
-            cd /Users/builder/clone/build/ipa
-            echo "IPA rebuilt with CFBundleIconName"
-          }
-
-          echo ""
-          echo "=== Uploading to App Store Connect ==="
+          echo "Uploading $IPA_FILE..."
           app-store-connect publish \
             --path "$IPA_FILE" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
