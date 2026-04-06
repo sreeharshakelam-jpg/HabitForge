@@ -27,26 +27,10 @@ workflows:
             --create
           keychain add-certificates
 
-      - name: Update code signing settings
+      - name: Set up profiles and generate export options
         script: |
           xcode-project use-profiles
-
-      - name: Create export options
-        script: |
-          cat > exportOptions.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>B37332G6T2</string>
-            <key>uploadSymbols</key>
-            <true/>
-          </dict>
-          </plist>
-          EOF
+          xcode-project use-profiles --export-options-plist exportOptions.plist
 
       - name: Build and archive for App Store
         script: |
@@ -63,7 +47,7 @@ workflows:
             -exportArchive \
             -archivePath HabitForge.xcarchive \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath .
+            -exportPath build/ipa
 
     publishing:
       app_store_connect:
@@ -73,5 +57,5 @@ workflows:
         submit_to_testflight: true
 
     artifacts:
-      - "*.ipa"
+      - build/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
