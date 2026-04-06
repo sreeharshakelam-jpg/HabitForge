@@ -20,6 +20,7 @@ targets:
     resources:
       - path: Assets.xcassets
     info:
+      path: Info.plist
       properties:
         CFBundleDevelopmentRegion: en
         CFBundleDisplayName: FORGE
