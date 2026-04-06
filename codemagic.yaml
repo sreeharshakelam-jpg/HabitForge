@@ -4,6 +4,8 @@ workflows:
     max_build_duration: 60
     environment:
       xcode: latest
+      groups:
+        - default
       vars:
         APP_STORE_CONNECT_ISSUER_ID: a6826daa-63d6-42be-bb34-2938edbcdb7d
         APP_STORE_CONNECT_KEY_IDENTIFIER: U2G5L4729F
