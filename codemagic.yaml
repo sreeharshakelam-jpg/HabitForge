@@ -18,6 +18,20 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
+      - name: Verify generated Info.plist has icon key
+        script: |
+          echo "=== Checking generated Info.plist ==="
+          GENERATED_PLIST=$(find . -name "Info.plist" -path "*/HabitForge*" ! -path "./.git/*" | head -5)
+          echo "Found plists: $GENERATED_PLIST"
+          for f in $GENERATED_PLIST; do
+            echo "--- $f ---"
+            /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$f" 2>&1 || echo "KEY MISSING in $f"
+          done
+          echo "=== Checking AppIcon asset ==="
+          find . -path "*/AppIcon.appiconset/*" -type f
+          echo "=== Build settings for icon ==="
+          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -i "icon\|INFOPLIST\|ASSETCATALOG" || true
+
       - name: Set up code signing
         script: |
           keychain initialize
@@ -41,13 +55,16 @@ workflows:
             -archivePath HabitForge.xcarchive \
             archive
 
-      - name: Fix Info.plist in archive
+      - name: Verify archive Info.plist
         script: |
           APP_PLIST="HabitForge.xcarchive/Products/Applications/HabitForge.app/Info.plist"
-          /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$APP_PLIST" 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP_PLIST"
-          echo "CFBundleIconName added to Info.plist"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PLIST"
+          echo "=== Archive Info.plist contents ==="
+          /usr/libexec/PlistBuddy -c "Print" "$APP_PLIST"
+          echo ""
+          echo "=== CFBundleIconName value ==="
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PLIST" || echo "MISSING!"
+          echo "=== App icon files in archive ==="
+          find HabitForge.xcarchive -name "AppIcon*" -o -name "*.car" | head -20
 
       - name: Export IPA
         script: |
