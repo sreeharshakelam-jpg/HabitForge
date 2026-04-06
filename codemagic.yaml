@@ -63,6 +63,8 @@ workflows:
     publishing:
       app_store_connect:
         api_key: Codemagic
+        key_id: U2G5L4729F
+        issuer_id: a6826daa-63d6-42be-bb34-2938edbcdb7d
         submit_to_testflight: true
 
     artifacts:
