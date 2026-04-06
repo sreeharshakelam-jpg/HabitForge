@@ -4,8 +4,6 @@ workflows:
     max_build_duration: 60
     environment:
       xcode: latest
-      app_store_connect:
-        api_key: Codemagic
     scripts:
       - name: Install XcodeGen
         script: |
