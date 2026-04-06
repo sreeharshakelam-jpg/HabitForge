@@ -41,6 +41,14 @@ workflows:
             -archivePath HabitForge.xcarchive \
             archive
 
+      - name: Fix Info.plist in archive
+        script: |
+          APP_PLIST="HabitForge.xcarchive/Products/Applications/HabitForge.app/Info.plist"
+          /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$APP_PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP_PLIST"
+          echo "CFBundleIconName added to Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_PLIST"
+
       - name: Export IPA
         script: |
           xcodebuild \
