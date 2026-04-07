@@ -14,9 +14,65 @@ workflows:
         script: |
           brew install xcodegen
 
+      - name: Sync all Assets and Info.plist
+        script: |
+          echo "=== Ensuring HabitForge/HabitForge/ matches top-level ==="
+          # Copy icon to ALL AppIcon.appiconset locations
+          find . -path "*/AppIcon.appiconset" ! -path "./.git/*" -type d | while read d; do
+            echo "Syncing $d"
+            cp Assets.xcassets/AppIcon.appiconset/AppIcon.png "$d/AppIcon.png" 2>/dev/null || true
+            cat > "$d/Contents.json" << 'ICONJSON'
+          {
+            "images" : [
+              {
+                "filename" : "AppIcon.png",
+                "idiom" : "universal",
+                "platform" : "ios",
+                "size" : "1024x1024"
+              }
+            ],
+            "info" : {
+              "author" : "xcode",
+              "version" : 1
+            }
+          }
+          ICONJSON
+            echo "  Contents:"
+            ls -la "$d"
+          done
+
+          # Ensure CFBundleIconName in ALL Info.plist files
+          find . -name "Info.plist" ! -path "./.git/*" | while read f; do
+            /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$f" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$f"
+            echo "Fixed $f"
+          done
+
       - name: Generate Xcode project
         script: |
           xcodegen generate --spec project.yml
+
+      - name: Debug project structure
+        script: |
+          echo "=== What INFOPLIST_FILE does xcodebuild use? ==="
+          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "INFOPLIST_FILE|GENERATE_INFOPLIST|ASSETCATALOG|TARGETED_DEVICE" || true
+          echo ""
+          echo "=== What sources does the project reference? ==="
+          grep -r "Assets.xcassets" HabitForge.xcodeproj/project.pbxproj | head -10 || true
+          echo ""
+          echo "=== Verify Info.plist that Xcode will use ==="
+          PLIST_FILE=$(xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep "INFOPLIST_FILE" | head -1 | awk '{print $NF}')
+          echo "INFOPLIST_FILE = $PLIST_FILE"
+          if [ -f "$PLIST_FILE" ]; then
+            echo "Contents:"
+            /usr/libexec/PlistBuddy -c "Print" "$PLIST_FILE"
+          else
+            echo "File not found! Checking relative to project..."
+            find . -name "$(basename $PLIST_FILE)" ! -path "./.git/*" | while read f; do
+              echo "Found at: $f"
+              /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$f" 2>&1
+            done
+          fi
 
       - name: Set up code signing
         script: |
@@ -39,94 +95,28 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
-            archive
+            ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon \
+            GENERATE_INFOPLIST_FILE=NO \
+            archive 2>&1 | tail -50
 
-      - name: Fix archive before export
+      - name: Full archive inspection
         script: |
           APP="HabitForge.xcarchive/Products/Applications/HabitForge.app"
-          PLIST="$APP/Info.plist"
 
-          echo "=== BEFORE FIX ==="
-          echo "Info.plist contents:"
-          /usr/libexec/PlistBuddy -c "Print" "$PLIST"
-          echo ""
-          echo "Files in app bundle:"
+          echo "=== All files in app bundle ==="
           ls -la "$APP/"
-          echo ""
-
-          # 1. Force add CFBundleIconName
-          /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$PLIST" 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$PLIST"
-
-          # 2. Generate all required icon sizes from source
-          echo "Generating icon files..."
-          SOURCE_ICON="Assets.xcassets/AppIcon.appiconset/AppIcon.png"
-          if [ ! -f "$SOURCE_ICON" ]; then
-            echo "Source icon not found at $SOURCE_ICON, checking other locations..."
-            SOURCE_ICON=$(find . -name "AppIcon.png" -path "*/AppIcon.appiconset/*" ! -path "./.git/*" | head -1)
-            echo "Found: $SOURCE_ICON"
-          fi
-
-          # Use sips (built into macOS) to resize
-          for size in 40 58 60 80 87 120 180 1024; do
-            sips -z $size $size "$SOURCE_ICON" --out "$APP/AppIcon${size}x${size}.png" 2>/dev/null
-            echo "  Created AppIcon${size}x${size}.png"
-          done
-
-          # 3. Add old-style CFBundleIcons to Info.plist as fallback
-          /usr/libexec/PlistBuddy -c "Delete :CFBundleIcons" "$PLIST" 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons dict" "$PLIST"
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon dict" "$PLIST"
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles array" "$PLIST"
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles: string AppIcon60x60" "$PLIST"
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconFiles: string AppIcon76x76" "$PLIST"
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName string AppIcon" "$PLIST"
-
-          # 4. Also copy with standard naming convention
-          cp "$APP/AppIcon120x120.png" "$APP/AppIcon60x60@2x.png" 2>/dev/null || true
-          cp "$APP/AppIcon180x180.png" "$APP/AppIcon60x60@3x.png" 2>/dev/null || true
-          cp "$APP/AppIcon80x80.png" "$APP/AppIcon40x40@2x.png" 2>/dev/null || true
-          cp "$APP/AppIcon120x120.png" "$APP/AppIcon40x40@3x.png" 2>/dev/null || true
-          cp "$APP/AppIcon58x58.png" "$APP/AppIcon29x29@2x.png" 2>/dev/null || true
-          cp "$APP/AppIcon87x87.png" "$APP/AppIcon29x29@3x.png" 2>/dev/null || true
-          cp "$APP/AppIcon40x40.png" "$APP/AppIcon20x20@2x.png" 2>/dev/null || true
-          cp "$APP/AppIcon60x60.png" "$APP/AppIcon20x20@3x.png" 2>/dev/null || true
 
           echo ""
-          echo "=== AFTER FIX ==="
-          echo "CFBundleIconName:"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$PLIST"
-          echo "CFBundleIcons:"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$PLIST"
+          echo "=== Info.plist ==="
+          /usr/libexec/PlistBuddy -c "Print" "$APP/Info.plist"
+
           echo ""
-          echo "Icon files in bundle:"
-          ls -la "$APP"/AppIcon* 2>/dev/null || echo "No icon files found"
+          echo "=== Assets.car contents (actool) ==="
+          xcrun --sdk iphoneos assetutil --info "$APP/Assets.car" 2>/dev/null | grep -i "icon\|AppIcon\|name" | head -20 || echo "Could not inspect Assets.car"
+
           echo ""
-          echo "Assets.car exists:"
-          ls -la "$APP/Assets.car" 2>/dev/null || echo "No Assets.car"
-
-          # 5. Re-codesign the modified app
-          echo ""
-          echo "=== Re-signing app ==="
-          SIGNING_IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
-          echo "Using identity: $SIGNING_IDENTITY"
-
-          # Find the provisioning profile
-          PROFILE=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
-          echo "Using profile: $PROFILE"
-          if [ -n "$PROFILE" ]; then
-            cp "$PROFILE" "$APP/embedded.mobileprovision"
-          fi
-
-          # Get entitlements from the existing signature
-          codesign -d --entitlements :- "$APP" > /tmp/entitlements.plist 2>/dev/null || true
-
-          # Re-sign
-          codesign --force --sign "$SIGNING_IDENTITY" \
-            --entitlements /tmp/entitlements.plist \
-            "$APP"
-
-          echo "Re-signed successfully"
+          echo "=== Icon files ==="
+          find "$APP" -name "*Icon*" -o -name "*icon*" | head -20
 
       - name: Export IPA
         script: |
@@ -136,35 +126,18 @@ workflows:
             -exportOptionsPlist exportOptions.plist \
             -exportPath build/ipa
 
-      - name: Verify and fix IPA then upload
+      - name: Upload to App Store Connect
         script: |
           cd build/ipa
           IPA_FILE=$(ls *.ipa | head -1)
-          echo "=== IPA: $IPA_FILE ==="
-
-          # Unzip to inspect
-          mkdir -p /tmp/ipa_check
-          unzip -o "$IPA_FILE" -d /tmp/ipa_check
-          APP_IN_IPA=$(find /tmp/ipa_check/Payload -name "*.app" -maxdepth 1 | head -1)
-
-          echo "=== Info.plist in IPA ==="
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$APP_IN_IPA/Info.plist" 2>&1
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$APP_IN_IPA/Info.plist" 2>&1
-
-          echo "=== Icon files in IPA ==="
-          ls "$APP_IN_IPA"/AppIcon* 2>/dev/null || echo "No icon files"
-          ls "$APP_IN_IPA"/Assets.car 2>/dev/null || echo "No Assets.car"
-
-          echo ""
-          echo "=== Uploading ==="
+          echo "Uploading $IPA_FILE..."
           xcrun altool --upload-app \
             -f "$IPA_FILE" \
             -t ios \
             --apiKey "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
             2>&1 || {
-            echo ""
-            echo "altool failed, trying app-store-connect CLI..."
+            echo "altool failed, trying app-store-connect..."
             app-store-connect publish \
               --path "$IPA_FILE" \
               --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
