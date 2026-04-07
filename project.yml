@@ -17,8 +17,8 @@ targets:
       - path: Services
       - path: Views
       - path: Extensions
-    resources:
       - path: Assets.xcassets
+        type: folder
     info:
       path: Info.plist
       properties:
