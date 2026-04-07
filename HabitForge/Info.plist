@@ -22,11 +22,7 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSHealthShareUsageDescription</key>
-	<string>FORGE uses Health data to track your fitness habits and enhance insights.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>FORGE writes mindfulness session data to Apple Health.</string>
-	<key>UIApplicationSceneManifest</key>
+<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
@@ -52,5 +48,7 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 </dict>
 </plist>

@@ -18,14 +18,50 @@ workflows:
         script: |
           xcodegen generate --spec project.yml
 
-      - name: Debug build settings
+      - name: Ensure CFBundleIconName in ALL Info.plist files
         script: |
-          echo "=== INFOPLIST and ICON build settings ==="
-          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "GENERATE_INFOPLIST|INFOPLIST_FILE|INFOPLIST_KEY|ASSETCATALOG_COMPILER_APPICON|CFBundleIconName" || true
-          echo "=== AppIcon asset catalog ==="
-          cat Assets.xcassets/AppIcon.appiconset/Contents.json
+          echo "=== Finding all Info.plist files ==="
+          find . -name "Info.plist" ! -path "./.git/*" | while read f; do
+            echo "Checking $f..."
+            if ! /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$f" 2>/dev/null; then
+              echo "  MISSING - adding CFBundleIconName"
+              /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$f"
+            else
+              echo "  OK"
+            fi
+          done
           echo ""
-          ls -la Assets.xcassets/AppIcon.appiconset/
+          echo "=== Finding all AppIcon assets ==="
+          find . -path "*/AppIcon.appiconset/*" ! -path "./.git/*" -type f
+          echo ""
+          echo "=== Ensuring all AppIcon.appiconset have the icon file ==="
+          find . -path "*/AppIcon.appiconset" ! -path "./.git/*" -type d | while read d; do
+            if [ ! -f "$d/AppIcon.png" ]; then
+              echo "MISSING AppIcon.png in $d - copying..."
+              cp Assets.xcassets/AppIcon.appiconset/AppIcon.png "$d/AppIcon.png"
+              cat > "$d/Contents.json" << 'ICONEOF'
+          {
+            "images" : [
+              {
+                "filename" : "AppIcon.png",
+                "idiom" : "universal",
+                "platform" : "ios",
+                "size" : "1024x1024"
+              }
+            ],
+            "info" : {
+              "author" : "xcode",
+              "version" : 1
+            }
+          }
+          ICONEOF
+            fi
+            echo "Contents of $d:"
+            ls -la "$d"
+          done
+          echo ""
+          echo "=== Build settings ==="
+          xcodebuild -project HabitForge.xcodeproj -scheme HabitForge -showBuildSettings 2>/dev/null | grep -E "INFOPLIST_FILE|GENERATE_INFOPLIST|ASSETCATALOG_COMPILER_APPICON" || true
 
       - name: Set up code signing
         script: |
@@ -48,18 +84,16 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
+            GENERATE_INFOPLIST_FILE=NO \
             archive
 
-      - name: Verify archive contents
+      - name: Verify archive
         script: |
           PLIST="HabitForge.xcarchive/Products/Applications/HabitForge.app/Info.plist"
-          echo "=== Full Info.plist in archive ==="
-          /usr/libexec/PlistBuddy -c "Print" "$PLIST"
-          echo ""
-          echo "=== CFBundleIconName ==="
+          echo "=== CFBundleIconName in archive ==="
           /usr/libexec/PlistBuddy -c "Print :CFBundleIconName" "$PLIST" 2>&1
-          echo "=== Icon files in archive ==="
-          find HabitForge.xcarchive/Products/Applications/HabitForge.app -name "AppIcon*" -o -name "Assets.car" | head -20
+          echo "=== Assets in archive ==="
+          find HabitForge.xcarchive/Products/Applications/HabitForge.app -maxdepth 1 -name "*.car" -o -name "AppIcon*" | head -10
 
       - name: Export IPA
         script: |
