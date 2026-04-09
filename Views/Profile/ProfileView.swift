@@ -20,10 +20,10 @@ struct ProfileView: View {
                         // Profile Header
                         profileHeaderSection
 
-                        // Premium Banner
-                        if !habitStore.userProfile.isPremium {
-                            premiumBanner
-                        }
+                        // Premium Banner — hidden until StoreKit IAP is implemented
+                        // if !habitStore.userProfile.isPremium {
+                        //     premiumBanner
+                        // }
 
                         // Stats Overview
                         statsOverviewSection
@@ -203,12 +203,7 @@ struct ProfileView: View {
                 )
             }
 
-            SettingsGroup(title: "HEALTH") {
-                SettingsActionRow(icon: "heart.fill", color: .pink, title: "Connect Apple Health") {
-                    healthKitManager.requestAuthorization()
-                }
-                SettingsActionRow(icon: "applewatch", color: .gray, title: "Apple Watch Sync") {}
-            }
+            // HEALTH section hidden — HealthKit disabled in v1.0
 
             SettingsGroup(title: "DATA") {
                 SettingsActionRow(icon: "square.and.arrow.up", color: .blue, title: "Export Data") {}
@@ -382,7 +377,7 @@ struct PremiumSheet: View {
     let features = [
         ("Advanced Analytics", "chart.bar.xaxis.ascending.badge.clock", Color(hex: "#3B82F6") ?? .blue),
         ("AI Coaching", "brain.head.profile", Color(hex: "#8B5CF6") ?? .purple),
-        ("Apple Watch Advanced Sync", "applewatch", Color(hex: "#10B981") ?? .green),
+        ("Voice Check-Ins", "waveform.circle.fill", Color(hex: "#10B981") ?? .green),
         ("Exclusive Themes", "paintpalette.fill", Color(hex: "#F59E0B") ?? .yellow),
         ("Unlimited Habits", "infinity", Color(hex: "#EF4444") ?? .red),
         ("Friends & Challenges", "person.2.fill", Color(hex: "#EC4899") ?? .pink),

@@ -8,6 +8,7 @@ struct HabitForgeApp: App {
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var healthKitManager = HealthKitManager()
     @StateObject private var watchConnectivity = WatchConnectivityManager()
+    @StateObject private var coach = ClaudeCoachService()
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("colorSchemePreference") private var colorSchemePreference = "dark"
 
@@ -21,11 +22,13 @@ struct HabitForgeApp: App {
                         .environmentObject(notificationManager)
                         .environmentObject(healthKitManager)
                         .environmentObject(watchConnectivity)
+                        .environmentObject(coach)
                 } else {
                     OnboardingFlow()
                         .environmentObject(habitStore)
                         .environmentObject(gamificationEngine)
                         .environmentObject(notificationManager)
+                        .environmentObject(coach)
                 }
             }
             .preferredColorScheme(colorSchemePreference == "dark" ? .dark : (colorSchemePreference == "light" ? .light : nil))
@@ -37,9 +40,25 @@ struct HabitForgeApp: App {
 
     private func setupApp() {
         notificationManager.requestPermission()
+        notificationManager.registerNotificationCategories()
         habitStore.gamificationEngine = gamificationEngine
+        habitStore.notificationManager = notificationManager
         watchConnectivity.habitStore = habitStore
         gamificationEngine.habitStore = habitStore
+        coach.habitStore = habitStore
+
+        // One-time migration for v1.0.1: reset stale discipline score that was
+        // mistakenly initialized to 100 in the original v1.0 release.
+        let migrationKey = "didMigrateDisciplineV101"
+        if !UserDefaults.standard.bool(forKey: migrationKey) {
+            habitStore.userProfile.disciplineScore = 0
+            habitStore.saveUserProfile()
+            UserDefaults.standard.set(true, forKey: migrationKey)
+        }
+
+        // Re-schedule all habit reminders on launch so alarms actually fire.
+        notificationManager.scheduleAllHabitReminders(habits: habitStore.habits)
+
         setupDailyReset()
         setupAppearance()
     }

@@ -22,16 +22,16 @@ struct MainTabView: View {
                         Label("Habits", systemImage: "list.star")
                     }
 
-                AnalyticsView()
+                CoachView()
                     .tag(2)
                     .tabItem {
-                        Label("Stats", systemImage: "chart.bar.xaxis")
+                        Label("Coach", systemImage: "brain.head.profile")
                     }
 
-                AchievementsView()
+                AnalyticsView()
                     .tag(3)
                     .tabItem {
-                        Label("Forge", systemImage: "trophy.fill")
+                        Label("Stats", systemImage: "chart.bar.xaxis")
                     }
 
                 ProfileView()

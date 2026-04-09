@@ -6,9 +6,20 @@ class NotificationManager: ObservableObject {
     @Published var isPermissionGranted = false
 
     func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert]) { granted, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             DispatchQueue.main.async {
                 self.isPermissionGranted = granted
+                if let error = error {
+                    print("[Notifications] Permission error: \(error)")
+                }
+            }
+        }
+    }
+
+    private func add(_ request: UNNotificationRequest) {
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("[Notifications] Failed to schedule \(request.identifier): \(error)")
             }
         }
     }
@@ -24,14 +35,14 @@ class NotificationManager: ObservableObject {
         let content = habitReminderContent(for: habit, type: .upcoming)
         let request = UNNotificationRequest(identifier: "habit_\(habit.id)_reminder", content: content, trigger: trigger)
 
-        UNUserNotificationCenter.current().add(request)
+        add(request)
 
         // Schedule the "on time" notification
         let onTimeComponents = Calendar.current.dateComponents([.hour, .minute], from: scheduledTime)
         let onTimeTrigger = UNCalendarNotificationTrigger(dateMatching: onTimeComponents, repeats: true)
         let onTimeContent = habitReminderContent(for: habit, type: .due)
         let onTimeRequest = UNNotificationRequest(identifier: "habit_\(habit.id)_due", content: onTimeContent, trigger: onTimeTrigger)
-        UNUserNotificationCenter.current().add(onTimeRequest)
+        add(onTimeRequest)
 
         // Schedule missed notification (15 min after)
         let missedTime = scheduledTime.addingTimeInterval(15 * 60)
@@ -39,7 +50,7 @@ class NotificationManager: ObservableObject {
         let missedTrigger = UNCalendarNotificationTrigger(dateMatching: missedComponents, repeats: true)
         let missedContent = habitReminderContent(for: habit, type: .late)
         let missedRequest = UNNotificationRequest(identifier: "habit_\(habit.id)_late", content: missedContent, trigger: missedTrigger)
-        UNUserNotificationCenter.current().add(missedRequest)
+        add(missedRequest)
     }
 
     func cancelHabitReminders(for habit: Habit) {
@@ -72,7 +83,7 @@ class NotificationManager: ObservableObject {
         components.minute = 0
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "daily_checkin", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        add(request)
     }
 
     // MARK: - Evening Summary
@@ -87,7 +98,7 @@ class NotificationManager: ObservableObject {
         components.minute = 30
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "daily_summary", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        add(request)
     }
 
     // MARK: - Morning Motivation
@@ -111,7 +122,7 @@ class NotificationManager: ObservableObject {
         components.minute = 45
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "morning_motivation", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        add(request)
     }
 
     // MARK: - Streak Protection
@@ -128,7 +139,7 @@ class NotificationManager: ObservableObject {
         components.minute = 0
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "streak_protection", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        add(request)
     }
 
     // MARK: - Snooze Penalty Alert
@@ -140,7 +151,7 @@ class NotificationManager: ObservableObject {
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(identifier: "snooze_penalty_\(UUID())", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        add(request)
     }
 
     // MARK: - Achievement Notification
@@ -152,7 +163,7 @@ class NotificationManager: ObservableObject {
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(identifier: "achievement_\(achievement.id)", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        add(request)
     }
 
     // MARK: - Content Builder

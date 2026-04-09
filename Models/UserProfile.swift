@@ -68,7 +68,7 @@ struct UserProfile: Codable {
         self.level = 1
         self.totalXP = 0
         self.totalPoints = 0
-        self.disciplineScore = 100
+        self.disciplineScore = 0
         self.consistencyScore = 0
         self.rank = .novice
         self.currentStreak = 0

@@ -14,6 +14,7 @@ class HabitStore: ObservableObject {
     @Published var isInComebackMode = false
 
     weak var gamificationEngine: GamificationEngine?
+    weak var notificationManager: NotificationManager?
     private let defaults = UserDefaults.standard
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -130,6 +131,7 @@ class HabitStore: ObservableObject {
         habits.append(newHabit)
         saveHabits()
         refreshTodayEntries()
+        notificationManager?.scheduleHabitReminder(for: newHabit)
     }
 
     func updateHabit(_ habit: Habit) {
@@ -137,6 +139,10 @@ class HabitStore: ObservableObject {
             habits[idx] = habit
             saveHabits()
             refreshTodayEntries()
+            notificationManager?.cancelHabitReminders(for: habit)
+            if habit.isActive {
+                notificationManager?.scheduleHabitReminder(for: habit)
+            }
         }
     }
 
@@ -146,6 +152,7 @@ class HabitStore: ObservableObject {
         saveHabits()
         saveEntries()
         refreshTodayEntries()
+        notificationManager?.cancelHabitReminders(for: habit)
     }
 
     func reorderHabits(from source: IndexSet, to destination: Int) {

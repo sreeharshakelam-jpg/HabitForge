@@ -156,7 +156,7 @@ class GamificationEngine: ObservableObject {
     // MARK: - Discipline Score
     func calculateDisciplineScore(store: HabitStore) -> Int {
         let profile = store.userProfile
-        var score = 100 // Base
+        var score = 0 // Base
 
         // Streak bonus (up to +200)
         score += min(profile.currentStreak * 5, 200)

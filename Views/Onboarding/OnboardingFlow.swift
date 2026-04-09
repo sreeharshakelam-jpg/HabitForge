@@ -167,7 +167,7 @@ struct WelcomeStep: View {
                         .foregroundColor(.white)
                         .tracking(4)
 
-                    Text("Build discipline.\nForge your future.")
+                    Text("Your AI Discipline Coach")
                         .font(ForgeTypography.h3)
                         .foregroundColor(ForgeColor.textSecondary)
                         .multilineTextAlignment(.center)
@@ -179,9 +179,9 @@ struct WelcomeStep: View {
 
             // Feature highlights
             VStack(spacing: 12) {
-                OnboardingFeatureRow(icon: "🎮", title: "Gamified Discipline", subtitle: "Level up in real life through daily habits")
-                OnboardingFeatureRow(icon: "⚡", title: "Points & Streaks", subtitle: "Stay motivated with rewards and achievements")
-                OnboardingFeatureRow(icon: "⌚", title: "Apple Watch", subtitle: "Complete habits from your wrist")
+                OnboardingFeatureRow(icon: "🧠", title: "Personal AI Coach", subtitle: "Claude-powered coach that sees your habits and guides you daily")
+                OnboardingFeatureRow(icon: "🎯", title: "Morning Mission + Evening Review", subtitle: "Tactical daily briefings, not empty motivation")
+                OnboardingFeatureRow(icon: "⚔️", title: "Built for Warriors", subtitle: "Streaks, XP, and a discipline score that actually means something")
             }
             .opacity(showContent ? 1 : 0)
             .offset(y: showContent ? 0 : 30)
