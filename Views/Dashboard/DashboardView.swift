@@ -6,6 +6,7 @@ struct DashboardView: View {
     @State private var showAddHabit = false
     @State private var scrollOffset: CGFloat = 0
     @State private var showGameNotification = false
+    @State private var showWisdomLibrary = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -33,6 +34,13 @@ struct DashboardView: View {
                             .padding(.horizontal, ForgeSpacing.md)
                             .padding(.top, ForgeSpacing.md)
                     }
+
+                    // Wisdom of the Day (Bhagavad Gita, Stoic, or modern classic)
+                    DailyWisdomCard(quote: WisdomLibrary.quoteOfTheDay()) {
+                        showWisdomLibrary = true
+                    }
+                    .padding(.horizontal, ForgeSpacing.md)
+                    .padding(.top, ForgeSpacing.md)
 
                     // Today's Section Title
                     HStack {
@@ -109,6 +117,9 @@ struct DashboardView: View {
         .sheet(isPresented: $showAddHabit) {
             AddHabitView()
                 .environmentObject(habitStore)
+        }
+        .sheet(isPresented: $showWisdomLibrary) {
+            WisdomLibraryView()
         }
     }
 
@@ -274,10 +285,7 @@ struct HabitRowCard: View {
     @State private var showActions = false
 
     var body: some View {
-        Button {
-            showDetail = true
-        } label: {
-            HStack(spacing: 14) {
+        HStack(spacing: 14) {
                 // Category/Status Icon
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
@@ -351,20 +359,21 @@ struct HabitRowCard: View {
                     StatusBadge(status: entry.status)
                 }
             }
-            .padding(ForgeSpacing.md)
-            .background(
-                RoundedRectangle(cornerRadius: ForgeRadius.lg)
-                    .fill(entry.status == .completed ?
-                          ForgeColor.card.opacity(0.6) : ForgeColor.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ForgeRadius.lg)
-                            .stroke(entryBorderColor, lineWidth: 1)
-                    )
-            )
-            .opacity(entry.status == .missed ? 0.5 : 1.0)
+        .padding(ForgeSpacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                .fill(entry.status == .completed ?
+                      ForgeColor.card.opacity(0.6) : ForgeColor.card)
+                .overlay(
+                    RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                        .stroke(entryBorderColor, lineWidth: 1)
+                )
+        )
+        .opacity(entry.status == .missed ? 0.5 : 1.0)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showDetail = true
         }
-        .buttonStyle(.plain)
-        .pressEffect()
         .contextMenu {
             habitContextMenu
         }

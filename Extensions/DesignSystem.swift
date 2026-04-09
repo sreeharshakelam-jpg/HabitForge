@@ -134,17 +134,12 @@ struct GlowEffect: ViewModifier {
 }
 
 struct PressEffect: ViewModifier {
-    @State private var isPressed = false
-
+    // Intentionally a no-op. The previous DragGesture(minimumDistance: 0)
+    // implementation hijacked scroll gestures inside lists and caused
+    // habits to auto-tick while scrolling. SwiftUI's built-in Button press
+    // highlight is sufficient; no custom gesture is needed.
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isPressed ? 0.96 : 1.0)
-            .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isPressed)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
-                    .onEnded { _ in isPressed = false }
-            )
     }
 }
 

@@ -121,10 +121,7 @@ struct HabitListRow: View {
     var streak: Int { habitStore.currentStreakForHabit(habit.id) }
 
     var body: some View {
-        Button {
-            showDetail = true
-        } label: {
-            HStack(spacing: 14) {
+        HStack(spacing: 14) {
                 // Icon
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
@@ -186,13 +183,14 @@ struct HabitListRow: View {
                     }
                 }
             }
-            .padding(ForgeSpacing.md)
-            .background(ForgeColor.card)
-            .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
-            .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
+        .padding(ForgeSpacing.md)
+        .background(ForgeColor.card)
+        .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+        .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showDetail = true
         }
-        .buttonStyle(.plain)
-        .pressEffect()
         .sheet(isPresented: $showDetail) {
             if let entry = todayEntry {
                 HabitDetailView(habit: habit, entry: entry)

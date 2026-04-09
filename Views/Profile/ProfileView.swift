@@ -6,7 +6,6 @@ struct ProfileView: View {
     @EnvironmentObject var healthKitManager: HealthKitManager
     @EnvironmentObject var notificationManager: NotificationManager
     @State private var showEditProfile = false
-    @State private var showPremiumSheet = false
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = true
     @AppStorage("colorSchemePreference") var colorSchemePreference = "dark"
 
@@ -19,11 +18,6 @@ struct ProfileView: View {
                     VStack(spacing: ForgeSpacing.md) {
                         // Profile Header
                         profileHeaderSection
-
-                        // Premium Banner — hidden until StoreKit IAP is implemented
-                        // if !habitStore.userProfile.isPremium {
-                        //     premiumBanner
-                        // }
 
                         // Stats Overview
                         statsOverviewSection
@@ -56,9 +50,6 @@ struct ProfileView: View {
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
                 .environmentObject(habitStore)
-        }
-        .sheet(isPresented: $showPremiumSheet) {
-            PremiumSheet()
         }
     }
 
@@ -110,47 +101,6 @@ struct ProfileView: View {
         .background(ForgeColor.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.xl))
         .overlay(RoundedRectangle(cornerRadius: ForgeRadius.xl).stroke(ForgeColor.border, lineWidth: 1))
-        .padding(.horizontal, ForgeSpacing.md)
-    }
-
-    var premiumBanner: some View {
-        Button {
-            showPremiumSheet = true
-        } label: {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle().fill(ForgeColor.goldGradient).frame(width: 44, height: 44)
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Go Premium")
-                        .font(ForgeTypography.h4)
-                        .foregroundColor(.white)
-                    Text("Unlock advanced analytics, AI coaching & more")
-                        .font(ForgeTypography.labelXS)
-                        .foregroundColor(ForgeColor.textSecondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(ForgeColor.textTertiary)
-            }
-            .padding(ForgeSpacing.md)
-            .background(
-                RoundedRectangle(cornerRadius: ForgeRadius.lg)
-                    .fill(Color(hex: "#1A1400") ?? .black)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ForgeRadius.lg)
-                            .stroke(ForgeColor.goldGradient, lineWidth: 1)
-                    )
-            )
-        }
-        .buttonStyle(.plain)
         .padding(.horizontal, ForgeSpacing.md)
     }
 
@@ -370,122 +320,8 @@ struct SettingsActionRow: View {
     }
 }
 
-// MARK: - Premium Sheet
-struct PremiumSheet: View {
-    @Environment(\.dismiss) var dismiss
-
-    let features = [
-        ("Advanced Analytics", "chart.bar.xaxis.ascending.badge.clock", Color(hex: "#3B82F6") ?? .blue),
-        ("AI Coaching", "brain.head.profile", Color(hex: "#8B5CF6") ?? .purple),
-        ("Voice Check-Ins", "waveform.circle.fill", Color(hex: "#10B981") ?? .green),
-        ("Exclusive Themes", "paintpalette.fill", Color(hex: "#F59E0B") ?? .yellow),
-        ("Unlimited Habits", "infinity", Color(hex: "#EF4444") ?? .red),
-        ("Friends & Challenges", "person.2.fill", Color(hex: "#EC4899") ?? .pink),
-    ]
-
-    var body: some View {
-        NavigationView {
-            ZStack {
-                ForgeColor.background.ignoresSafeArea()
-
-                ScrollView {
-                    VStack(spacing: ForgeSpacing.lg) {
-                        // Header
-                        VStack(spacing: 12) {
-                            Image(systemName: "crown.fill")
-                                .font(.system(size: 48))
-                                .foregroundStyle(ForgeColor.goldGradient)
-                                .shadow(color: ForgeColor.warning.opacity(0.4), radius: 12)
-
-                            Text("FORGE Premium")
-                                .font(ForgeTypography.displayM)
-                                .foregroundColor(.white)
-
-                            Text("Unlock your full potential")
-                                .font(ForgeTypography.bodyM)
-                                .foregroundColor(ForgeColor.textSecondary)
-                        }
-                        .padding(.top, ForgeSpacing.xl)
-
-                        // Features
-                        VStack(spacing: 10) {
-                            ForEach(features, id: \.0) { feature in
-                                HStack(spacing: 14) {
-                                    Image(systemName: feature.1)
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(feature.2)
-                                        .frame(width: 30)
-                                    Text(feature.0)
-                                        .font(ForgeTypography.h4)
-                                        .foregroundColor(.white)
-                                    Spacer()
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(ForgeColor.success)
-                                }
-                                .padding(ForgeSpacing.md)
-                                .background(ForgeColor.card)
-                                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
-                            }
-                        }
-                        .padding(.horizontal, ForgeSpacing.md)
-
-                        // Pricing
-                        VStack(spacing: 12) {
-                            Button {
-                                // Handle purchase
-                                dismiss()
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Text("$9.99 / month")
-                                        .font(ForgeTypography.h3)
-                                        .foregroundColor(.white)
-                                    Text("Cancel anytime")
-                                        .font(ForgeTypography.labelXS)
-                                        .foregroundColor(.white.opacity(0.7))
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(ForgeSpacing.md)
-                                .background(ForgeColor.goldGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
-                                .shadow(color: ForgeColor.warning.opacity(0.3), radius: 12)
-                            }
-                            .buttonStyle(.plain)
-                            .pressEffect()
-
-                            Button {
-                                dismiss()
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Text("$79.99 / year")
-                                        .font(ForgeTypography.h3)
-                                        .foregroundColor(.white)
-                                    Text("Save 33% · Most popular")
-                                        .font(ForgeTypography.labelXS)
-                                        .foregroundColor(ForgeColor.success)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(ForgeSpacing.md)
-                                .background(ForgeColor.card)
-                                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
-                                .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.accent.opacity(0.4), lineWidth: 1))
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(.horizontal, ForgeSpacing.md)
-                    }
-                    .padding(.bottom, 40)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Close") { dismiss() }
-                        .foregroundColor(ForgeColor.textSecondary)
-                }
-            }
-        }
-    }
-}
+// MARK: - Premium Sheet (removed — FORGE is 100% free for everyone)
+// The PremiumSheet struct has been removed. All features are free.
 
 // MARK: - Edit Profile View
 struct EditProfileView: View {

@@ -167,7 +167,7 @@ struct WelcomeStep: View {
                         .foregroundColor(.white)
                         .tracking(4)
 
-                    Text("Your AI Discipline Coach")
+                    Text("Discipline + Timeless Wisdom")
                         .font(ForgeTypography.h3)
                         .foregroundColor(ForgeColor.textSecondary)
                         .multilineTextAlignment(.center)
@@ -179,9 +179,10 @@ struct WelcomeStep: View {
 
             // Feature highlights
             VStack(spacing: 12) {
-                OnboardingFeatureRow(icon: "🧠", title: "Personal AI Coach", subtitle: "Claude-powered coach that sees your habits and guides you daily")
-                OnboardingFeatureRow(icon: "🎯", title: "Morning Mission + Evening Review", subtitle: "Tactical daily briefings, not empty motivation")
+                OnboardingFeatureRow(icon: "📖", title: "Timeless Wisdom", subtitle: "Daily quotes from the Bhagavad Gita, Stoics, Zen masters and self-improvement classics")
+                OnboardingFeatureRow(icon: "🎯", title: "Morning Mission + Evening Review", subtitle: "Tactical daily briefings that see your real habits and streak")
                 OnboardingFeatureRow(icon: "⚔️", title: "Built for Warriors", subtitle: "Streaks, XP, and a discipline score that actually means something")
+                OnboardingFeatureRow(icon: "🆓", title: "100% Free Forever", subtitle: "No subscriptions, no API keys, no accounts. Just discipline.")
             }
             .opacity(showContent ? 1 : 0)
             .offset(y: showContent ? 0 : 30)
