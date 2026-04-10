@@ -214,6 +214,26 @@ class HabitStore: ObservableObject {
         checkDailySummary()
     }
 
+    func uncompleteHabit(_ entry: HabitEntry) {
+        // Reverse the stats that were awarded on completion
+        let points = entry.pointsEarned
+        let xp = entry.xpEarned
+        userProfile.totalPoints = max(0, userProfile.totalPoints - points)
+        userProfile.totalXP = max(0, userProfile.totalXP - xp)
+        userProfile.totalHabitsCompleted = max(0, userProfile.totalHabitsCompleted - 1)
+        userProfile.disciplineScore = max(0, userProfile.disciplineScore - 3)
+
+        // Recalculate level (may drop)
+        while userProfile.level > 1 && userProfile.totalXP < UserRank.xpRequired(forLevel: userProfile.level) {
+            userProfile.level -= 1
+        }
+        userProfile.rank = UserRank.rankForLevel(userProfile.level)
+
+        // Reset entry back to pending — pass .some(nil) to clear completedAt
+        updateEntry(entry.id, status: .pending, completedAt: .some(nil), pointsEarned: 0, xpEarned: 0)
+        saveUserProfile()
+    }
+
     func snoozeHabit(_ entry: HabitEntry) {
         guard let habit = habits.first(where: { $0.id == entry.habitId }) else { return }
         let newSnoozeCount = (allEntries.first { $0.id == entry.id }?.snoozeCount ?? 0) + 1
@@ -240,15 +260,19 @@ class HabitStore: ObservableObject {
     private func updateEntry(
         _ id: UUID,
         status: CompletionStatus? = nil,
-        completedAt: Date? = nil,
+        completedAt: Date?? = nil,
         pointsEarned: Int? = nil,
         xpEarned: Int? = nil,
         snoozeCount: Int? = nil,
         actualValue: Double? = nil
     ) {
+        // completedAt is Double-Optional so callers can pass explicit nil
+        // to clear the field:  updateEntry(id, completedAt: nil)  → no change
+        //                       updateEntry(id, completedAt: .some(nil)) → sets to nil
+        //                       updateEntry(id, completedAt: someDate) → sets date
         if let idx = allEntries.firstIndex(where: { $0.id == id }) {
             if let s = status { allEntries[idx].status = s }
-            if let c = completedAt { allEntries[idx].completedAt = c }
+            if case .some(let val) = completedAt { allEntries[idx].completedAt = val }
             if let p = pointsEarned { allEntries[idx].pointsEarned = p }
             if let x = xpEarned { allEntries[idx].xpEarned = x }
             if let sn = snoozeCount { allEntries[idx].snoozeCount = sn }
@@ -256,7 +280,7 @@ class HabitStore: ObservableObject {
         }
         if let idx = todayEntries.firstIndex(where: { $0.id == id }) {
             if let s = status { todayEntries[idx].status = s }
-            if let c = completedAt { todayEntries[idx].completedAt = c }
+            if case .some(let val) = completedAt { todayEntries[idx].completedAt = val }
             if let p = pointsEarned { todayEntries[idx].pointsEarned = p }
             if let x = xpEarned { todayEntries[idx].xpEarned = x }
             if let sn = snoozeCount { todayEntries[idx].snoozeCount = sn }
@@ -312,6 +336,13 @@ class HabitStore: ObservableObject {
         todayEntries.reduce(0) { $0 + $1.pointsEarned }
     }
 
+    /// Maximum points available today (sum of all active habit rewardPoints)
+    var todayPossiblePoints: Int {
+        todayEntries.compactMap { entry in
+            habits.first { $0.id == entry.habitId }?.rewardPoints
+        }.reduce(0, +)
+    }
+
     // MARK: - Historical Data
     func entriesForDate(_ date: Date) -> [HabitEntry] {
         allEntries.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
@@ -363,6 +394,9 @@ class HabitStore: ObservableObject {
                 allEntries[i].status = .missed
             }
         }
+
+        // Update challenge tracker
+        updateChallengeDay(for: yesterday)
 
         // Refresh today
         refreshTodayEntries()
@@ -443,6 +477,31 @@ class HabitStore: ObservableObject {
             "What are you most proud of today?"
         ]
         return questions.randomElement() ?? "How did today go?"
+    }
+
+    // MARK: - Challenge Day Tracker
+    private func updateChallengeDay(for date: Date) {
+        guard userProfile.challengeDays > 0 else { return }
+
+        let entries = entriesForDate(date)
+        let active = entries.filter { $0.status != .skipped }
+        let allDone = !active.isEmpty && active.allSatisfy { $0.status == .completed }
+
+        if allDone {
+            userProfile.challengeCurrentDay += 1
+            userProfile.challengeBestDay = max(userProfile.challengeBestDay, userProfile.challengeCurrentDay)
+
+            // Challenge completed!
+            if userProfile.challengeCurrentDay >= userProfile.challengeDays {
+                // Award bonus XP/points for finishing
+                userProfile.totalXP += userProfile.challengeDays * 5
+                userProfile.totalPoints += userProfile.challengeDays * 2
+            }
+        } else {
+            // Missed — reset challenge day counter
+            userProfile.challengeCurrentDay = 0
+        }
+        saveUserProfile()
     }
 
     // MARK: - Achievement Management

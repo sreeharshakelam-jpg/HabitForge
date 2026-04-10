@@ -29,6 +29,13 @@ struct UserProfile: Codable {
     var totalHabitsCompleted: Int
     var perfectDays: Int
     var comebackCount: Int
+    var dailyPointGoal: Int
+
+    // Challenge tracker
+    var challengeDays: Int          // e.g. 30, 75, 100 (0 = no challenge)
+    var challengeStartDate: Date?
+    var challengeCurrentDay: Int    // how many consecutive days completed
+    var challengeBestDay: Int       // highest day reached before a miss
 
     // Preferences
     var notificationsEnabled: Bool
@@ -76,6 +83,13 @@ struct UserProfile: Codable {
         self.totalHabitsCompleted = 0
         self.perfectDays = 0
         self.comebackCount = 0
+        self.dailyPointGoal = 100
+
+        // Challenge tracker
+        self.challengeDays = 0
+        self.challengeStartDate = nil
+        self.challengeCurrentDay = 0
+        self.challengeBestDay = 0
 
         // Default preferences
         self.notificationsEnabled = true
@@ -84,6 +98,58 @@ struct UserProfile: Codable {
         self.weeklyReportEnabled = true
         self.soundEnabled = true
         self.hapticEnabled = true
+    }
+
+    // Custom decoder to handle new fields gracefully for existing users
+    enum CodingKeys: String, CodingKey {
+        case id, name, username, avatarEmoji, bio, goals, createdAt, timezone
+        case wakeUpTime, sleepTime, isPremium, premiumExpiry, preferredTheme
+        case level, totalXP, totalPoints, disciplineScore, consistencyScore
+        case rank, currentStreak, longestStreak, totalHabitsCompleted
+        case perfectDays, comebackCount, dailyPointGoal
+        case challengeDays, challengeStartDate, challengeCurrentDay, challengeBestDay
+        case notificationsEnabled, motivationalQuotes, dailyCheckInEnabled
+        case weeklyReportEnabled, soundEnabled, hapticEnabled
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        username = try c.decode(String.self, forKey: .username)
+        avatarEmoji = try c.decode(String.self, forKey: .avatarEmoji)
+        bio = try c.decode(String.self, forKey: .bio)
+        goals = try c.decode([UserGoal].self, forKey: .goals)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        timezone = try c.decode(String.self, forKey: .timezone)
+        wakeUpTime = try c.decode(Date.self, forKey: .wakeUpTime)
+        sleepTime = try c.decode(Date.self, forKey: .sleepTime)
+        isPremium = try c.decode(Bool.self, forKey: .isPremium)
+        premiumExpiry = try c.decodeIfPresent(Date.self, forKey: .premiumExpiry)
+        preferredTheme = try c.decode(AppTheme.self, forKey: .preferredTheme)
+        level = try c.decode(Int.self, forKey: .level)
+        totalXP = try c.decode(Int.self, forKey: .totalXP)
+        totalPoints = try c.decode(Int.self, forKey: .totalPoints)
+        disciplineScore = try c.decode(Int.self, forKey: .disciplineScore)
+        consistencyScore = try c.decode(Int.self, forKey: .consistencyScore)
+        rank = try c.decode(UserRank.self, forKey: .rank)
+        currentStreak = try c.decode(Int.self, forKey: .currentStreak)
+        longestStreak = try c.decode(Int.self, forKey: .longestStreak)
+        totalHabitsCompleted = try c.decode(Int.self, forKey: .totalHabitsCompleted)
+        perfectDays = try c.decode(Int.self, forKey: .perfectDays)
+        comebackCount = try c.decode(Int.self, forKey: .comebackCount)
+        // New fields — defaults for existing users
+        dailyPointGoal = try c.decodeIfPresent(Int.self, forKey: .dailyPointGoal) ?? 100
+        challengeDays = try c.decodeIfPresent(Int.self, forKey: .challengeDays) ?? 0
+        challengeStartDate = try c.decodeIfPresent(Date.self, forKey: .challengeStartDate)
+        challengeCurrentDay = try c.decodeIfPresent(Int.self, forKey: .challengeCurrentDay) ?? 0
+        challengeBestDay = try c.decodeIfPresent(Int.self, forKey: .challengeBestDay) ?? 0
+        notificationsEnabled = try c.decode(Bool.self, forKey: .notificationsEnabled)
+        motivationalQuotes = try c.decode(Bool.self, forKey: .motivationalQuotes)
+        dailyCheckInEnabled = try c.decode(Bool.self, forKey: .dailyCheckInEnabled)
+        weeklyReportEnabled = try c.decode(Bool.self, forKey: .weeklyReportEnabled)
+        soundEnabled = try c.decode(Bool.self, forKey: .soundEnabled)
+        hapticEnabled = try c.decode(Bool.self, forKey: .hapticEnabled)
     }
 
     var xpForCurrentLevel: Int {

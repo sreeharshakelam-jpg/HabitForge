@@ -6,7 +6,7 @@ class NotificationManager: ObservableObject {
     @Published var isPermissionGranted = false
 
     func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { granted, error in
             DispatchQueue.main.async {
                 self.isPermissionGranted = granted
                 if let error = error {
@@ -173,14 +173,23 @@ class NotificationManager: ObservableObject {
         case .upcoming:
             content.title = "⏰ Coming Up: \(habit.name)"
             content.body = "Starting in \(habit.reminderMinutesBefore) minutes. Get ready!"
+            content.sound = .default
         case .due:
-            content.title = "\(habit.icon) Time for \(habit.name)!"
+            content.title = "🔔 Time for \(habit.name)!"
             content.body = "It's time. Complete this for \(habit.rewardPoints) points. Let's go! 🔥"
+            // Use default critical sound for the "due" alarm so it's audible
+            content.sound = UNNotificationSound.defaultCritical
+            if #available(iOS 15.0, *) {
+                content.interruptionLevel = .timeSensitive
+            }
         case .late:
             content.title = "⚠️ \(habit.name) is overdue"
             content.body = "You still have time. Complete it now — don't lose that streak!"
+            content.sound = UNNotificationSound.defaultCritical
+            if #available(iOS 15.0, *) {
+                content.interruptionLevel = .timeSensitive
+            }
         }
-        content.sound = .default
         content.categoryIdentifier = "HABIT_ACTION"
         content.userInfo = ["habitId": habit.id.uuidString]
         return content

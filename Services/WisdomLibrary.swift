@@ -6,6 +6,8 @@ enum WisdomSource: String, Codable, CaseIterable {
     case stoic = "Stoic"
     case modern = "Self-Improvement"
     case zen = "Zen"
+    case psychology = "Psychology"
+    case leadership = "Leadership"
 
     var color: String {
         switch self {
@@ -13,6 +15,8 @@ enum WisdomSource: String, Codable, CaseIterable {
         case .stoic: return "#3B82F6"
         case .modern: return "#10B981"
         case .zen: return "#8B5CF6"
+        case .psychology: return "#EC4899"
+        case .leadership: return "#F97316"
         }
     }
 
@@ -22,6 +26,8 @@ enum WisdomSource: String, Codable, CaseIterable {
         case .stoic: return "building.columns.fill"
         case .modern: return "book.fill"
         case .zen: return "leaf.fill"
+        case .psychology: return "brain.head.profile"
+        case .leadership: return "person.3.fill"
         }
     }
 }
@@ -336,8 +342,162 @@ enum WisdomLibrary {
         )
     ]
 
+    // MARK: - Psychology & Mindset (paraphrased insights from classic research)
+    static let psychology: [WisdomQuote] = [
+        WisdomQuote(
+            text: "Between stimulus and response there is a space. In that space is our power to choose our response.",
+            author: "Viktor Frankl",
+            source: .psychology,
+            reference: "Man's Search for Meaning",
+            reflection: "You always have a choice. Always."
+        ),
+        WisdomQuote(
+            text: "He who has a why to live can bear almost any how.",
+            author: "Friedrich Nietzsche",
+            source: .psychology,
+            reflection: "Purpose makes pain bearable. Find your why first."
+        ),
+        WisdomQuote(
+            text: "The mind is everything. What you think you become.",
+            author: "Buddha",
+            source: .psychology,
+            reflection: "Guard your thoughts like you guard your front door."
+        ),
+        WisdomQuote(
+            text: "Whether you think you can, or you think you can't — you're right.",
+            author: "Henry Ford",
+            source: .psychology,
+            reflection: "Belief isn't soft. It's the operating system everything runs on."
+        ),
+        WisdomQuote(
+            text: "People do not decide their futures, they decide their habits and their habits decide their futures.",
+            author: "F.M. Alexander",
+            source: .psychology,
+            reflection: "You don't choose outcomes directly — you choose the daily inputs."
+        ),
+        WisdomQuote(
+            text: "It does not matter how slowly you go as long as you do not stop.",
+            author: "Confucius",
+            source: .psychology,
+            reflection: "Speed is optional. Stopping is fatal."
+        ),
+        WisdomQuote(
+            text: "When we are no longer able to change a situation, we are challenged to change ourselves.",
+            author: "Viktor Frankl",
+            source: .psychology,
+            reference: "Man's Search for Meaning",
+            reflection: "Adapt. That's the only real superpower."
+        ),
+        WisdomQuote(
+            text: "The happiness of your life depends upon the quality of your thoughts.",
+            author: "Marcus Aurelius",
+            source: .psychology,
+            reflection: "Upgrade the inner dialogue — everything else follows."
+        ),
+        WisdomQuote(
+            text: "Knowing yourself is the beginning of all wisdom.",
+            author: "Aristotle",
+            source: .psychology,
+            reflection: "Self-awareness isn't luxury — it's prerequisite."
+        ),
+        WisdomQuote(
+            text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
+            author: "Ralph Waldo Emerson",
+            source: .psychology,
+            reflection: "The real resource is internal, not external."
+        ),
+        WisdomQuote(
+            text: "Growth is painful. Change is painful. But nothing is as painful as staying stuck somewhere you don't belong.",
+            author: "N.R. Narayana Murthy",
+            source: .psychology,
+            reflection: "Pick your pain: growth or stagnation."
+        ),
+        WisdomQuote(
+            text: "Strength does not come from winning. Your struggles develop your strengths.",
+            author: "Arnold Schwarzenegger",
+            source: .psychology,
+            reflection: "Every rep that hurts is building something you can't see yet."
+        )
+    ]
+
+    // MARK: - Leadership & Success (paraphrased wisdom from thought leaders)
+    static let leadership: [WisdomQuote] = [
+        WisdomQuote(
+            text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            author: "Winston Churchill",
+            source: .leadership,
+            reflection: "Neither victory nor defeat is permanent. Persistence is."
+        ),
+        WisdomQuote(
+            text: "The only way to do great work is to love what you do.",
+            author: "Steve Jobs",
+            source: .leadership,
+            reflection: "Passion isn't found. It's built through mastery."
+        ),
+        WisdomQuote(
+            text: "Do not wait to strike till the iron is hot; but make it hot by striking.",
+            author: "William Butler Yeats",
+            source: .leadership,
+            reflection: "Don't wait for motivation. Action creates motivation."
+        ),
+        WisdomQuote(
+            text: "The secret of getting ahead is getting started.",
+            author: "Mark Twain",
+            source: .leadership,
+            reflection: "Step one is always the hardest and always the most important."
+        ),
+        WisdomQuote(
+            text: "In the middle of difficulty lies opportunity.",
+            author: "Albert Einstein",
+            source: .leadership,
+            reflection: "Your biggest breakthrough is hiding inside your biggest problem."
+        ),
+        WisdomQuote(
+            text: "If you want to lift yourself up, lift up someone else.",
+            author: "Booker T. Washington",
+            source: .leadership,
+            reflection: "Service is the fastest path to self-respect."
+        ),
+        WisdomQuote(
+            text: "Our greatest glory is not in never falling, but in rising every time we fall.",
+            author: "Confucius",
+            source: .leadership,
+            reflection: "Champions are defined by recoveries, not by perfection."
+        ),
+        WisdomQuote(
+            text: "Vision without execution is hallucination.",
+            author: "Thomas Edison",
+            source: .leadership,
+            reflection: "Dreams without reps are just entertainment."
+        ),
+        WisdomQuote(
+            text: "What gets measured gets managed.",
+            author: "Peter Drucker",
+            source: .leadership,
+            reflection: "Track it. That's literally what this app is for."
+        ),
+        WisdomQuote(
+            text: "The best time to plant a tree was twenty years ago. The second best time is now.",
+            author: "Chinese Proverb",
+            source: .leadership,
+            reflection: "Stop regretting the past. Start building the future."
+        ),
+        WisdomQuote(
+            text: "Action is the foundational key to all success.",
+            author: "Pablo Picasso",
+            source: .leadership,
+            reflection: "Think less. Do more. Iterate."
+        ),
+        WisdomQuote(
+            text: "Don't count the days. Make the days count.",
+            author: "Muhammad Ali",
+            source: .leadership,
+            reflection: "Quality over quantity. Even in discipline."
+        )
+    ]
+
     // MARK: - All
-    static var all: [WisdomQuote] { gita + stoic + modern + zen }
+    static var all: [WisdomQuote] { gita + stoic + modern + zen + psychology + leadership }
 
     // MARK: - Lookups
     static func quotes(from source: WisdomSource) -> [WisdomQuote] {
@@ -346,6 +506,8 @@ enum WisdomLibrary {
         case .stoic: return stoic
         case .modern: return modern
         case .zen: return zen
+        case .psychology: return psychology
+        case .leadership: return leadership
         }
     }
 

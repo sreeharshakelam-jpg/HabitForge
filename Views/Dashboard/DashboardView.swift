@@ -7,6 +7,8 @@ struct DashboardView: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var showGameNotification = false
     @State private var showWisdomLibrary = false
+    @State private var showChallengeSetup = false
+    @State private var showDailyGoalPicker = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -41,6 +43,40 @@ struct DashboardView: View {
                     }
                     .padding(.horizontal, ForgeSpacing.md)
                     .padding(.top, ForgeSpacing.md)
+
+                    // Challenge Day Tracker
+                    if habitStore.userProfile.challengeDays > 0 {
+                        ChallengeBanner()
+                            .padding(.horizontal, ForgeSpacing.md)
+                            .padding(.top, ForgeSpacing.md)
+                    } else {
+                        Button {
+                            showChallengeSetup = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "flag.checkered")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Start a Challenge")
+                                    .font(ForgeTypography.labelM)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                            .foregroundColor(ForgeColor.accent)
+                            .padding(ForgeSpacing.md)
+                            .background(ForgeColor.card)
+                            .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                            .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.accent.opacity(0.3), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, ForgeSpacing.md)
+                        .padding(.top, ForgeSpacing.md)
+                    }
+
+                    // Points progress toward daily goal
+                    DailyPointsGoalBar()
+                        .padding(.horizontal, ForgeSpacing.md)
+                        .padding(.top, ForgeSpacing.md)
 
                     // Today's Section Title
                     HStack {
@@ -120,6 +156,14 @@ struct DashboardView: View {
         }
         .sheet(isPresented: $showWisdomLibrary) {
             WisdomLibraryView()
+        }
+        .sheet(isPresented: $showChallengeSetup) {
+            ChallengeSetupView()
+                .environmentObject(habitStore)
+        }
+        .sheet(isPresented: $showDailyGoalPicker) {
+            DailyGoalPickerView()
+                .environmentObject(habitStore)
         }
     }
 
@@ -208,7 +252,7 @@ struct HeroStatsCard: View {
                 // Stats
                 VStack(alignment: .leading, spacing: 10) {
                     StatRow(icon: "bolt.fill", color: ForgeColor.accent,
-                            label: "Points Today", value: "\(habitStore.todayPointsEarned)")
+                            label: "Points Today", value: "\(habitStore.todayPointsEarned)/\(habitStore.userProfile.dailyPointGoal)")
                     StatRow(icon: "flame.fill", color: .orange,
                             label: "Streak", value: "\(habitStore.userProfile.currentStreak) days")
                     StatRow(icon: "chart.bar.fill", color: ForgeColor.success,
@@ -355,6 +399,15 @@ struct HabitRowCard: View {
                 // Quick Action Button
                 if entry.status == .pending || entry.status == .snoozed {
                     CompleteButton(habit: habit, entry: entry)
+                } else if entry.status == .completed {
+                    // Tap completed badge to undo
+                    Button {
+                        withAnimation { habitStore.uncompleteHabit(entry) }
+                        ForgeHaptics.impact(.medium)
+                    } label: {
+                        StatusBadge(status: entry.status)
+                    }
+                    .buttonStyle(.plain)
                 } else {
                     StatusBadge(status: entry.status)
                 }
@@ -420,6 +473,13 @@ struct HabitRowCard: View {
                 habitStore.skipHabit(entry)
             } label: {
                 Label("Skip Today", systemImage: "minus.circle")
+            }
+        } else if entry.status == .completed {
+            Button {
+                withAnimation { habitStore.uncompleteHabit(entry) }
+                ForgeHaptics.impact(.medium)
+            } label: {
+                Label("Undo Completion", systemImage: "arrow.uturn.backward.circle")
             }
         }
     }
@@ -585,6 +645,295 @@ struct GameNotificationToast: View {
         case .levelUp: return "arrow.up.circle.fill"
         case .streakMilestone: return "flame.fill"
         }
+    }
+}
+
+// MARK: - Daily Points Goal Bar
+struct DailyPointsGoalBar: View {
+    @EnvironmentObject var habitStore: HabitStore
+
+    var earned: Int { habitStore.todayPointsEarned }
+    var goal: Int { habitStore.userProfile.dailyPointGoal }
+    var progress: Double { goal > 0 ? min(Double(earned) / Double(goal), 1.0) : 0 }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("DAILY GOAL")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textTertiary)
+                    .tracking(2)
+                Spacer()
+                Text("\(earned) / \(goal) pts")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundColor(progress >= 1.0 ? ForgeColor.success : ForgeColor.accent)
+            }
+
+            // Progress bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(ForgeColor.surfaceElevated)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(progress >= 1.0 ? ForgeColor.success : ForgeColor.accent)
+                        .frame(width: geo.size.width * progress)
+                        .animation(.spring(response: 0.5), value: progress)
+                }
+            }
+            .frame(height: 8)
+
+            // Show motivational quote when goal is hit
+            if progress >= 1.0 {
+                let q = WisdomLibrary.quoteOfTheDay()
+                Text("🏆 Goal reached! \"\(q.text.prefix(80))...\"")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.success)
+                    .lineLimit(2)
+            } else if progress >= 0.5 {
+                Text("🔥 Halfway there! Keep pushing.")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.warning)
+            }
+        }
+        .padding(ForgeSpacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                .fill(ForgeColor.card)
+                .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
+        )
+    }
+}
+
+// MARK: - Challenge Banner
+struct ChallengeBanner: View {
+    @EnvironmentObject var habitStore: HabitStore
+
+    var profile: UserProfile { habitStore.userProfile }
+    var progress: Double {
+        guard profile.challengeDays > 0 else { return 0 }
+        return Double(profile.challengeCurrentDay) / Double(profile.challengeDays)
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack {
+                Image(systemName: "flag.checkered")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(ForgeColor.accent)
+                Text("\(profile.challengeDays)-DAY CHALLENGE")
+                    .font(ForgeTypography.labelS)
+                    .foregroundColor(ForgeColor.accent)
+                    .tracking(1)
+                Spacer()
+                Text("Day \(profile.challengeCurrentDay)")
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundColor(.white)
+            }
+
+            // Progress bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(ForgeColor.surfaceElevated)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(ForgeColor.accentGradient)
+                        .frame(width: geo.size.width * progress)
+                        .animation(.spring(response: 0.5), value: progress)
+                }
+            }
+            .frame(height: 8)
+
+            HStack {
+                Text("\(Int(progress * 100))% complete")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textSecondary)
+                Spacer()
+                if profile.challengeBestDay > 0 && profile.challengeCurrentDay < profile.challengeBestDay {
+                    Text("Best: Day \(profile.challengeBestDay)")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.warning)
+                }
+            }
+        }
+        .padding(ForgeSpacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                .fill(Color(hex: "#0A0F1A") ?? .black)
+                .overlay(
+                    RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                        .stroke(ForgeColor.accent.opacity(0.4), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Challenge Setup View
+struct ChallengeSetupView: View {
+    @EnvironmentObject var habitStore: HabitStore
+    @Environment(\.dismiss) var dismiss
+    @State private var selectedDays: Int = 30
+
+    let options = [
+        (days: 21, label: "21-Day Kickstart", desc: "Build the foundation"),
+        (days: 30, label: "30-Day Forge", desc: "Cement a new habit"),
+        (days: 75, label: "75 Hard", desc: "The classic mental toughness test"),
+        (days: 100, label: "100-Day Warrior", desc: "Transform your identity")
+    ]
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                ForgeColor.background.ignoresSafeArea()
+                ScrollView {
+                    VStack(spacing: 20) {
+                        Text("🏁")
+                            .font(.system(size: 60))
+                            .padding(.top, 20)
+
+                        Text("Choose Your Challenge")
+                            .font(ForgeTypography.h2)
+                            .foregroundColor(.white)
+
+                        Text("Complete all your habits every day for the chosen period. Miss a day and it resets — but you can always restart.")
+                            .font(ForgeTypography.bodyM)
+                            .foregroundColor(ForgeColor.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+
+                        ForEach(options, id: \.days) { option in
+                            Button {
+                                selectedDays = option.days
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(option.label)
+                                            .font(ForgeTypography.h4)
+                                            .foregroundColor(.white)
+                                        Text(option.desc)
+                                            .font(ForgeTypography.labelXS)
+                                            .foregroundColor(ForgeColor.textSecondary)
+                                    }
+                                    Spacer()
+                                    if selectedDays == option.days {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 22))
+                                            .foregroundColor(ForgeColor.accent)
+                                    } else {
+                                        Circle()
+                                            .stroke(ForgeColor.border, lineWidth: 2)
+                                            .frame(width: 22, height: 22)
+                                    }
+                                }
+                                .padding(ForgeSpacing.md)
+                                .background(
+                                    RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                                        .fill(selectedDays == option.days ? ForgeColor.accent.opacity(0.1) : ForgeColor.card)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                                                .stroke(selectedDays == option.days ? ForgeColor.accent : ForgeColor.border, lineWidth: 1)
+                                        )
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, ForgeSpacing.md)
+
+                        Button {
+                            habitStore.userProfile.challengeDays = selectedDays
+                            habitStore.userProfile.challengeStartDate = Date()
+                            habitStore.userProfile.challengeCurrentDay = 0
+                            habitStore.saveUserProfile()
+                            ForgeHaptics.success()
+                            dismiss()
+                        } label: {
+                            Text("Start \(selectedDays)-Day Challenge")
+                                .font(ForgeTypography.h4)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(ForgeSpacing.md)
+                                .background(ForgeColor.accentGradient)
+                                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, ForgeSpacing.md)
+                        .padding(.top, 10)
+                    }
+                }
+            }
+            .navigationTitle("Challenge")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(ForgeColor.accent)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Daily Goal Picker View
+struct DailyGoalPickerView: View {
+    @EnvironmentObject var habitStore: HabitStore
+    @Environment(\.dismiss) var dismiss
+    @State private var goal: Double = 100
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                ForgeColor.background.ignoresSafeArea()
+                VStack(spacing: 24) {
+                    Text("⚡")
+                        .font(.system(size: 60))
+                        .padding(.top, 30)
+
+                    Text("Daily Points Goal")
+                        .font(ForgeTypography.h2)
+                        .foregroundColor(.white)
+
+                    Text("\(Int(goal))")
+                        .font(.system(size: 52, weight: .black, design: .rounded))
+                        .foregroundColor(ForgeColor.accent)
+
+                    Slider(value: $goal, in: 25...500, step: 25)
+                        .tint(ForgeColor.accent)
+                        .padding(.horizontal, 40)
+
+                    Text("Points you want to hit every day.\nEarned by completing your habits.")
+                        .font(ForgeTypography.bodyM)
+                        .foregroundColor(ForgeColor.textSecondary)
+                        .multilineTextAlignment(.center)
+
+                    Spacer()
+
+                    Button {
+                        habitStore.userProfile.dailyPointGoal = Int(goal)
+                        habitStore.saveUserProfile()
+                        dismiss()
+                    } label: {
+                        Text("Set Goal")
+                            .font(ForgeTypography.h4)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(ForgeSpacing.md)
+                            .background(ForgeColor.accentGradient)
+                            .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, ForgeSpacing.md)
+                    .padding(.bottom, 30)
+                }
+            }
+            .navigationTitle("Set Goal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(ForgeColor.accent)
+                }
+            }
+        }
+        .onAppear { goal = Double(habitStore.userProfile.dailyPointGoal) }
     }
 }
 
