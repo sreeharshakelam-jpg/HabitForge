@@ -118,7 +118,7 @@ struct ProfileView: View {
                 ProfileStat(icon: "checkmark.circle.fill", color: ForgeColor.success, value: "\(habitStore.userProfile.totalHabitsCompleted)", label: "Done")
                 ProfileStat(icon: "crown.fill", color: ForgeColor.warning, value: "\(habitStore.userProfile.perfectDays)", label: "Perfect")
                 ProfileStat(icon: "sparkles", color: Color(hex: "#8B5CF6") ?? .purple, value: "\(habitStore.userProfile.totalXP) XP", label: "Total XP")
-                ProfileStat(icon: "chart.bar.fill", color: ForgeColor.info, value: "\(habitStore.userProfile.disciplineScore)", label: "Discipline")
+                ProfileStat(icon: "chart.bar.fill", color: ForgeColor.info, value: "\(habitStore.userProfile.totalDisciplinedDays)", label: "Disciplined Days")
             }
             .padding(.horizontal, ForgeSpacing.md)
         }

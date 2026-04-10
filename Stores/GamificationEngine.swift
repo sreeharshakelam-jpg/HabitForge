@@ -16,45 +16,19 @@ class GamificationEngine: ObservableObject {
     private var comboCount = 0
 
     // MARK: - Reward Calculation
+    // Returns the exact points and XP the user assigned to the habit.
+    // No hidden multipliers — what you set is what you get.
     func calculateReward(for habit: Habit, entry: HabitEntry) -> (points: Int, xp: Int) {
-        var points = habit.rewardPoints
-        var xp = habit.xpReward
+        let points = habit.rewardPoints
+        let xp = habit.xpReward
 
-        // Timing bonus
-        let timing = entry.timingStatus
-        points = Int(Double(points) * timing.bonusMultiplier)
-        xp = Int(Double(xp) * timing.bonusMultiplier)
-
-        // Combo multiplier
-        points = Int(Double(points) * comboMultiplier)
-        xp = Int(Double(xp) * comboMultiplier)
-
-        // Snooze penalty
-        let snoozePenalty = Double(entry.snoozeCount) * 0.15
-        points = Int(Double(points) * (1.0 - snoozePenalty))
-        xp = Int(Double(xp) * (1.0 - snoozePenalty))
-
-        // Streak bonus (up to +50% at 30+ day streak)
-        if let store = habitStore {
-            let streak = store.userProfile.currentStreak
-            let streakBonus = min(Double(streak) / 60.0, 0.5)
-            points = Int(Double(points) * (1.0 + streakBonus))
-            xp = Int(Double(xp) * (1.0 + streakBonus))
-        }
-
-        // Perfect day bonus (first completion of the day when all others are done)
+        // Check for perfect day (all other habits done)
         if let store = habitStore {
             let pending = store.todayEntries.filter { $0.status == .pending && $0.id != entry.id }
             if pending.isEmpty {
-                // This is the last habit — perfect day bonus!
-                points = Int(Double(points) * 1.5)
-                xp = Int(Double(xp) * 1.5)
                 triggerPerfectDayNotification()
             }
         }
-
-        // Update combo
-        updateCombo()
 
         return (max(1, points), max(1, xp))
     }

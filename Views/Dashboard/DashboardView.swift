@@ -256,7 +256,7 @@ struct HeroStatsCard: View {
                     StatRow(icon: "flame.fill", color: .orange,
                             label: "Streak", value: "\(habitStore.userProfile.currentStreak) days")
                     StatRow(icon: "chart.bar.fill", color: ForgeColor.success,
-                            label: "Discipline", value: "\(habitStore.userProfile.disciplineScore)/1000")
+                            label: "Disciplined Days", value: "\(habitStore.userProfile.totalDisciplinedDays) days")
                 }
 
                 Spacer()

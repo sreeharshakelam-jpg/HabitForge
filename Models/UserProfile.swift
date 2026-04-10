@@ -29,6 +29,7 @@ struct UserProfile: Codable {
     var totalHabitsCompleted: Int
     var perfectDays: Int
     var comebackCount: Int
+    var totalDisciplinedDays: Int  // days where all habits were completed
     var dailyPointGoal: Int
 
     // Challenge tracker
@@ -83,6 +84,7 @@ struct UserProfile: Codable {
         self.totalHabitsCompleted = 0
         self.perfectDays = 0
         self.comebackCount = 0
+        self.totalDisciplinedDays = 0
         self.dailyPointGoal = 100
 
         // Challenge tracker
@@ -106,7 +108,7 @@ struct UserProfile: Codable {
         case wakeUpTime, sleepTime, isPremium, premiumExpiry, preferredTheme
         case level, totalXP, totalPoints, disciplineScore, consistencyScore
         case rank, currentStreak, longestStreak, totalHabitsCompleted
-        case perfectDays, comebackCount, dailyPointGoal
+        case perfectDays, comebackCount, totalDisciplinedDays, dailyPointGoal
         case challengeDays, challengeStartDate, challengeCurrentDay, challengeBestDay
         case notificationsEnabled, motivationalQuotes, dailyCheckInEnabled
         case weeklyReportEnabled, soundEnabled, hapticEnabled
@@ -139,6 +141,7 @@ struct UserProfile: Codable {
         perfectDays = try c.decode(Int.self, forKey: .perfectDays)
         comebackCount = try c.decode(Int.self, forKey: .comebackCount)
         // New fields — defaults for existing users
+        totalDisciplinedDays = try c.decodeIfPresent(Int.self, forKey: .totalDisciplinedDays) ?? 0
         dailyPointGoal = try c.decodeIfPresent(Int.self, forKey: .dailyPointGoal) ?? 100
         challengeDays = try c.decodeIfPresent(Int.self, forKey: .challengeDays) ?? 0
         challengeStartDate = try c.decodeIfPresent(Date.self, forKey: .challengeStartDate)

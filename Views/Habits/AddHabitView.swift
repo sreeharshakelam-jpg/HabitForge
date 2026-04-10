@@ -16,6 +16,7 @@ struct AddHabitView: View {
     @State private var hasDuration = false
     @State private var durationMinutes = 30
     @State private var selectedDifficulty = HabitDifficulty.medium
+    @State private var customPoints: Double = 25
     @State private var reminderMinutesBefore = 10
     @State private var snoozeAllowed = true
     @State private var hasTarget = false
@@ -72,6 +73,7 @@ struct AddHabitView: View {
                             selectedIcon: $selectedIcon,
                             selectedColorHex: $selectedColorHex,
                             selectedDifficulty: $selectedDifficulty,
+                            customPoints: $customPoints,
                             reminderMinutesBefore: $reminderMinutesBefore,
                             snoozeAllowed: $snoozeAllowed,
                             habitName: name
@@ -138,6 +140,8 @@ struct AddHabitView: View {
     }
 
     private func saveHabit() {
+        let pts = Int(customPoints)
+        let xp = max(1, pts / 2)
         let habit = Habit(
             name: name,
             description: description,
@@ -149,6 +153,8 @@ struct AddHabitView: View {
             scheduledTime: hasScheduledTime ? scheduledTime : nil,
             durationMinutes: hasDuration ? durationMinutes : nil,
             difficulty: selectedDifficulty,
+            rewardPoints: pts,
+            xpReward: xp,
             isActive: true,
             reminderMinutesBefore: reminderMinutesBefore,
             snoozeAllowed: snoozeAllowed,
@@ -370,18 +376,26 @@ struct SchedulePage: View {
                 }
 
                 // Scheduled Time
-                VStack(alignment: .leading, spacing: 10) {
-                    Toggle(isOn: $hasScheduledTime) {
-                        Text("SCHEDULED TIME")
-                            .font(ForgeTypography.labelXS)
-                            .foregroundColor(ForgeColor.textTertiary)
-                            .tracking(2)
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle(isOn: $hasScheduledTime.animation(.easeInOut(duration: 0.2))) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("SCHEDULED TIME")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.textTertiary)
+                                .tracking(2)
+                            Text(hasScheduledTime ? scheduledTime.timeString : "Off")
+                                .font(ForgeTypography.labelM)
+                                .foregroundColor(hasScheduledTime ? .white : ForgeColor.textSecondary)
+                        }
                     }
                     .tint(ForgeColor.accent)
 
                     if hasScheduledTime {
-                        DatePicker("Time", selection: $scheduledTime, displayedComponents: .hourAndMinute)
+                        Divider().background(ForgeColor.border)
+
+                        DatePicker("Select time", selection: $scheduledTime, displayedComponents: .hourAndMinute)
                             .datePickerStyle(.wheel)
+                            .labelsHidden()
                             .colorScheme(.dark)
                             .frame(maxHeight: 120)
                             .clipped()
@@ -450,6 +464,7 @@ struct AppearancePage: View {
     @Binding var selectedIcon: String
     @Binding var selectedColorHex: String
     @Binding var selectedDifficulty: HabitDifficulty
+    @Binding var customPoints: Double
     @Binding var reminderMinutesBefore: Int
     @Binding var snoozeAllowed: Bool
     let habitName: String
@@ -486,9 +501,9 @@ struct AppearancePage: View {
                         Text(habitName.isEmpty ? "Your Habit" : habitName)
                             .font(ForgeTypography.h4)
                             .foregroundColor(.white)
-                        Text("+\(selectedDifficulty.defaultPoints) points · \(selectedDifficulty.displayName)")
+                        Text("+\(Int(customPoints)) points")
                             .font(ForgeTypography.labelXS)
-                            .foregroundColor(ForgeColor.textSecondary)
+                            .foregroundColor(ForgeColor.accent)
                     }
                     Spacer()
                 }
@@ -546,33 +561,45 @@ struct AppearancePage: View {
                     }
                 }
 
-                // Difficulty
+                // Points
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("DIFFICULTY & REWARD")
+                    Text("POINTS FOR THIS HABIT")
                         .font(ForgeTypography.labelXS)
                         .foregroundColor(ForgeColor.textTertiary)
                         .tracking(2)
+
+                    Text("Decide how many of your daily goal this habit is worth.")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.textSecondary)
+
+                    HStack {
+                        Text("\(Int(customPoints))")
+                            .font(.system(size: 32, weight: .black, design: .rounded))
+                            .foregroundColor(ForgeColor.accent)
+                        Text("pts")
+                            .font(ForgeTypography.labelM)
+                            .foregroundColor(ForgeColor.textSecondary)
+                        Spacer()
+                    }
+
+                    Slider(value: $customPoints, in: 5...100, step: 5)
+                        .tint(ForgeColor.accent)
+
+                    // Quick-pick chips
                     HStack(spacing: 8) {
-                        ForEach(HabitDifficulty.allCases, id: \.self) { diff in
+                        ForEach([10, 20, 25, 50], id: \.self) { pts in
                             Button {
-                                selectedDifficulty = diff
+                                customPoints = Double(pts)
                                 ForgeHaptics.light()
                             } label: {
-                                VStack(spacing: 4) {
-                                    Image(systemName: diff.icon)
-                                        .font(.system(size: 14, weight: .bold))
-                                        .foregroundColor(selectedDifficulty == diff ? .white : diff.color)
-                                    Text(diff.displayName)
-                                        .font(ForgeTypography.labelXS)
-                                        .foregroundColor(selectedDifficulty == diff ? .white : ForgeColor.textSecondary)
-                                    Text("+\(diff.defaultPoints)")
-                                        .font(.system(size: 10, weight: .black, design: .rounded))
-                                        .foregroundColor(selectedDifficulty == diff ? .white.opacity(0.8) : ForgeColor.textTertiary)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(selectedDifficulty == diff ? diff.color : ForgeColor.card)
-                                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
+                                Text("\(pts)")
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .foregroundColor(Int(customPoints) == pts ? .white : ForgeColor.textSecondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(Int(customPoints) == pts ? ForgeColor.accent : ForgeColor.card)
+                                    .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
+                                    .overlay(RoundedRectangle(cornerRadius: ForgeRadius.md).stroke(Int(customPoints) == pts ? ForgeColor.accent : ForgeColor.border, lineWidth: 1))
                             }
                             .buttonStyle(.plain)
                         }

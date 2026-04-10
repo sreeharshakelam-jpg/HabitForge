@@ -417,7 +417,10 @@ class HabitStore: ObservableObject {
         let xp = entries.reduce(0) { $0 + $1.xpEarned }
         let isPerfect = !entries.isEmpty && entries.allSatisfy { $0.status == .completed }
 
-        if isPerfect { userProfile.perfectDays += 1 }
+        if isPerfect {
+            userProfile.perfectDays += 1
+            userProfile.totalDisciplinedDays += 1
+        }
 
         let report = DailyReport(
             id: UUID(),
