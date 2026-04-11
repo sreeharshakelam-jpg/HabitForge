@@ -149,47 +149,24 @@ struct HabitDetailView: View {
             .buttonStyle(.plain)
             .pressEffect()
 
-            HStack(spacing: 10) {
-                if habit.snoozeAllowed {
-                    Button {
-                        habitStore.snoozeHabit(entry)
-                        ForgeHaptics.impact(.rigid)
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Image(systemName: "clock.badge.exclamationmark")
-                            Text("Snooze (-\(HabitStore.snoozePenalty) pts)")
-                        }
-                        .font(ForgeTypography.labelM)
-                        .foregroundColor(ForgeColor.warning)
-                        .frame(maxWidth: .infinity)
-                        .padding(ForgeSpacing.md)
-                        .background(ForgeColor.warning.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
-                        .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.warning.opacity(0.3), lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
+            Button {
+                habitStore.skipHabit(entry)
+                ForgeHaptics.light()
+                dismiss()
+            } label: {
+                HStack {
+                    Image(systemName: "minus.circle")
+                    Text("Skip Today")
                 }
-
-                Button {
-                    habitStore.skipHabit(entry)
-                    ForgeHaptics.light()
-                    dismiss()
-                } label: {
-                    HStack {
-                        Image(systemName: "minus.circle")
-                        Text("Skip Today")
-                    }
-                    .font(ForgeTypography.labelM)
-                    .foregroundColor(ForgeColor.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(ForgeSpacing.md)
-                    .background(ForgeColor.card)
-                    .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
-                    .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
-                }
-                .buttonStyle(.plain)
+                .font(ForgeTypography.labelM)
+                .foregroundColor(ForgeColor.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(ForgeSpacing.md)
+                .background(ForgeColor.card)
+                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
             }
+            .buttonStyle(.plain)
         }
     }
 

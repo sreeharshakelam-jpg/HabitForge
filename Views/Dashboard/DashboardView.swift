@@ -410,11 +410,6 @@ struct HabitRowCard: View {
                             .background(ForgeColor.accent.opacity(0.1))
                             .clipShape(Capsule())
 
-                        if entry.snoozeCount > 0 {
-                            Text("Snoozed \(entry.snoozeCount)x")
-                                .font(ForgeTypography.labelXS)
-                                .foregroundColor(ForgeColor.warning)
-                        }
                     }
                 }
 
@@ -515,15 +510,6 @@ struct HabitRowCard: View {
                 ForgeHaptics.success()
             } label: {
                 Label("Complete", systemImage: "checkmark.circle.fill")
-            }
-
-            if habit.snoozeAllowed {
-                Button {
-                    habitStore.snoozeHabit(entry)
-                    ForgeHaptics.impact(.rigid)
-                } label: {
-                    Label("Snooze (-\(HabitStore.snoozePenalty) pts)", systemImage: "clock.badge.exclamationmark")
-                }
             }
 
             Button(role: .destructive) {
