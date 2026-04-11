@@ -109,7 +109,7 @@ struct HabitDetailView: View {
                         .foregroundColor(ForgeColor.accent)
                     Text("+\(entry.pointsEarned) points earned")
                         .font(ForgeTypography.h4)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                 }
             }
         }
@@ -135,7 +135,7 @@ struct HabitDetailView: View {
                     Text("Complete Now (+\(habit.rewardPoints) pts)")
                         .font(ForgeTypography.h4)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(ForgeSpacing.md)
                 .background(ForgeColor.greenGradient)
@@ -293,7 +293,7 @@ struct InfoRow: View {
             Spacer()
             Text(value)
                 .font(ForgeTypography.h4)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 4)

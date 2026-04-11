@@ -113,7 +113,7 @@ private struct QuoteCard: View {
 
             Text("\u{201C}\(quote.text)\u{201D}")
                 .font(.system(size: 15, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack {

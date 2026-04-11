@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ProfileView: View {
     @EnvironmentObject var habitStore: HabitStore
@@ -6,6 +7,9 @@ struct ProfileView: View {
     @EnvironmentObject var healthKitManager: HealthKitManager
     @EnvironmentObject var notificationManager: NotificationManager
     @State private var showEditProfile = false
+    @State private var showResetConfirm = false
+    @State private var exportItems: [Any] = []
+    @State private var showExportSheet = false
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = true
     @AppStorage("colorSchemePreference") var colorSchemePreference = "dark"
 
@@ -51,6 +55,19 @@ struct ProfileView: View {
             EditProfileView()
                 .environmentObject(habitStore)
         }
+        .confirmationDialog("Reset All Progress?", isPresented: $showResetConfirm, titleVisibility: .visible) {
+            Button("Delete Everything & Start Fresh", role: .destructive) {
+                habitStore.resetAllProgress()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently deletes all habits, entries, and resets your stats. This cannot be undone.")
+        }
+        .sheet(isPresented: $showExportSheet) {
+            if !exportItems.isEmpty {
+                ActivityShareView(items: exportItems)
+            }
+        }
     }
 
     var profileHeaderSection: some View {
@@ -69,7 +86,7 @@ struct ProfileView: View {
                 // Level badge
                 Text("L\(habitStore.userProfile.level)")
                     .font(.system(size: 11, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(Capsule().fill(ForgeColor.accent))
@@ -86,7 +103,7 @@ struct ProfileView: View {
                 }
                 Text(habitStore.userProfile.name.isEmpty ? "Add Your Name" : habitStore.userProfile.name)
                     .font(ForgeTypography.h2)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("@\(habitStore.userProfile.username.isEmpty ? "forger" : habitStore.userProfile.username)")
                     .font(ForgeTypography.labelM)
                     .foregroundColor(ForgeColor.textTertiary)
@@ -156,9 +173,11 @@ struct ProfileView: View {
             // HEALTH section hidden — HealthKit disabled in v1.0
 
             SettingsGroup(title: "DATA") {
-                SettingsActionRow(icon: "square.and.arrow.up", color: .blue, title: "Export Data") {}
-                SettingsActionRow(icon: "arrow.counterclockwise", color: .orange, title: "Reset Progress", destructive: true) {
-                    // Confirm before resetting
+                SettingsActionRow(icon: "square.and.arrow.up", color: .blue, title: "Export Data") {
+                    exportData()
+                }
+                SettingsActionRow(icon: "arrow.counterclockwise", color: .red, title: "Reset Progress", destructive: true) {
+                    showResetConfirm = true
                 }
             }
         }
@@ -170,8 +189,8 @@ struct ProfileView: View {
             VStack(spacing: 4) {
                 Text("⚡ FORGE")
                     .font(.system(size: 18, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                Text("Version 1.0.0")
+                    .foregroundColor(ForgeColor.textPrimary)
+                Text("Version 1.0.5")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
                 Text("Build your discipline. Forge your future.")
@@ -181,6 +200,38 @@ struct ProfileView: View {
             }
             .padding(ForgeSpacing.lg)
         }
+    }
+
+    private func exportData() {
+        struct ExportPayload: Encodable {
+            let exportDate: Date
+            let habits: [Habit]
+            let entries: [HabitEntry]
+            let userProfile: UserProfile
+            let dailyReports: [DailyReport]
+        }
+
+        let payload = ExportPayload(
+            exportDate: Date(),
+            habits: habitStore.habits,
+            entries: habitStore.allEntries,
+            userProfile: habitStore.userProfile,
+            dailyReports: habitStore.dailyReports
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        encoder.dateEncodingStrategy = .iso8601
+
+        guard let jsonData = try? encoder.encode(payload),
+              let jsonString = String(data: jsonData, encoding: .utf8) else { return }
+
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("forge_export_\(timestamp).json")
+        try? jsonString.write(to: url, atomically: true, encoding: .utf8)
+        exportItems = [url]
+        showExportSheet = true
     }
 }
 
@@ -198,7 +249,7 @@ struct ProfileStat: View {
                 .foregroundColor(color)
             Text(value)
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Text(label)
@@ -248,11 +299,11 @@ struct SettingsRow<Trailing: View>: View {
                     .frame(width: 30, height: 30)
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
             }
             Text(title)
                 .font(ForgeTypography.bodyM)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Spacer()
             trailing
         }
@@ -274,11 +325,11 @@ struct SettingsToggleRow: View {
                     .frame(width: 30, height: 30)
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
             }
             Text(title)
                 .font(ForgeTypography.bodyM)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Spacer()
             Toggle("", isOn: $value)
                 .tint(ForgeColor.accent)
@@ -304,7 +355,7 @@ struct SettingsActionRow: View {
                         .frame(width: 30, height: 30)
                     Image(systemName: icon)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                 }
                 Text(title)
                     .font(ForgeTypography.bodyM)
@@ -417,11 +468,20 @@ struct ForgeTextField: View {
                 .tracking(2)
             TextField(placeholder, text: $text)
                 .font(ForgeTypography.bodyM)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .padding(ForgeSpacing.md)
                 .background(ForgeColor.card)
                 .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
                 .overlay(RoundedRectangle(cornerRadius: ForgeRadius.md).stroke(ForgeColor.border, lineWidth: 1))
         }
     }
+}
+
+// MARK: - Activity Share Sheet
+struct ActivityShareView: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

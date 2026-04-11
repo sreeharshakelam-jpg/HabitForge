@@ -2,8 +2,59 @@ import Foundation
 import UserNotifications
 import SwiftUI
 
-class NotificationManager: ObservableObject {
+class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     @Published var isPermissionGranted = false
+
+    /// Weak reference so the delegate can complete/snooze/skip habits from notifications.
+    weak var habitStore: HabitStore?
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    /// Handle the user tapping an action button (Complete / Snooze / Skip) from a notification.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                 didReceive response: UNNotificationResponse,
+                                 withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        let habitIdStr = userInfo["habitId"] as? String
+        let habitId = habitIdStr.flatMap { UUID(uuidString: $0) }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let store = self?.habitStore, let id = habitId else {
+                completionHandler(); return
+            }
+            switch response.actionIdentifier {
+            case "COMPLETE":
+                if let entry = store.todayEntries.first(where: {
+                    $0.habitId == id && $0.status != .completed
+                }) {
+                    store.completeHabit(entry)
+                }
+            case "SNOOZE":
+                if let entry = store.todayEntries.first(where: {
+                    $0.habitId == id && $0.status == .pending
+                }) {
+                    store.snoozeHabit(entry)
+                }
+            case "SKIP":
+                if let entry = store.todayEntries.first(where: {
+                    $0.habitId == id &&
+                    ($0.status == .pending || $0.status == .snoozed)
+                }) {
+                    store.skipHabit(entry)
+                }
+            default:
+                break
+            }
+            completionHandler()
+        }
+    }
+
+    /// Show notification banners even when the app is in the foreground.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                 willPresent notification: UNNotification,
+                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound, .badge])
+    }
 
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .providesAppNotificationSettings]) { granted, error in
@@ -183,8 +234,15 @@ class NotificationManager: ObservableObject {
                 content.interruptionLevel = .timeSensitive
             }
         case .late:
+            let lateQuotes = [
+                "You still have time. Complete it now — don't lose that streak!",
+                "Champions slip. Legends get back up. Complete it now!",
+                "Missing one doesn't define you. Rising does. Act now!",
+                "The comeback is always stronger than the setback.",
+                "Your future self is counting on today's version of you."
+            ]
             content.title = "⚠️ \(habit.name) is overdue"
-            content.body = "You still have time. Complete it now — don't lose that streak!"
+            content.body = lateQuotes[abs(habit.id.hashValue) % lateQuotes.count]
             content.sound = UNNotificationSound.defaultCritical
             if #available(iOS 15.0, *) {
                 content.interruptionLevel = .timeSensitive

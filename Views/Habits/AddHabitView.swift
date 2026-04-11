@@ -117,7 +117,7 @@ struct AddHabitView: View {
                                     Image(systemName: "checkmark")
                                 }
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(ForgeSpacing.md)
                             .background(isValid ? ForgeColor.accentGradient : LinearGradient(colors: [ForgeColor.border], startPoint: .leading, endPoint: .trailing))
@@ -180,7 +180,7 @@ struct BasicsPage: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("What habit do you want to build?")
                         .font(ForgeTypography.h2)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                     Text("Be specific. The clearer the habit, the easier to track.")
                         .font(ForgeTypography.bodyS)
                         .foregroundColor(ForgeColor.textSecondary)
@@ -194,7 +194,7 @@ struct BasicsPage: View {
                         .tracking(2)
                     TextField("e.g. Morning Workout", text: $name)
                         .font(ForgeTypography.h3)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                         .padding(ForgeSpacing.md)
                         .background(ForgeColor.card)
                         .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
@@ -212,7 +212,7 @@ struct BasicsPage: View {
                         .tracking(2)
                     TextField("Why this habit matters to you...", text: $description, axis: .vertical)
                         .font(ForgeTypography.bodyM)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                         .lineLimit(3, reservesSpace: true)
                         .padding(ForgeSpacing.md)
                         .background(ForgeColor.card)
@@ -341,7 +341,7 @@ struct SchedulePage: View {
             VStack(alignment: .leading, spacing: ForgeSpacing.lg) {
                 Text("When & How Often?")
                     .font(ForgeTypography.h2)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
 
                 // Frequency
                 VStack(alignment: .leading, spacing: 10) {
@@ -416,7 +416,7 @@ struct SchedulePage: View {
                         HStack {
                             Text("\(durationMinutes) minutes")
                                 .font(ForgeTypography.h3)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                             Spacer()
                         }
                         Slider(value: Binding(
@@ -441,7 +441,7 @@ struct SchedulePage: View {
                         HStack {
                             Text("\(Int(targetValue))")
                                 .font(ForgeTypography.h2)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                             TextField("unit (e.g. glasses, km)", text: $targetUnit)
                                 .font(ForgeTypography.bodyM)
                                 .foregroundColor(ForgeColor.textSecondary)
@@ -484,7 +484,7 @@ struct AppearancePage: View {
             VStack(alignment: .leading, spacing: ForgeSpacing.lg) {
                 Text("Make it yours.")
                     .font(ForgeTypography.h2)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
 
                 // Preview Card
                 HStack(spacing: 14) {
@@ -500,7 +500,7 @@ struct AppearancePage: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(habitName.isEmpty ? "Your Habit" : habitName)
                             .font(ForgeTypography.h4)
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                         Text("+\(Int(customPoints)) points")
                             .font(ForgeTypography.labelXS)
                             .foregroundColor(ForgeColor.accent)
@@ -614,7 +614,7 @@ struct AppearancePage: View {
                         .tracking(2)
                     Stepper("Remind \(reminderMinutesBefore) min before", value: $reminderMinutesBefore, in: 0...60, step: 5)
                         .font(ForgeTypography.bodyM)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                         .padding(ForgeSpacing.md)
                         .background(ForgeColor.card)
                         .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
@@ -623,7 +623,7 @@ struct AppearancePage: View {
                         VStack(alignment: .leading) {
                             Text("Allow Snooze")
                                 .font(ForgeTypography.h4)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                             Text("Snoozing will reduce your points earned")
                                 .font(ForgeTypography.labelXS)
                                 .foregroundColor(ForgeColor.textSecondary)

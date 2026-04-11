@@ -140,7 +140,7 @@ struct DashboardHeader: View {
                     .tracking(2)
                 Text(habitStore.userProfile.name.isEmpty ? "Forger" : habitStore.userProfile.name)
                     .font(ForgeTypography.h1)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
             }
 
             Spacer()
@@ -157,7 +157,7 @@ struct DashboardHeader: View {
 
                 Text("\(habitStore.userProfile.level)")
                     .font(.system(size: 10, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                     .padding(3)
                     .background(Circle().fill(ForgeColor.accent))
                     .offset(x: 4, y: 4)
@@ -187,7 +187,7 @@ struct HeroStatsCard: View {
                     VStack(spacing: 0) {
                         Text("\(Int(habitStore.todayCompletionRate * 100))%")
                             .font(.system(size: 22, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                         Text("Done")
                             .font(ForgeTypography.labelXS)
                             .foregroundColor(ForgeColor.textSecondary)
@@ -255,7 +255,7 @@ struct StatRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(value)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text(label)
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
@@ -473,7 +473,7 @@ struct StreakBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(streak)-Day Streak")
                     .font(ForgeTypography.h4)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Don't break the chain. Keep forging.")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -550,7 +550,7 @@ struct GameNotificationToast: View {
 
             Text(notification.message)
                 .font(ForgeTypography.h4)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
 
             Spacer()
         }
@@ -589,7 +589,7 @@ struct EmptyTodayState: View {
             VStack(spacing: 8) {
                 Text("No Habits Yet")
                     .font(ForgeTypography.h2)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Add your first habit to start forging\nyour best self today.")
                     .font(ForgeTypography.bodyM)
                     .foregroundColor(ForgeColor.textSecondary)

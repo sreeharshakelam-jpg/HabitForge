@@ -45,7 +45,7 @@ struct CoachView: View {
                     .foregroundColor(ForgeColor.textTertiary)
                 Text("Discipline + Timeless Wisdom")
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
             }
             Spacer()
             Button {
@@ -87,7 +87,7 @@ struct CoachView: View {
 
                 Text("Your daily coach is ready")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Tap a mission below, or ask anything. The coach sees your real habits, streak, and discipline score.")
                     .font(.system(size: 14))
                     .foregroundColor(ForgeColor.textSecondary)
@@ -162,7 +162,7 @@ struct CoachView: View {
         HStack(spacing: 10) {
             TextField("Ask your coach anything…", text: $draft, axis: .vertical)
                 .font(.system(size: 15))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .lineLimit(1...4)
                 .focused($inputFocused)
                 .padding(.horizontal, 14)
@@ -207,7 +207,7 @@ private struct CoachBubble: View {
                 }
                 Text(message.content)
                     .font(.system(size: 15))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(12)
                     .background(
@@ -261,7 +261,7 @@ private struct QuickActionChip: View {
                 Text(label)
                     .font(.system(size: 13, weight: .semibold))
             }
-            .foregroundColor(.white)
+            .foregroundColor(ForgeColor.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
             .background(ForgeColor.surfaceElevated)
@@ -302,7 +302,7 @@ struct DailyWisdomCard: View {
 
                 Text("\u{201C}\(quote.text)\u{201D}")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
 

@@ -29,12 +29,11 @@ targets:
         CFBundleInfoDictionaryVersion: "6.0"
         CFBundleName: $(PRODUCT_NAME)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
-        CFBundleShortVersionString: "1.0.4"
-        CFBundleVersion: "5"
+        CFBundleShortVersionString: "1.0.5"
+        CFBundleVersion: "6"
         CFBundleIconName: AppIcon
         LSRequiresIPhoneOS: true
         UILaunchScreen: {}
-        UIUserInterfaceStyle: Dark
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         UIRequiredDeviceCapabilities:

@@ -19,7 +19,7 @@ struct DailyCheckInView: View {
                                 .font(.system(size: 56))
                             Text(greeting)
                                 .font(ForgeTypography.h1)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                                 .multilineTextAlignment(.center)
                             Text(motivationMessage)
                                 .font(ForgeTypography.bodyM)
@@ -45,7 +45,7 @@ struct DailyCheckInView: View {
 
                                         Text(habit.name)
                                             .font(ForgeTypography.h4)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(ForgeColor.textPrimary)
 
                                         Spacer()
 
@@ -80,7 +80,7 @@ struct DailyCheckInView: View {
                                     .font(.system(size: 24))
                                 Text("You have a \(habitStore.userProfile.currentStreak)-day streak! Don't break it today.")
                                     .font(ForgeTypography.labelM)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(ForgeColor.textPrimary)
                             }
                             .padding(ForgeSpacing.md)
                             .background(Color(hex: "#1A0800") ?? .black)
@@ -96,7 +96,7 @@ struct DailyCheckInView: View {
                         } label: {
                             Text("Let's Forge! ⚡")
                                 .font(ForgeTypography.h3)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                                 .frame(maxWidth: .infinity)
                                 .padding(18)
                                 .background(ForgeColor.accentGradient)
@@ -207,7 +207,7 @@ struct DailySummaryView: View {
                         } label: {
                             Text("See You Tomorrow ⚡")
                                 .font(ForgeTypography.h3)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                                 .frame(maxWidth: .infinity)
                                 .padding(18)
                                 .background(ForgeColor.accentGradient)
@@ -240,7 +240,7 @@ struct DailySummaryView: View {
                 VStack(spacing: 2) {
                     Text("\(Int(completionRate * 100))%")
                         .font(.system(size: 28, weight: .black, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                     Text(grade.emoji)
                         .font(.system(size: 20))
                 }
@@ -257,7 +257,7 @@ struct DailySummaryView: View {
 
             Text(grade.message)
                 .font(ForgeTypography.h3)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -326,7 +326,7 @@ struct DailySummaryView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(ach.title)
                             .font(ForgeTypography.h4)
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                         Text(ach.description)
                             .font(ForgeTypography.labelXS)
                             .foregroundColor(ForgeColor.textSecondary)
@@ -353,11 +353,11 @@ struct DailySummaryView: View {
 
             Text(habitStore.dailyReports.last?.reflectionQuestion ?? "How did today go?")
                 .font(ForgeTypography.h4)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
 
             TextField("Write your reflection...", text: $reflection, axis: .vertical)
                 .font(ForgeTypography.bodyM)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .lineLimit(4, reservesSpace: true)
                 .padding(ForgeSpacing.md)
                 .background(ForgeColor.card)
@@ -372,23 +372,44 @@ struct SummaryHabitRow: View {
     let entry: HabitEntry
     let isCompleted: Bool
 
+    private let missedQuotes = [
+        "Tomorrow is a new forge. Rise.",
+        "Every champion has off days. Yours ends now.",
+        "You slipped. That's okay. Get back up.",
+        "The comeback is always stronger than the setback.",
+        "One miss doesn't define you — what you do next does.",
+        "Discipline is choosing between what you want now and what you want most.",
+        "Fall seven times, stand up eight.",
+        "It's not about how hard you fall. It's about how fast you get back up."
+    ]
+
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: habit.icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(isCompleted ? habit.color : ForgeColor.textTertiary)
-                .frame(width: 20)
-            Text(habit.name)
-                .font(ForgeTypography.labelM)
-                .foregroundColor(isCompleted ? .white : ForgeColor.textSecondary)
-            Spacer()
-            if isCompleted {
-                Text("+\(entry.pointsEarned) pts")
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                Image(systemName: habit.icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(isCompleted ? habit.color : ForgeColor.textTertiary)
+                    .frame(width: 20)
+                Text(habit.name)
+                    .font(ForgeTypography.labelM)
+                    .foregroundColor(isCompleted ? .white : ForgeColor.textSecondary)
+                Spacer()
+                if isCompleted {
+                    Text("+\(entry.pointsEarned) pts")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.accent)
+                } else {
+                    Image(systemName: "xmark.circle")
+                        .foregroundColor(ForgeColor.error.opacity(0.6))
+                }
+            }
+
+            if !isCompleted {
+                Text("💪 \"\(missedQuotes[abs(habit.name.hashValue) % missedQuotes.count])\"")
                     .font(ForgeTypography.labelXS)
-                    .foregroundColor(ForgeColor.accent)
-            } else {
-                Image(systemName: "xmark.circle")
-                    .foregroundColor(ForgeColor.error.opacity(0.6))
+                    .foregroundColor(ForgeColor.warning.opacity(0.8))
+                    .italic()
+                    .lineLimit(2)
             }
         }
         .padding(12)

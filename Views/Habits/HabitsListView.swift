@@ -28,7 +28,7 @@ struct HabitsListView: View {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(ForgeColor.textTertiary)
                             TextField("Search habits...", text: $searchText)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                                 .font(ForgeTypography.bodyM)
                         }
                         .padding(12)
@@ -136,7 +136,7 @@ struct HabitListRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(habit.name)
                         .font(ForgeTypography.h4)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
 
                     HStack(spacing: 8) {
                         // Category
@@ -192,10 +192,16 @@ struct HabitListRow: View {
             showDetail = true
         }
         .sheet(isPresented: $showDetail) {
-            if let entry = todayEntry {
-                HabitDetailView(habit: habit, entry: entry)
-                    .environmentObject(habitStore)
-            }
+            HabitDetailView(
+                habit: habit,
+                entry: todayEntry ?? HabitEntry(
+                    habitId: habit.id,
+                    date: Calendar.current.startOfDay(for: Date()),
+                    status: .pending,
+                    scheduledTime: habit.scheduledTime
+                )
+            )
+            .environmentObject(habitStore)
         }
     }
 }
@@ -233,7 +239,7 @@ struct HabitsEmptyState: View {
             VStack(spacing: 8) {
                 Text("Build Your Forge")
                     .font(ForgeTypography.h1)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Add your first habit and start building\nthe life you want.")
                     .font(ForgeTypography.bodyM)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -247,7 +253,7 @@ struct HabitsEmptyState: View {
                     Text("Add First Habit")
                 }
                 .font(ForgeTypography.h4)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .padding(.horizontal, 32)
                 .padding(.vertical, 14)
                 .background(ForgeColor.accentGradient)

@@ -210,7 +210,7 @@ struct FlameBadge: View {
                 .foregroundStyle(ForgeColor.fireGradient)
             Text("\(count)")
                 .font(.system(size: size * 0.4, weight: .black, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
@@ -275,7 +275,7 @@ struct ScorePill: View {
                 .foregroundColor(color)
             Text(value)
                 .font(.system(size: 20, weight: .black, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Text(label)
                 .font(ForgeTypography.labelXS)
                 .foregroundColor(ForgeColor.textSecondary)

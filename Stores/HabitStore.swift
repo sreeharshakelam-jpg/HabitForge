@@ -21,8 +21,55 @@ class HabitStore: ObservableObject {
 
     init() {
         loadAll()
+        catchUpMissedDays()
         refreshTodayEntries()
         checkComebackMode()
+    }
+
+    /// On launch, mark any pending entries from previous days as missed and
+    /// recalculate the global streak so the counter is always accurate.
+    private func catchUpMissedDays() {
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: Date())
+
+        // Mark all pending entries from before today as missed
+        var didMiss = false
+        for (i, entry) in allEntries.enumerated() {
+            if entry.status == .pending && !calendar.isDate(entry.date, inSameDayAs: todayStart) && entry.date < todayStart {
+                allEntries[i].status = .missed
+                didMiss = true
+            }
+        }
+
+        // Recalculate global streak from actual data
+        var streak = 0
+        var checkDate = calendar.date(byAdding: .day, value: -1, to: todayStart)!
+        while true {
+            let dayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: checkDate) }
+            if dayEntries.isEmpty {
+                break // No data for this day — stop counting
+            }
+            if dayEntries.contains(where: { $0.status == .completed }) {
+                streak += 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+            } else {
+                break // Day with entries but none completed — streak broken
+            }
+        }
+
+        // Add today if already has a completion
+        let todayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: todayStart) }
+        if todayEntries.contains(where: { $0.status == .completed }) {
+            streak += 1
+        }
+
+        userProfile.currentStreak = streak
+        userProfile.longestStreak = max(userProfile.longestStreak, streak)
+
+        if didMiss {
+            saveEntries()
+        }
+        saveUserProfile()
     }
 
     // MARK: - Load / Save
@@ -308,15 +355,28 @@ class HabitStore: ObservableObject {
 
     private func updateStreak() {
         let calendar = Calendar.current
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date()))!
+        let todayStart = calendar.startOfDay(for: Date())
+
+        // Guard: only increment the streak once per calendar day
+        let lastIncrementDate = defaults.object(forKey: "streakLastIncrementDate") as? Date
+        if let lastDate = lastIncrementDate, calendar.isDate(lastDate, inSameDayAs: todayStart) {
+            return
+        }
+
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart)!
         let yesterdayEntries = entriesForDate(yesterday)
 
-        if yesterdayEntries.isEmpty || yesterdayEntries.allSatisfy({ $0.status == .completed || $0.status == .skipped }) {
-            // Yesterday was complete or skipped (no habits) — streak continues
-            if allCompletedToday {
-                userProfile.currentStreak += 1
-                userProfile.longestStreak = max(userProfile.longestStreak, userProfile.currentStreak)
-            }
+        // Yesterday is OK if: no habits were scheduled, OR at least one was completed
+        let yesterdayOK = yesterdayEntries.isEmpty
+            || yesterdayEntries.contains { $0.status == .completed }
+
+        // Today: at least one habit completed (streak no longer requires ALL habits)
+        let todayHasCompletion = todayEntries.contains { $0.status == .completed }
+
+        if yesterdayOK && todayHasCompletion {
+            userProfile.currentStreak += 1
+            userProfile.longestStreak = max(userProfile.longestStreak, userProfile.currentStreak)
+            defaults.set(Date(), forKey: "streakLastIncrementDate")
         }
     }
 
@@ -393,6 +453,16 @@ class HabitStore: ObservableObject {
             if Calendar.current.isDate(entry.date, inSameDayAs: yesterdayStart) && entry.status == .pending {
                 allEntries[i].status = .missed
             }
+        }
+
+        // Reset global streak if nothing was completed yesterday
+        let yesterdayFinal = allEntries.filter {
+            Calendar.current.isDate($0.date, inSameDayAs: yesterdayStart)
+        }
+        if !yesterdayFinal.isEmpty && !yesterdayFinal.contains(where: { $0.status == .completed }) {
+            userProfile.currentStreak = 0
+            // Clear the streak-increment guard so it can fire again on the next completion
+            defaults.removeObject(forKey: "streakLastIncrementDate")
         }
 
         // Update challenge tracker
@@ -523,5 +593,23 @@ class HabitStore: ObservableObject {
         if let idx = achievements.firstIndex(where: { $0.id == id }) {
             achievements[idx].progress = progress
         }
+    }
+
+    // MARK: - Reset All Progress
+    func resetAllProgress() {
+        habits.removeAll()
+        allEntries.removeAll()
+        todayEntries.removeAll()
+        dailyReports.removeAll()
+        achievements = AchievementLibrary.all
+        userProfile = UserProfile()
+
+        defaults.removeObject(forKey: "habits")
+        defaults.removeObject(forKey: "entries")
+        defaults.removeObject(forKey: "userProfile")
+        defaults.removeObject(forKey: "achievements")
+        defaults.removeObject(forKey: "dailyReports")
+        defaults.removeObject(forKey: "streakLastIncrementDate")
+        defaults.removeObject(forKey: "didMigrateDisciplineV101")
     }
 }

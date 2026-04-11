@@ -91,7 +91,7 @@ struct AchievementsView: View {
 
                     Text(habitStore.userProfile.name.isEmpty ? "Forger" : habitStore.userProfile.name)
                         .font(ForgeTypography.h2)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
 
                     Text("Level \(habitStore.userProfile.level)")
                         .font(ForgeTypography.labelM)
@@ -253,7 +253,7 @@ struct AchievementDetailSheet: View {
 
                         Text(achievement.title)
                             .font(ForgeTypography.h1)
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                             .multilineTextAlignment(.center)
 
                         Text(achievement.description)
@@ -270,7 +270,7 @@ struct AchievementDetailSheet: View {
                                 .tracking(2)
                             Text(date.shortDateString)
                                 .font(ForgeTypography.h4)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                         }
                         .padding(.vertical, 10)
                         .padding(.horizontal, 20)

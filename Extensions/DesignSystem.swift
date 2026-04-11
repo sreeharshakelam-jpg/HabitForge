@@ -3,13 +3,29 @@ import SwiftUI
 // MARK: - FORGE Design System
 
 struct ForgeColor {
-    // Backgrounds
-    static let background = Color(hex: "#060609") ?? .black
-    static let surface = Color(hex: "#0E0E18") ?? Color(white: 0.05)
-    static let surfaceElevated = Color(hex: "#141425") ?? Color(white: 0.08)
-    static let card = Color(hex: "#12121E") ?? Color(white: 0.07)
+    // MARK: - Adaptive Backgrounds (respond to preferredColorScheme)
+    static let background = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 6/255,  green: 6/255,  blue: 9/255,  alpha: 1)   // #060609
+            : UIColor(red: 242/255, green: 242/255, blue: 247/255, alpha: 1) // iOS system grouped bg
+    })
+    static let surface = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 14/255, green: 14/255, blue: 24/255, alpha: 1)   // #0E0E18
+            : UIColor(red: 229/255, green: 229/255, blue: 234/255, alpha: 1)
+    })
+    static let surfaceElevated = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 20/255, green: 20/255, blue: 37/255, alpha: 1)   // #141425
+            : UIColor.systemBackground
+    })
+    static let card = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 18/255, green: 18/255, blue: 30/255, alpha: 1)   // #12121E
+            : UIColor.secondarySystemGroupedBackground
+    })
 
-    // Primary
+    // Primary (unchanged — brand accent colors look good on both backgrounds)
     static let accent = Color(hex: "#7C3AED") ?? .purple
     static let accentBright = Color(hex: "#9D5FFF") ?? .purple
     static let accentGlow = Color(hex: "#7C3AED").map { $0.opacity(0.4) } ?? .purple.opacity(0.4)
@@ -21,14 +37,29 @@ struct ForgeColor {
     static let error = Color(hex: "#EF4444") ?? .red
     static let info = Color(hex: "#3B82F6") ?? .blue
 
-    // Text
-    static let textPrimary = Color.white
-    static let textSecondary = Color(white: 0.6)
-    static let textTertiary = Color(white: 0.35)
+    // MARK: - Adaptive Text Colors
+    /// Primary text — white in dark mode, near-black in light mode.
+    static let textPrimary = Color.primary
+    /// Secondary text — adapts automatically to the current color scheme.
+    static let textSecondary = Color.secondary
+    /// Tertiary / hint text
+    static let textTertiary = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(white: 0.35, alpha: 1)
+            : UIColor(white: 0.50, alpha: 1)
+    })
 
-    // Borders
-    static let border = Color(white: 0.12)
-    static let borderSubtle = Color(white: 0.07)
+    // MARK: - Adaptive Borders
+    static let border = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(white: 0.12, alpha: 1)
+            : UIColor(white: 0.80, alpha: 1)
+    })
+    static let borderSubtle = Color(UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(white: 0.07, alpha: 1)
+            : UIColor(white: 0.88, alpha: 1)
+    })
 
     // Gradients
     static let accentGradient = LinearGradient(
@@ -205,7 +236,7 @@ struct FlameBadge: View {
                 .foregroundStyle(ForgeColor.fireGradient)
             Text("\(count)")
                 .font(.system(size: size * 0.4, weight: .black, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
@@ -270,7 +301,7 @@ struct ScorePill: View {
                 .foregroundColor(color)
             Text(value)
                 .font(.system(size: 20, weight: .black, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Text(label)
                 .font(ForgeTypography.labelXS)
                 .foregroundColor(ForgeColor.textSecondary)

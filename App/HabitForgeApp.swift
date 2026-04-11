@@ -39,6 +39,9 @@ struct HabitForgeApp: App {
     }
 
     private func setupApp() {
+        // Must be set before requestPermission so the delegate receives the initial callbacks.
+        UNUserNotificationCenter.current().delegate = notificationManager
+        notificationManager.habitStore = habitStore
         notificationManager.requestPermission()
         notificationManager.registerNotificationCategories()
         habitStore.gamificationEngine = gamificationEngine

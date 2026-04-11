@@ -86,7 +86,7 @@ struct OnboardingFlow: View {
                             Text(currentStep < totalSteps - 1 ? "Continue" : "Start Forging 🔥")
                                 .font(ForgeTypography.h3)
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                         .frame(maxWidth: .infinity)
                         .padding(18)
                         .background(ForgeColor.accentGradient)
@@ -156,7 +156,7 @@ struct WelcomeStep: View {
                         .shadow(color: ForgeColor.accent.opacity(0.4), radius: 20)
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 48, weight: .black))
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                 }
                 .scaleEffect(showContent ? 1.0 : 0.7)
                 .animation(.spring(response: 0.6).delay(0.1), value: showContent)
@@ -164,7 +164,7 @@ struct WelcomeStep: View {
                 VStack(spacing: 8) {
                     Text("FORGE")
                         .font(.system(size: 52, weight: .black, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                         .tracking(4)
 
                     Text("Build discipline.\nForge your future.")
@@ -206,7 +206,7 @@ struct OnboardingFeatureRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(ForgeTypography.h4)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text(subtitle)
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -229,7 +229,7 @@ struct GoalSelectionStep: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("What are you building?")
                     .font(ForgeTypography.h1)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Select your top goals. You can change these anytime.")
                     .font(ForgeTypography.bodyS)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -309,7 +309,7 @@ struct PersonalizationStep: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Make it yours.")
                         .font(ForgeTypography.h1)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
                     Text("Personalize your FORGE experience")
                         .font(ForgeTypography.bodyS)
                         .foregroundColor(ForgeColor.textSecondary)
@@ -396,7 +396,7 @@ struct SuggestedHabitsStep: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Your starter forge.")
                     .font(ForgeTypography.h1)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("We've prepared habits based on your goals.\nYou can customize everything after.")
                     .font(ForgeTypography.bodyS)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -439,7 +439,7 @@ struct SuggestedHabitRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(habit.name)
                     .font(ForgeTypography.h4)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("\(habit.category.displayName) · +\(habit.rewardPoints) pts · \(habit.difficulty.displayName)")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)

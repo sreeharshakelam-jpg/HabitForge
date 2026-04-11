@@ -9,6 +9,8 @@ struct DashboardView: View {
     @State private var showWisdomLibrary = false
     @State private var showChallengeSetup = false
     @State private var showDailyGoalPicker = false
+    @State private var showStreakDetail = false
+    @State private var showProfileSheet = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -17,7 +19,7 @@ struct DashboardView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     // Header
-                    DashboardHeader()
+                    DashboardHeader(onAvatarTap: { showProfileSheet = true })
                         .padding(.horizontal, ForgeSpacing.md)
                         .padding(.top, 16)
 
@@ -32,9 +34,14 @@ struct DashboardView: View {
                             .padding(.horizontal, ForgeSpacing.md)
                             .padding(.top, ForgeSpacing.md)
                     } else if habitStore.userProfile.currentStreak > 0 {
-                        StreakBanner(streak: habitStore.userProfile.currentStreak)
-                            .padding(.horizontal, ForgeSpacing.md)
-                            .padding(.top, ForgeSpacing.md)
+                        Button {
+                            showStreakDetail = true
+                        } label: {
+                            StreakBanner(streak: habitStore.userProfile.currentStreak)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, ForgeSpacing.md)
+                        .padding(.top, ForgeSpacing.md)
                     }
 
                     // Wisdom of the Day (Bhagavad Gita, Stoic, or modern classic)
@@ -165,6 +172,16 @@ struct DashboardView: View {
             DailyGoalPickerView()
                 .environmentObject(habitStore)
         }
+        .sheet(isPresented: $showStreakDetail) {
+            StreakDetailView()
+                .environmentObject(habitStore)
+        }
+        .sheet(isPresented: $showProfileSheet) {
+            NavigationView {
+                EditProfileView()
+                    .environmentObject(habitStore)
+            }
+        }
     }
 
     var completedCount: Int {
@@ -175,6 +192,7 @@ struct DashboardView: View {
 // MARK: - Dashboard Header
 struct DashboardHeader: View {
     @EnvironmentObject var habitStore: HabitStore
+    var onAvatarTap: (() -> Void)? = nil
 
     var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
@@ -195,28 +213,33 @@ struct DashboardHeader: View {
                     .tracking(2)
                 Text(habitStore.userProfile.name.isEmpty ? "Forger" : habitStore.userProfile.name)
                     .font(ForgeTypography.h1)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
             }
 
             Spacer()
 
-            // Avatar + Level
-            ZStack(alignment: .bottomTrailing) {
-                Circle()
-                    .fill(ForgeColor.accentGradient)
-                    .frame(width: 46, height: 46)
-                    .overlay(
-                        Text(habitStore.userProfile.avatarEmoji)
-                            .font(.system(size: 22))
-                    )
+            // Avatar + Level (tappable → Profile)
+            Button {
+                onAvatarTap?()
+            } label: {
+                ZStack(alignment: .bottomTrailing) {
+                    Circle()
+                        .fill(ForgeColor.accentGradient)
+                        .frame(width: 46, height: 46)
+                        .overlay(
+                            Text(habitStore.userProfile.avatarEmoji)
+                                .font(.system(size: 22))
+                        )
 
-                Text("\(habitStore.userProfile.level)")
-                    .font(.system(size: 10, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(3)
-                    .background(Circle().fill(ForgeColor.accent))
-                    .offset(x: 4, y: 4)
+                    Text("\(habitStore.userProfile.level)")
+                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .foregroundColor(ForgeColor.textPrimary)
+                        .padding(3)
+                        .background(Circle().fill(ForgeColor.accent))
+                        .offset(x: 4, y: 4)
+                }
             }
+            .buttonStyle(.plain)
         }
     }
 }
@@ -242,7 +265,7 @@ struct HeroStatsCard: View {
                     VStack(spacing: 0) {
                         Text("\(Int(habitStore.todayCompletionRate * 100))%")
                             .font(.system(size: 22, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                         Text("Done")
                             .font(ForgeTypography.labelXS)
                             .foregroundColor(ForgeColor.textSecondary)
@@ -310,7 +333,7 @@ struct StatRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(value)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text(label)
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
@@ -329,7 +352,8 @@ struct HabitRowCard: View {
     @State private var showActions = false
 
     var body: some View {
-        HStack(spacing: 14) {
+        VStack(spacing: 0) {
+            HStack(spacing: 14) {
                 // Category/Status Icon
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
@@ -357,7 +381,7 @@ struct HabitRowCard: View {
                     HStack(spacing: 6) {
                         Text(habit.name)
                             .font(ForgeTypography.h4)
-                            .foregroundColor(entry.status == .missed ? ForgeColor.textSecondary : .white)
+                            .foregroundColor(entry.status == .missed ? ForgeColor.textSecondary : ForgeColor.textPrimary)
                             .strikethrough(entry.status == .missed)
 
                         if entry.status == .completed {
@@ -412,7 +436,24 @@ struct HabitRowCard: View {
                     StatusBadge(status: entry.status)
                 }
             }
-        .padding(ForgeSpacing.md)
+            .padding(ForgeSpacing.md)
+
+            // Motivational quote when missed or overdue
+            if entry.status == .missed || (isOverdue && entry.status == .pending) {
+                HStack(spacing: 8) {
+                    Image(systemName: entry.status == .missed ? "quote.opening" : "exclamationmark.triangle")
+                        .font(.system(size: 11))
+                        .foregroundColor(entry.status == .missed ? ForgeColor.textTertiary : ForgeColor.warning)
+                    Text(missedQuote)
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(entry.status == .missed ? ForgeColor.textTertiary : ForgeColor.warning)
+                        .lineLimit(2)
+                    Spacer()
+                }
+                .padding(.horizontal, ForgeSpacing.md)
+                .padding(.bottom, ForgeSpacing.sm)
+            }
+        }
         .background(
             RoundedRectangle(cornerRadius: ForgeRadius.lg)
                 .fill(entry.status == .completed ?
@@ -422,7 +463,7 @@ struct HabitRowCard: View {
                         .stroke(entryBorderColor, lineWidth: 1)
                 )
         )
-        .opacity(entry.status == .missed ? 0.5 : 1.0)
+        .opacity(entry.status == .missed ? 0.7 : 1.0)
         .contentShape(Rectangle())
         .onTapGesture {
             showDetail = true
@@ -439,6 +480,22 @@ struct HabitRowCard: View {
     var isOverdue: Bool {
         guard let scheduledTime = habit.scheduledTime, entry.status == .pending else { return false }
         return scheduledTime < Date()
+    }
+
+    var missedQuote: String {
+        let quotes = [
+            "Tomorrow is another chance to forge ahead.",
+            "Missing one doesn't define you. Rising does.",
+            "Champions slip. Legends get back up.",
+            "The comeback is always stronger than the setback.",
+            "Discipline is built one recovery at a time.",
+            "Don't dwell. Just forge forward.",
+            "Your best streak starts right now.",
+            "Fall seven times, stand up eight."
+        ]
+        // Use habit ID hash for deterministic-per-habit selection
+        let idx = abs(habit.id.hashValue) % quotes.count
+        return quotes[idx]
     }
 
     var entryBorderColor: Color {
@@ -542,7 +599,7 @@ struct StreakBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(streak)-Day Streak")
                     .font(ForgeTypography.h4)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Don't break the chain. Keep forging.")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -619,7 +676,7 @@ struct GameNotificationToast: View {
 
             Text(notification.message)
                 .font(ForgeTypography.h4)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
 
             Spacer()
         }
@@ -727,7 +784,7 @@ struct ChallengeBanner: View {
                 Spacer()
                 Text("Day \(profile.challengeCurrentDay)")
                     .font(.system(size: 16, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
             }
 
             // Progress bar
@@ -792,7 +849,7 @@ struct ChallengeSetupView: View {
 
                         Text("Choose Your Challenge")
                             .font(ForgeTypography.h2)
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
 
                         Text("Complete all your habits every day for the chosen period. Miss a day and it resets — but you can always restart.")
                             .font(ForgeTypography.bodyM)
@@ -808,7 +865,7 @@ struct ChallengeSetupView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(option.label)
                                             .font(ForgeTypography.h4)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(ForgeColor.textPrimary)
                                         Text(option.desc)
                                             .font(ForgeTypography.labelXS)
                                             .foregroundColor(ForgeColor.textSecondary)
@@ -848,7 +905,7 @@ struct ChallengeSetupView: View {
                         } label: {
                             Text("Start \(selectedDays)-Day Challenge")
                                 .font(ForgeTypography.h4)
-                                .foregroundColor(.white)
+                                .foregroundColor(ForgeColor.textPrimary)
                                 .frame(maxWidth: .infinity)
                                 .padding(ForgeSpacing.md)
                                 .background(ForgeColor.accentGradient)
@@ -889,7 +946,7 @@ struct DailyGoalPickerView: View {
 
                     Text("Daily Points Goal")
                         .font(ForgeTypography.h2)
-                        .foregroundColor(.white)
+                        .foregroundColor(ForgeColor.textPrimary)
 
                     Text("\(Int(goal))")
                         .font(.system(size: 52, weight: .black, design: .rounded))
@@ -913,7 +970,7 @@ struct DailyGoalPickerView: View {
                     } label: {
                         Text("Set Goal")
                             .font(ForgeTypography.h4)
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(ForgeSpacing.md)
                             .background(ForgeColor.accentGradient)
@@ -947,7 +1004,7 @@ struct EmptyTodayState: View {
             VStack(spacing: 8) {
                 Text("No Habits Yet")
                     .font(ForgeTypography.h2)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Text("Add your first habit to start forging\nyour best self today.")
                     .font(ForgeTypography.bodyM)
                     .foregroundColor(ForgeColor.textSecondary)
@@ -956,5 +1013,153 @@ struct EmptyTodayState: View {
         }
         .frame(maxWidth: .infinity)
         .padding(ForgeSpacing.xxl)
+    }
+}
+
+// MARK: - Streak Detail View
+struct StreakDetailView: View {
+    @EnvironmentObject var habitStore: HabitStore
+    @Environment(\.dismiss) var dismiss
+
+    private var last14Days: [(date: Date, completed: Int, total: Int)] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        return (0..<14).reversed().map { offset -> (Date, Int, Int) in
+            let day = calendar.date(byAdding: .day, value: -offset, to: today)!
+            let entries = habitStore.allEntries.filter { calendar.isDate($0.date, inSameDayAs: day) }
+            let completed = entries.filter { $0.status == .completed }.count
+            return (day, completed, entries.count)
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                ForgeColor.background.ignoresSafeArea()
+                ScrollView {
+                    VStack(spacing: ForgeSpacing.lg) {
+                        // Hero
+                        VStack(spacing: 12) {
+                            Text("🔥")
+                                .font(.system(size: 64))
+                            Text("\(habitStore.userProfile.currentStreak)")
+                                .font(.system(size: 72, weight: .black, design: .rounded))
+                                .foregroundColor(.orange)
+                            Text("DAY STREAK")
+                                .font(ForgeTypography.labelS)
+                                .foregroundColor(ForgeColor.textTertiary)
+                                .tracking(3)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(ForgeSpacing.xl)
+                        .background(
+                            RoundedRectangle(cornerRadius: ForgeRadius.xl)
+                                .fill(Color(hex: "#120800") ?? ForgeColor.card)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: ForgeRadius.xl)
+                                        .stroke(.orange.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+
+                        // Stats row
+                        HStack(spacing: 10) {
+                            ScorePill(
+                                label: "Current",
+                                value: "\(habitStore.userProfile.currentStreak)🔥",
+                                color: .orange,
+                                icon: "flame.fill"
+                            )
+                            ScorePill(
+                                label: "Longest",
+                                value: "\(habitStore.userProfile.longestStreak)",
+                                color: ForgeColor.warning,
+                                icon: "trophy.fill"
+                            )
+                            ScorePill(
+                                label: "Total Days",
+                                value: "\(habitStore.allEntries.map { Calendar.current.startOfDay(for: $0.date) }.uniqued().count)",
+                                color: ForgeColor.accent,
+                                icon: "calendar"
+                            )
+                        }
+
+                        // 14-day history
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("LAST 14 DAYS")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.textTertiary)
+                                .tracking(2)
+
+                            HStack(spacing: 6) {
+                                ForEach(last14Days, id: \.date) { item in
+                                    VStack(spacing: 4) {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .fill(item.completed > 0 ? .orange.opacity(0.8) : ForgeColor.card)
+                                                .frame(width: 20, height: 36)
+                                            if item.completed > 0 {
+                                                Image(systemName: "flame.fill")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                    .foregroundColor(ForgeColor.textPrimary)
+                                            }
+                                        }
+                                        Text(item.date.dayName)
+                                            .font(.system(size: 8, weight: .semibold, design: .rounded))
+                                            .foregroundColor(ForgeColor.textTertiary)
+                                    }
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(ForgeSpacing.md)
+                        .background(ForgeColor.card)
+                        .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+
+                        // Motivation
+                        let message = streakMotivation
+                        Text(message)
+                            .font(ForgeTypography.h4)
+                            .foregroundColor(ForgeColor.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .padding(ForgeSpacing.lg)
+                            .frame(maxWidth: .infinity)
+                            .background(ForgeColor.card)
+                            .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                    }
+                    .padding(.horizontal, ForgeSpacing.md)
+                    .padding(.top, ForgeSpacing.md)
+                    .padding(.bottom, 40)
+                }
+            }
+            .navigationTitle("Streak")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundColor(ForgeColor.accent)
+                }
+            }
+        }
+    }
+
+    var streakMotivation: String {
+        let streak = habitStore.userProfile.currentStreak
+        switch streak {
+        case 0: return "Start today. Every champion began at zero."
+        case 1: return "Day 1 done. The hardest part is showing up."
+        case 2..<7: return "Building momentum. Keep the chain alive."
+        case 7..<14: return "One week strong! You're forming a real habit."
+        case 14..<30: return "Two weeks in — this is becoming part of who you are."
+        case 30..<75: return "A full month forged. You're unstoppable."
+        case 75..<100: return "75 days of discipline. Legendary status incoming."
+        default: return "100+ days. You've transcended. Keep going."
+        }
+    }
+}
+
+private extension Array where Element == Date {
+    func uniqued() -> [Date] {
+        var seen = Set<Date>()
+        return filter { seen.insert($0).inserted }
     }
 }

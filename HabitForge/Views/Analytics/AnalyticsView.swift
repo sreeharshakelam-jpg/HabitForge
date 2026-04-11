@@ -156,7 +156,7 @@ struct AnalyticsView: View {
                     VStack(spacing: 0) {
                         Text("\(habitStore.userProfile.disciplineScore)")
                             .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                         Text("/1000")
                             .font(ForgeTypography.labelXS)
                             .foregroundColor(ForgeColor.textTertiary)
@@ -189,7 +189,7 @@ struct AnalyticsView: View {
                     VStack(spacing: 0) {
                         Text("\(habitStore.userProfile.consistencyScore)%")
                             .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(ForgeColor.textPrimary)
                         Text("30d avg")
                             .font(ForgeTypography.labelXS)
                             .foregroundColor(ForgeColor.textTertiary)
@@ -341,7 +341,7 @@ struct MetricCard: View {
             }
             Text(value)
                 .font(.system(size: 28, weight: .black, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Text(title)
                 .font(ForgeTypography.labelXS)
                 .foregroundColor(ForgeColor.textSecondary)
@@ -366,7 +366,7 @@ struct SectionHeader: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(ForgeTypography.h3)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Text(subtitle)
                 .font(ForgeTypography.labelXS)
                 .foregroundColor(ForgeColor.textTertiary)
@@ -394,7 +394,7 @@ struct HabitPerformanceRow: View {
                     .frame(width: 20)
                 Text(habit.name)
                     .font(ForgeTypography.labelM)
-                    .foregroundColor(.white)
+                    .foregroundColor(ForgeColor.textPrimary)
                 Spacer()
                 Text("\(Int(completionRate * 100))%")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -435,7 +435,7 @@ struct HealthMetricCard: View {
             }
             Text(value)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
             Text("Goal: \(target)")
                 .font(ForgeTypography.labelXS)
                 .foregroundColor(ForgeColor.textTertiary)
@@ -471,7 +471,7 @@ struct TimingCard: View {
                 .foregroundColor(color)
             Text(value)
                 .font(ForgeTypography.h3)
-                .foregroundColor(.white)
+                .foregroundColor(ForgeColor.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(title)
