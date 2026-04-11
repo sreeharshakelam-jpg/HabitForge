@@ -158,7 +158,7 @@ struct HabitDetailView: View {
                     } label: {
                         HStack {
                             Image(systemName: "clock.badge.exclamationmark")
-                            Text("Snooze (-pts)")
+                            Text("Snooze (-\(HabitStore.snoozePenalty) pts)")
                         }
                         .font(ForgeTypography.labelM)
                         .foregroundColor(ForgeColor.warning)

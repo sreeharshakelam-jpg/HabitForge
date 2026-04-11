@@ -30,7 +30,7 @@ targets:
         CFBundleName: $(PRODUCT_NAME)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
         CFBundleShortVersionString: "1.0.6"
-        CFBundleVersion: "8"
+        CFBundleVersion: "9"
         CFBundleIconName: AppIcon
         LSRequiresIPhoneOS: true
         UILaunchScreen: {}

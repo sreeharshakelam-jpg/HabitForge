@@ -283,12 +283,12 @@ class HabitStore: ObservableObject {
         saveUserProfile()
     }
 
+    static let snoozePenalty = 5
+
     func snoozeHabit(_ entry: HabitEntry) {
-        guard let habit = habits.first(where: { $0.id == entry.habitId }) else { return }
         let newSnoozeCount = (allEntries.first { $0.id == entry.id }?.snoozeCount ?? 0) + 1
-        let penaltyPoints = Int(Double(habit.rewardPoints) * Double(habit.maxSnoozePenaltyPercent) / 100.0 / 3.0)
         updateEntry(entry.id, status: .snoozed, snoozeCount: newSnoozeCount)
-        userProfile.totalPoints = max(0, userProfile.totalPoints - penaltyPoints)
+        userProfile.totalPoints = max(0, userProfile.totalPoints - HabitStore.snoozePenalty)
         userProfile.disciplineScore = max(0, userProfile.disciplineScore - 2)
         saveUserProfile()
     }

@@ -522,7 +522,7 @@ struct HabitRowCard: View {
                     habitStore.snoozeHabit(entry)
                     ForgeHaptics.impact(.rigid)
                 } label: {
-                    Label("Snooze (lose points)", systemImage: "clock.badge.exclamationmark")
+                    Label("Snooze (-\(HabitStore.snoozePenalty) pts)", systemImage: "clock.badge.exclamationmark")
                 }
             }
 
