@@ -299,7 +299,7 @@ struct HabitTypeRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(type.displayName)
                         .font(ForgeTypography.h4)
-                        .foregroundColor(isSelected ? .white : ForgeColor.textSecondary)
+                        .foregroundColor(isSelected ? ForgeColor.accent : ForgeColor.textSecondary)
                     Text(type.description)
                         .font(ForgeTypography.labelXS)
                         .foregroundColor(ForgeColor.textTertiary)
@@ -359,7 +359,7 @@ struct SchedulePage: View {
                             HStack {
                                 Text(freq.displayName)
                                     .font(ForgeTypography.h4)
-                                    .foregroundColor(selectedFrequency.type == type ? .white : ForgeColor.textSecondary)
+                                    .foregroundColor(selectedFrequency.type == type ? ForgeColor.accent : ForgeColor.textSecondary)
                                 Spacer()
                                 if selectedFrequency.type == type {
                                     Image(systemName: "checkmark.circle.fill")
@@ -385,7 +385,7 @@ struct SchedulePage: View {
                                 .tracking(2)
                             Text(hasScheduledTime ? scheduledTime.timeString : "Off")
                                 .font(ForgeTypography.labelM)
-                                .foregroundColor(hasScheduledTime ? .white : ForgeColor.textSecondary)
+                                .foregroundColor(hasScheduledTime ? ForgeColor.accent : ForgeColor.textSecondary)
                         }
                     }
                     .tint(ForgeColor.accent)
@@ -396,7 +396,6 @@ struct SchedulePage: View {
                         DatePicker("Select time", selection: $scheduledTime, displayedComponents: .hourAndMinute)
                             .datePickerStyle(.wheel)
                             .labelsHidden()
-                            .colorScheme(.dark)
                             .frame(maxHeight: 120)
                             .clipped()
                     }

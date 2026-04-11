@@ -359,7 +359,7 @@ struct SettingsActionRow: View {
                 }
                 Text(title)
                     .font(ForgeTypography.bodyM)
-                    .foregroundColor(destructive ? ForgeColor.error : .white)
+                    .foregroundColor(destructive ? ForgeColor.error : ForgeColor.textPrimary)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .medium))
