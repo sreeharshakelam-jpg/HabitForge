@@ -575,7 +575,7 @@ struct EditHabitView: View {
     private var frequencyPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(HabitFrequency.allCases, id: \.self) { freq in
+                ForEach([HabitFrequency.daily, .weekdays, .weekends], id: \.type) { freq in
                     Button { selectedFrequency = freq } label: {
                         Text(freq.displayName)
                             .font(ForgeTypography.labelXS)
