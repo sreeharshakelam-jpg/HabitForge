@@ -275,7 +275,7 @@ struct HeroStatsCard: View {
                 // Stats
                 VStack(alignment: .leading, spacing: 10) {
                     StatRow(icon: "bolt.fill", color: ForgeColor.accent,
-                            label: "Points Today", value: "\(habitStore.todayPointsEarned)/\(habitStore.userProfile.dailyPointGoal)")
+                            label: "Points Today", value: "\(habitStore.todayPointsEarned)/\(habitStore.todayPossiblePoints)")
                     StatRow(icon: "flame.fill", color: .orange,
                             label: "Streak", value: "\(habitStore.userProfile.currentStreak) days")
                     StatRow(icon: "chart.bar.fill", color: ForgeColor.success,
@@ -710,23 +710,25 @@ struct DailyPointsGoalBar: View {
     @EnvironmentObject var habitStore: HabitStore
 
     var earned: Int { habitStore.todayPointsEarned }
-    var goal: Int { habitStore.userProfile.dailyPointGoal }
-    var progress: Double { goal > 0 ? min(Double(earned) / Double(goal), 1.0) : 0 }
+    var goal: Int { habitStore.todayPossiblePoints }
+    var completedCount: Int { habitStore.todayEntries.filter { $0.status == .completed }.count }
+    var totalCount: Int { habitStore.todayEntries.count }
+    var progress: Double { totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("DAILY GOAL")
+                Text("DAILY PROGRESS")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
                     .tracking(2)
                 Spacer()
-                Text("\(earned) / \(goal) pts")
+                Text("\(completedCount)/\(totalCount) habits · \(earned)/\(goal) pts")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundColor(progress >= 1.0 ? ForgeColor.success : ForgeColor.accent)
             }
 
-            // Progress bar
+            // Progress bar based on habit completion ratio
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
@@ -739,17 +741,20 @@ struct DailyPointsGoalBar: View {
             }
             .frame(height: 8)
 
-            // Show motivational quote when goal is hit
+            // Status messages based on habit completion
             if progress >= 1.0 {
-                let q = WisdomLibrary.quoteOfTheDay()
-                Text("🏆 Goal reached! \"\(q.text.prefix(80))...\"")
+                Text("🏆 All habits completed! Perfect day.")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.success)
                     .lineLimit(2)
             } else if progress >= 0.5 {
-                Text("🔥 Halfway there! Keep pushing.")
+                Text("🔥 \(completedCount) done, \(totalCount - completedCount) to go. Keep pushing!")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.warning)
+            } else if totalCount > 0 {
+                Text("💪 \(totalCount - completedCount) habits waiting. Start forging!")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textTertiary)
             }
         }
         .padding(ForgeSpacing.md)

@@ -190,7 +190,7 @@ struct ProfileView: View {
                 Text("⚡ FORGE")
                     .font(.system(size: 18, weight: .black, design: .rounded))
                     .foregroundColor(ForgeColor.textPrimary)
-                Text("Version 1.0.5")
+                Text("Version 1.0.6")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
                 Text("Build your discipline. Forge your future.")
