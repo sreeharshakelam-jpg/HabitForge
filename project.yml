@@ -33,6 +33,7 @@ targets:
         CFBundleVersion: "13"
         CFBundleIconName: AppIcon
         LSRequiresIPhoneOS: true
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
