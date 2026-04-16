@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resize Real Screenshots for App Store</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: white; font-family: -apple-system, sans-serif; padding: 40px; }
+  h1 { text-align: center; margin-bottom: 10px; font-size: 26px; }
+  p.sub { text-align: center; color: #888; margin-bottom: 30px; font-size: 14px; line-height: 1.5; }
+  .upload-zone {
+    max-width: 700px; margin: 0 auto 40px; padding: 40px; border: 2px dashed #7C3AED;
+    border-radius: 16px; text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .upload-zone:hover { background: rgba(124, 58, 237, 0.1); }
+  .upload-zone.drag { background: rgba(124, 58, 237, 0.2); border-color: #A855F7; }
+  input[type=file] { display: none; }
+  .btn {
+    background: #7C3AED; color: white; border: none; padding: 14px 32px;
+    border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer;
+    margin: 0 8px; display: inline-block;
+  }
+  .btn:hover { background: #6D28D9; }
+  .previews { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .preview { text-align: center; background: #252540; padding: 12px; border-radius: 12px; }
+  .preview canvas { width: 160px; height: 346px; border-radius: 8px; display: block; margin-bottom: 8px; cursor: pointer; }
+  .preview canvas:hover { opacity: 0.8; }
+  .preview .name { font-size: 12px; color: #aaa; }
+  .controls { text-align: center; margin: 30px 0; }
+  label.bg-label { display: block; margin-bottom: 10px; color: #888; font-size: 14px; }
+  select {
+    background: #252540; color: white; border: 1px solid #444; padding: 10px 20px;
+    border-radius: 8px; font-size: 14px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Resize Real Phone Screenshots → 1284 × 2778px</h1>
+<p class="sub">
+Upload your real iPhone screenshots. This tool will pad/resize them to exact App Store Connect dimensions.<br>
+Supports any screenshot resolution — output is always 1284 × 2778px PNG.
+</p>
+
+<div class="controls">
+  <label class="bg-label">Background color (fills padding area):</label>
+  <select id="bgColor" onchange="redrawAll()">
+    <option value="#F3F4F6">Light Gray (matches app)</option>
+    <option value="#FFFFFF">White</option>
+    <option value="#000000">Black</option>
+    <option value="#7C3AED">Purple</option>
+    <option value="gradient-purple">Purple Gradient</option>
+    <option value="gradient-green">Green Gradient</option>
+    <option value="gradient-blue">Blue Gradient</option>
+    <option value="gradient-orange">Orange Gradient</option>
+  </select>
+</div>
+
+<label class="upload-zone" id="dropzone" for="fileInput">
+  <div style="font-size:48px">📱</div>
+  <div style="font-size:18px; margin-top:10px;">Drop screenshots here or click to upload</div>
+  <div style="font-size:13px; color:#888; margin-top:8px">Multiple files OK • PNG or JPG</div>
+  <input type="file" id="fileInput" accept="image/*" multiple>
+</label>
+
+<div class="previews" id="previews"></div>
+
+<div class="controls" id="downloadControls" style="display:none">
+  <button class="btn" onclick="downloadAll()">⬇ Download All (1284 × 2778)</button>
+</div>
+
+<script>
+const W = 1284;
+const H = 2778;
+const files = [];
+
+document.getElementById('fileInput').addEventListener('change', handleFiles);
+const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  handleFiles({ target: { files: e.dataTransfer.files }});
+});
+
+function handleFiles(e) {
+  const newFiles = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+  newFiles.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        files.push({ name: f.name, img });
+        renderPreviews();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function getBg(ctx) {
+  const bg = document.getElementById('bgColor').value;
+  if (bg.startsWith('gradient')) {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    const pairs = {
+      'gradient-purple': ['#7C3AED', '#4C1D95'],
+      'gradient-green': ['#10B981', '#064E3B'],
+      'gradient-blue': ['#2563EB', '#1E3A8A'],
+      'gradient-orange': ['#D97706', '#78350F'],
+    };
+    const p = pairs[bg];
+    g.addColorStop(0, p[0]);
+    g.addColorStop(1, p[1]);
+    return g;
+  }
+  return bg;
+}
+
+function drawToCanvas(canvas, img) {
+  const ctx = canvas.getContext('2d');
+  canvas.width = W;
+  canvas.height = H;
+
+  // Fill background
+  ctx.fillStyle = getBg(ctx);
+  ctx.fillRect(0, 0, W, H);
+
+  // Calculate scale to fit image within canvas while maintaining aspect ratio
+  const imgAspect = img.width / img.height;
+  const canvasAspect = W / H;
+
+  let drawW, drawH, drawX, drawY;
+  if (imgAspect > canvasAspect) {
+    // Image is wider — fit to width
+    drawW = W * 0.95;
+    drawH = drawW / imgAspect;
+  } else {
+    // Image is taller or same — fit to height
+    drawH = H * 0.95;
+    drawW = drawH * imgAspect;
+  }
+  drawX = (W - drawW) / 2;
+  drawY = (H - drawH) / 2;
+
+  // Draw shadow under screenshot
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 10;
+
+  // Draw screenshot with rounded corners
+  ctx.save();
+  const r = 50;
+  ctx.beginPath();
+  ctx.moveTo(drawX + r, drawY);
+  ctx.lineTo(drawX + drawW - r, drawY);
+  ctx.quadraticCurveTo(drawX + drawW, drawY, drawX + drawW, drawY + r);
+  ctx.lineTo(drawX + drawW, drawY + drawH - r);
+  ctx.quadraticCurveTo(drawX + drawW, drawY + drawH, drawX + drawW - r, drawY + drawH);
+  ctx.lineTo(drawX + r, drawY + drawH);
+  ctx.quadraticCurveTo(drawX, drawY + drawH, drawX, drawY + drawH - r);
+  ctx.lineTo(drawX, drawY + r);
+  ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  ctx.restore();
+  ctx.shadowColor = 'transparent';
+}
+
+function renderPreviews() {
+  const container = document.getElementById('previews');
+  container.innerHTML = '';
+  files.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'preview';
+    const canvas = document.createElement('canvas');
+    canvas.title = 'Click to download';
+    canvas.onclick = () => downloadOne(canvas, `VirtueForge_${i + 1}_1284x2778`);
+    drawToCanvas(canvas, f.img);
+    div.appendChild(canvas);
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = f.name;
+    div.appendChild(name);
+    container.appendChild(div);
+  });
+  document.getElementById('downloadControls').style.display = files.length > 0 ? 'block' : 'none';
+}
+
+function redrawAll() {
+  document.querySelectorAll('.preview canvas').forEach((canvas, i) => {
+    drawToCanvas(canvas, files[i].img);
+  });
+}
+
+function downloadOne(canvas, name) {
+  const link = document.createElement('a');
+  link.download = name + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function downloadAll() {
+  document.querySelectorAll('.preview canvas').forEach((canvas, i) => {
+    setTimeout(() => downloadOne(canvas, `VirtueForge_${i + 1}_1284x2778`), i * 400);
+  });
+}
+</script>
+
+</body>
+</html>
+</content>
+</invoke>

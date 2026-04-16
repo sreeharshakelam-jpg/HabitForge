@@ -223,13 +223,13 @@ struct ProfileView: View {
     var appInfoSection: some View {
         VStack(spacing: 8) {
             VStack(spacing: 4) {
-                Text("⚡ FORGE")
+                Text("🔥 VIRTUE FORGE")
                     .font(.system(size: 18, weight: .black, design: .rounded))
                     .foregroundColor(ForgeColor.textPrimary)
-                Text("Version 1.0.5")
+                Text("Version 2.0.0")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
-                Text("Build your discipline. Forge your future.")
+                Text("Wisdom • Mentorship • Ritual")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
                     .multilineTextAlignment(.center)
