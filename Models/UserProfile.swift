@@ -298,7 +298,7 @@ enum UserRank: String, Codable, CaseIterable {
         case .master: return "Master"
         case .grandmaster: return "Grandmaster"
         case .legend: return "Legend"
-        case .forge: return "FORGE"
+        case .forge: return "Sage"
         }
     }
 

@@ -102,7 +102,7 @@ class NotificationManager: ObservableObject {
         let quote = quotes.randomElement() ?? "Start forging. 🔥"
 
         let content = UNMutableNotificationContent()
-        content.title = "FORGE — Daily Motivation"
+        content.title = "Virtue Forge — Daily Motivation"
         content.body = quote
         content.sound = .default
 

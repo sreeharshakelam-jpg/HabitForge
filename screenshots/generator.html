@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORGE App Store Screenshots</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: white; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; padding: 40px; }
+  h1 { text-align: center; margin-bottom: 10px; font-size: 28px; }
+  p.sub { text-align: center; color: #888; margin-bottom: 40px; font-size: 14px; }
+  .screenshots { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
+  .screenshot-wrapper { text-align: center; }
+  .screenshot-wrapper h3 { margin-bottom: 10px; color: #7C3AED; font-size: 14px; }
+
+  /* Each canvas represents 1284x2778 but displayed smaller */
+  canvas {
+    width: 214px;
+    height: 463px;
+    border-radius: 12px;
+    border: 2px solid #333;
+    cursor: pointer;
+  }
+  canvas:hover { border-color: #7C3AED; }
+
+  .btn-row { text-align: center; margin-top: 40px; }
+  .btn {
+    background: #7C3AED; color: white; border: none; padding: 14px 32px;
+    border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer;
+    margin: 0 8px;
+  }
+  .btn:hover { background: #6D28D9; }
+  .btn.secondary { background: #333; }
+  .btn.secondary:hover { background: #444; }
+  .info { text-align: center; color: #666; margin-top: 20px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>FORGE — App Store Screenshots Generator</h1>
+<p class="sub">1284 × 2778px (iPhone 6.5" Display) — Click any screenshot to download individually</p>
+
+<div class="screenshots" id="screenshotContainer"></div>
+
+<div class="btn-row">
+  <button class="btn" onclick="downloadAll()">Download All Screenshots</button>
+</div>
+<div class="info">Each screenshot is 1284 × 2778px PNG — ready for App Store Connect</div>
+
+<script>
+const W = 1284;
+const H = 2778;
+
+const screenshots = [
+  {
+    id: 'ss1',
+    title: 'Screenshot 1 — Coach',
+    headline: 'Your Personal\nDiscipline Coach',
+    subline: 'Context-aware guidance powered by\nyour real habits, streaks & progress',
+    bg: ['#7C3AED', '#4C1D95'],
+    mockup: 'coach',
+  },
+  {
+    id: 'ss2',
+    title: 'Screenshot 2 — Wisdom',
+    headline: 'Timeless Wisdom\nfrom 6 Traditions',
+    subline: 'Bhagavad Gita • Stoic • Zen\nPsychology • Leadership • Modern',
+    bg: ['#6D28D9', '#1E1B4B'],
+    mockup: 'wisdom',
+  },
+  {
+    id: 'ss3',
+    title: 'Screenshot 3 — Dashboard',
+    headline: 'Track Every Habit.\nEarn Every Point.',
+    subline: 'Dynamic goals based on YOUR habits\nStreak requires completing all of them',
+    bg: ['#059669', '#064E3B'],
+    mockup: 'dashboard',
+  },
+  {
+    id: 'ss4',
+    title: 'Screenshot 4 — Profile',
+    headline: 'Level Up Your\nDiscipline Score',
+    subline: 'XP • Ranks • Achievements\nForge your path from Novice to Legend',
+    bg: ['#D97706', '#78350F'],
+    mockup: 'profile',
+  },
+  {
+    id: 'ss5',
+    title: 'Screenshot 5 — Evening Review',
+    headline: 'Morning Missions.\nEvening Reviews.',
+    subline: 'Your coach adapts to the time of day\nand your actual completion data',
+    bg: ['#2563EB', '#1E3A8A'],
+    mockup: 'evening',
+  },
+  {
+    id: 'ss6',
+    title: 'Screenshot 6 — Habits List',
+    headline: 'Build Habits That\nActually Stick',
+    subline: 'Customize points, frequency & reminders\nComplete all to keep your streak alive',
+    bg: ['#10B981', '#065F46'],
+    mockup: 'habits',
+  },
+  {
+    id: 'ss7',
+    title: 'Screenshot 7 — Add Habit',
+    headline: 'Create Your\nPersonal Forge',
+    subline: 'Choose type, frequency & reward points\nMake each habit truly yours',
+    bg: ['#EC4899', '#831843'],
+    mockup: 'addhabit',
+  },
+  {
+    id: 'ss8',
+    title: 'Screenshot 8 — Analytics',
+    headline: 'See Your Progress\nIn Real Numbers',
+    subline: 'Weekly trends, completion rates\nand discipline score over time',
+    bg: ['#F59E0B', '#78350F'],
+    mockup: 'analytics',
+  },
+  {
+    id: 'ss9',
+    title: 'Screenshot 9 — Achievements',
+    headline: 'Earn Badges.\nUnlock Ranks.',
+    subline: 'Gamified milestones that reward\nconsistency and discipline',
+    bg: ['#EF4444', '#7F1D1D'],
+    mockup: 'achievements',
+  }
+];
+
+function createCanvas(config) {
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  canvas.title = 'Click to download';
+  canvas.onclick = () => downloadOne(canvas, config.id);
+
+  const ctx = canvas.getContext('2d');
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, config.bg[0]);
+  grad.addColorStop(1, config.bg[1]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle pattern overlay
+  ctx.fillStyle = 'rgba(255,255,255,0.03)';
+  for (let i = 0; i < 20; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random() * W, Math.random() * H, Math.random() * 200 + 50, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Top badge
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  roundRect(ctx, W/2 - 120, 120, 240, 44, 22);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = '600 28px -apple-system, SF Pro Display, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('FORGE', W/2, 150);
+
+  // Headline
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '800 82px -apple-system, SF Pro Display, sans-serif';
+  ctx.textAlign = 'center';
+  const headLines = config.headline.split('\n');
+  let headY = 260;
+  headLines.forEach(line => {
+    ctx.fillText(line, W/2, headY);
+    headY += 95;
+  });
+
+  // Subline
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = '500 36px -apple-system, SF Pro Display, sans-serif';
+  const subLines = config.subline.split('\n');
+  let subY = headY + 30;
+  subLines.forEach(line => {
+    ctx.fillText(line, W/2, subY);
+    subY += 48;
+  });
+
+  // Phone mockup area
+  const phoneW = 620;
+  const phoneH = 1300;
+  const phoneX = (W - phoneW) / 2;
+  const phoneY = H - phoneH - 120;
+
+  // Phone shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur = 60;
+  ctx.shadowOffsetY = 20;
+
+  // Phone frame
+  ctx.fillStyle = '#1A1A2E';
+  roundRect(ctx, phoneX, phoneY, phoneW, phoneH, 40);
+  ctx.fill();
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  // Phone border
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 3;
+  roundRect(ctx, phoneX, phoneY, phoneW, phoneH, 40);
+  ctx.stroke();
+
+  // Phone screen (inner)
+  const screenPad = 16;
+  const screenX = phoneX + screenPad;
+  const screenY = phoneY + screenPad;
+  const screenW = phoneW - screenPad * 2;
+  const screenH = phoneH - screenPad * 2;
+
+  ctx.fillStyle = '#FFFFFF';
+  roundRect(ctx, screenX, screenY, screenW, screenH, 28);
+  ctx.fill();
+
+  // Draw mockup content based on type
+  drawMockup(ctx, config.mockup, screenX, screenY, screenW, screenH);
+
+  // Notch
+  ctx.fillStyle = '#1A1A2E';
+  roundRect(ctx, W/2 - 80, phoneY, 160, 36, 18);
+  ctx.fill();
+
+  return canvas;
+}
+
+function drawMockup(ctx, type, sx, sy, sw, sh) {
+  ctx.save();
+  ctx.beginPath();
+  roundRect(ctx, sx, sy, sw, sh, 28);
+  ctx.clip();
+
+  if (type === 'coach') {
+    // Coach screen mockup
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Header
+    ctx.fillStyle = '#1A1A2E';
+    ctx.font = '600 22px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('FORGE COACH', sx + 24, sy + 50);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 32px -apple-system, sans-serif';
+    ctx.fillText('Discipline +', sx + 24, sy + 90);
+    ctx.fillText('Timeless Wisdom', sx + 24, sy + 126);
+
+    // Flame icon
+    ctx.fillStyle = '#EDE9FE';
+    ctx.beginPath();
+    ctx.arc(sx + sw/2, sy + 240, 60, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '60px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥', sx + sw/2, sy + 260);
+
+    // Ready text
+    ctx.fillStyle = '#111';
+    ctx.font = '700 26px -apple-system, sans-serif';
+    ctx.fillText('Your daily coach is ready', sx + sw/2, sy + 340);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 18px -apple-system, sans-serif';
+    ctx.fillText('Tap a mission below, or ask anything.', sx + sw/2, sy + 372);
+
+    // Wisdom card
+    ctx.fillStyle = '#F5F3FF';
+    roundRect(ctx, sx + 20, sy + 410, sw - 40, 200, 16);
+    ctx.fill();
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '600 16px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('WISDOM OF THE DAY', sx + 40, sy + 448);
+    ctx.fillStyle = '#7C3AED';
+    ctx.textAlign = 'right';
+    ctx.fillText('Stoic', sx + sw - 40, sy + 448);
+    ctx.fillStyle = '#111';
+    ctx.font = '500 20px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    wrapText(ctx, '"It is not death that a man should fear, but he should fear never beginning to live."', sx + 40, sy + 485, sw - 80, 28);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 17px -apple-system, sans-serif';
+    ctx.fillText('— Marcus Aurelius', sx + 40, sy + 565);
+
+    // Bottom buttons
+    const btnY = sy + sh - 130;
+    ctx.fillStyle = '#F3F4F6';
+    roundRect(ctx, sx + 15, btnY, 170, 44, 22);
+    ctx.fill();
+    roundRect(ctx, sx + 195, btnY, 180, 44, 22);
+    ctx.fill();
+    roundRect(ctx, sx + 385, btnY, 150, 44, 22);
+    ctx.fill();
+    ctx.fillStyle = '#374151';
+    ctx.font = '600 16px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Morning Mission', sx + 100, btnY + 28);
+    ctx.fillText('Evening Review', sx + 285, btnY + 28);
+    ctx.fillText("I'm Stuck", sx + 460, btnY + 28);
+
+  } else if (type === 'wisdom') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Wisdom library mockup
+    ctx.fillStyle = '#111';
+    ctx.font = '800 32px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Wisdom Library', sx + sw/2, sy + 60);
+
+    // Source chips
+    const sources = ['All', 'Gita', 'Stoic', 'Zen', 'Psychology', 'Leadership'];
+    const colors = ['#7C3AED', '#F59E0B', '#3B82F6', '#10B981', '#EC4899', '#D97706'];
+    let chipX = sx + 20;
+    sources.forEach((s, i) => {
+      const w = ctx.measureText(s).width + 32;
+      ctx.fillStyle = i === 0 ? colors[0] : '#F3F4F6';
+      roundRect(ctx, chipX, sy + 85, w + 10, 38, 19);
+      ctx.fill();
+      ctx.fillStyle = i === 0 ? '#FFF' : '#666';
+      ctx.font = '600 17px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s, chipX + (w + 10)/2, sy + 109);
+      chipX += w + 18;
+    });
+
+    // Quote cards
+    const quotes = [
+      { text: '"You have the right to work, but never to the fruit of work."', author: 'Bhagavad Gita 2.47', tag: 'Gita', color: '#F59E0B' },
+      { text: '"The happiness of your life depends upon the quality of your thoughts."', author: 'Marcus Aurelius', tag: 'Stoic', color: '#3B82F6' },
+      { text: '"Before enlightenment, chop wood, carry water."', author: 'Zen Proverb', tag: 'Zen', color: '#10B981' },
+    ];
+    let qY = sy + 150;
+    quotes.forEach(q => {
+      ctx.fillStyle = '#FFFFFF';
+      roundRect(ctx, sx + 20, qY, sw - 40, 180, 16);
+      ctx.fill();
+      ctx.strokeStyle = '#E5E7EB';
+      ctx.lineWidth = 1;
+      roundRect(ctx, sx + 20, qY, sw - 40, 180, 16);
+      ctx.stroke();
+
+      // Tag
+      ctx.fillStyle = q.color + '20';
+      roundRect(ctx, sx + 36, qY + 16, 70, 26, 13);
+      ctx.fill();
+      ctx.fillStyle = q.color;
+      ctx.font = '600 14px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(q.tag, sx + 71, qY + 34);
+
+      ctx.fillStyle = '#111';
+      ctx.font = '500 19px -apple-system, sans-serif';
+      ctx.textAlign = 'left';
+      wrapText(ctx, q.text, sx + 40, qY + 65, sw - 80, 26);
+      ctx.fillStyle = '#888';
+      ctx.font = '400 16px -apple-system, sans-serif';
+      ctx.fillText('— ' + q.author, sx + 40, qY + 150);
+      qY += 200;
+    });
+
+  } else if (type === 'dashboard') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Header
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('GOOD MORNING', sx + 24, sy + 45);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 34px -apple-system, sans-serif';
+    ctx.fillText('Forger', sx + 24, sy + 82);
+
+    // Avatar
+    ctx.fillStyle = '#7C3AED';
+    ctx.beginPath();
+    ctx.arc(sx + sw - 45, sy + 60, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = '22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥', sx + sw - 45, sy + 68);
+
+    // Stats card
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 110, sw - 32, 200, 20);
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx + 16, sy + 110, sw - 32, 200, 20);
+    ctx.stroke();
+
+    // Progress ring
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(sx + 90, sy + 210, 50, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#10B981';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(sx + 90, sy + 210, 50, -Math.PI/2, Math.PI * 1.1);
+    ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.font = '800 28px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('80%', sx + 90, sy + 216);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 14px -apple-system, sans-serif';
+    ctx.fillText('Done', sx + 90, sy + 236);
+
+    // Stats
+    ctx.textAlign = 'left';
+    const stats = [
+      { icon: '⚡', label: 'Points Today', val: '100/125' },
+      { icon: '🔥', label: 'Streak', val: '5 days' },
+      { icon: '📊', label: 'Disciplined Days', val: '12 days' }
+    ];
+    stats.forEach((s, i) => {
+      ctx.fillStyle = '#888';
+      ctx.font = '400 15px -apple-system, sans-serif';
+      ctx.fillText(s.icon + ' ' + s.label, sx + 170, sy + 168 + i * 40);
+      ctx.fillStyle = '#111';
+      ctx.font = '700 17px -apple-system, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(s.val, sx + sw - 40, sy + 168 + i * 40);
+      ctx.textAlign = 'left';
+    });
+
+    // Wisdom card
+    ctx.fillStyle = '#F5F3FF';
+    roundRect(ctx, sx + 16, sy + 330, sw - 32, 140, 16);
+    ctx.fill();
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('WISDOM OF THE DAY', sx + 34, sy + 360);
+    ctx.fillStyle = '#111';
+    ctx.font = '500 17px -apple-system, sans-serif';
+    wrapText(ctx, '"The impediment to action advances action. What stands in the way becomes the way."', sx + 34, sy + 392, sw - 68, 24);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 15px -apple-system, sans-serif';
+    ctx.fillText('— Marcus Aurelius', sx + 34, sy + 450);
+
+    // Habit cards
+    const habits = [
+      { name: 'Morning Workout', pts: '+25pts', icon: '💪', done: true },
+      { name: 'Meditation', pts: '+25pts', icon: '🧘', done: true },
+      { name: 'Read 30 min', pts: '+25pts', icon: '📚', done: true },
+      { name: 'Cold Shower', pts: '+25pts', icon: '🚿', done: false },
+      { name: 'Journal', pts: '+25pts', icon: '✍️', done: false },
+    ];
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 13px -apple-system, sans-serif';
+    ctx.fillText("TODAY'S FORGE", sx + 24, sy + 502);
+    ctx.textAlign = 'right';
+    ctx.fillText('4/5', sx + sw - 24, sy + 502);
+    ctx.textAlign = 'left';
+
+    let hY = sy + 520;
+    habits.forEach(h => {
+      ctx.fillStyle = h.done ? '#F0FDF4' : '#FFFFFF';
+      roundRect(ctx, sx + 16, hY, sw - 32, 64, 14);
+      ctx.fill();
+      ctx.strokeStyle = h.done ? '#BBF7D0' : '#E5E7EB';
+      ctx.lineWidth = 1;
+      roundRect(ctx, sx + 16, hY, sw - 32, 64, 14);
+      ctx.stroke();
+
+      ctx.font = '24px sans-serif';
+      ctx.fillStyle = '#111';
+      ctx.fillText(h.icon, sx + 32, hY + 40);
+      ctx.font = '600 18px -apple-system, sans-serif';
+      ctx.fillStyle = h.done ? '#111' : '#111';
+      ctx.fillText(h.name, sx + 68, hY + 36);
+      ctx.fillStyle = '#7C3AED';
+      ctx.font = '600 14px -apple-system, sans-serif';
+      ctx.fillText(h.pts, sx + 68, hY + 54);
+      if (h.done) {
+        ctx.fillStyle = '#10B981';
+        ctx.font = '22px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('✅', sx + sw - 36, hY + 42);
+        ctx.textAlign = 'left';
+      }
+      hY += 74;
+    });
+
+  } else if (type === 'profile') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    ctx.fillStyle = '#111';
+    ctx.font = '800 34px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Profile', sx + 24, sy + 55);
+
+    // Avatar card
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 80, sw - 32, 260, 20);
+    ctx.fill();
+    ctx.fillStyle = '#7C3AED';
+    ctx.beginPath();
+    ctx.arc(sx + sw/2, sy + 160, 50, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = '42px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥', sx + sw/2, sy + 175);
+
+    // Level badge
+    ctx.fillStyle = '#7C3AED';
+    roundRect(ctx, sx + sw/2 + 28, sy + 190, 36, 22, 11);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = '800 13px -apple-system, sans-serif';
+    ctx.fillText('L5', sx + sw/2 + 46, sy + 206);
+
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '500 14px -apple-system, sans-serif';
+    ctx.fillText('🌿 WARRIOR', sx + sw/2, sy + 240);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 28px -apple-system, sans-serif';
+    ctx.fillText('Forger', sx + sw/2, sy + 274);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 16px -apple-system, sans-serif';
+    ctx.fillText('@forger', sx + sw/2, sy + 298);
+
+    // XP bar
+    ctx.fillStyle = '#E5E7EB';
+    roundRect(ctx, sx + 60, sy + 318, sw - 120, 8, 4);
+    ctx.fill();
+    ctx.fillStyle = '#7C3AED';
+    roundRect(ctx, sx + 60, sy + 318, (sw - 120) * 0.65, 8, 4);
+    ctx.fill();
+
+    // Stats grid
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 13px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('ALL-TIME STATS', sx + 24, sy + 370);
+
+    const profileStats = [
+      { icon: '🔥', val: '12', label: 'Streak' },
+      { icon: '⚡', val: '450', label: 'Points' },
+      { icon: '✅', val: '89', label: 'Done' },
+      { icon: '👑', val: '8', label: 'Perfect' },
+      { icon: '✨', val: '1.2K', label: 'Total XP' },
+      { icon: '📊', val: '15', label: 'Disciplined' },
+    ];
+    const cols = 3;
+    const cellW = (sw - 48) / cols;
+    profileStats.forEach((s, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx = sx + 20 + col * (cellW + 6);
+      const cy = sy + 390 + row * 100;
+      ctx.fillStyle = '#FFFFFF';
+      roundRect(ctx, cx, cy, cellW - 4, 88, 14);
+      ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.font = '22px sans-serif';
+      ctx.fillText(s.icon, cx + cellW/2 - 2, cy + 30);
+      ctx.fillStyle = '#111';
+      ctx.font = '800 22px -apple-system, sans-serif';
+      ctx.fillText(s.val, cx + cellW/2 - 2, cy + 58);
+      ctx.fillStyle = '#888';
+      ctx.font = '400 13px -apple-system, sans-serif';
+      ctx.fillText(s.label, cx + cellW/2 - 2, cy + 78);
+    });
+
+  } else if (type === 'evening') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Header
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('FORGE COACH', sx + 24, sy + 45);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 32px -apple-system, sans-serif';
+    ctx.fillText('Discipline +', sx + 24, sy + 82);
+    ctx.fillText('Timeless Wisdom', sx + 24, sy + 118);
+
+    // User message bubble
+    ctx.fillStyle = '#7C3AED';
+    roundRect(ctx, sx + sw - 280, sy + 160, 260, 44, 18);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = '500 17px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Run my evening review.', sx + sw - 150, sy + 187);
+
+    // Coach response
+    ctx.fillStyle = '#F5F3FF';
+    roundRect(ctx, sx + 20, sy + 230, sw - 40, 420, 18);
+    ctx.fill();
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('FORGE COACH', sx + 40, sy + 264);
+
+    ctx.fillStyle = '#111';
+    ctx.font = '700 22px -apple-system, sans-serif';
+    ctx.fillText('EVENING REVIEW', sx + 40, sy + 300);
+
+    ctx.font = '500 18px -apple-system, sans-serif';
+    ctx.fillStyle = '#333';
+    wrapText(ctx, "Great work today! You completed 4 out of 5 habits. That's 80% — solid discipline.", sx + 40, sy + 340, sw - 80, 26);
+
+    ctx.fillStyle = '#10B981';
+    ctx.font = '600 18px -apple-system, sans-serif';
+    ctx.fillText('✅ Morning Workout — Done', sx + 40, sy + 420);
+    ctx.fillText('✅ Meditation — Done', sx + 40, sy + 450);
+    ctx.fillText('✅ Read 30 min — Done', sx + 40, sy + 480);
+    ctx.fillText('✅ Cold Shower — Done', sx + 40, sy + 510);
+    ctx.fillStyle = '#EF4444';
+    ctx.fillText('❌ Journal — Missed', sx + 40, sy + 540);
+
+    ctx.fillStyle = '#333';
+    ctx.font = '500 18px -apple-system, sans-serif';
+    wrapText(ctx, '— — —\nSTOIC — On Perseverance\n"The obstacle is the way."', sx + 40, sy + 585, sw - 80, 26);
+
+    // Bottom buttons
+    const btnY = sy + sh - 130;
+    ctx.fillStyle = '#F3F4F6';
+    roundRect(ctx, sx + 15, btnY, 170, 44, 22);
+    ctx.fill();
+    ctx.fillStyle = '#EDE9FE';
+    roundRect(ctx, sx + 195, btnY, 180, 44, 22);
+    ctx.fill();
+    ctx.fillStyle = '#F3F4F6';
+    roundRect(ctx, sx + 385, btnY, 150, 44, 22);
+    ctx.fill();
+    ctx.fillStyle = '#374151';
+    ctx.font = '600 16px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Morning Mission', sx + 100, btnY + 28);
+    ctx.fillStyle = '#7C3AED';
+    ctx.fillText('Evening Review', sx + 285, btnY + 28);
+    ctx.fillStyle = '#374151';
+    ctx.fillText("I'm Stuck", sx + 460, btnY + 28);
+
+  } else if (type === 'habits') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Header
+    ctx.fillStyle = '#111';
+    ctx.font = '800 34px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText("Today's Forge", sx + 24, sy + 55);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 16px -apple-system, sans-serif';
+    ctx.fillText('Saturday, April 12', sx + 24, sy + 80);
+
+    // Progress bar
+    ctx.fillStyle = '#E5E7EB';
+    roundRect(ctx, sx + 24, sy + 100, sw - 48, 10, 5);
+    ctx.fill();
+    ctx.fillStyle = '#10B981';
+    roundRect(ctx, sx + 24, sy + 100, (sw - 48) * 0.6, 10, 5);
+    ctx.fill();
+    ctx.fillStyle = '#10B981';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('3 of 5 completed', sx + sw - 24, sy + 95);
+    ctx.textAlign = 'left';
+
+    // Habit cards with more detail
+    const habitList = [
+      { name: 'Morning Workout', pts: 25, icon: '💪', time: '6:30 AM', done: true, streak: 12 },
+      { name: 'Meditation', pts: 20, icon: '🧘', time: '7:00 AM', done: true, streak: 8 },
+      { name: 'Read 30 min', pts: 15, icon: '📚', time: '8:00 AM', done: true, streak: 5 },
+      { name: 'Cold Shower', pts: 25, icon: '🚿', time: '9:00 AM', done: false, streak: 3 },
+      { name: 'Journal', pts: 20, icon: '✍️', time: '9:00 PM', done: false, streak: 0 },
+      { name: 'No Sugar', pts: 15, icon: '🍎', time: 'All Day', done: false, streak: 7 },
+    ];
+    let hY = sy + 130;
+    habitList.forEach(h => {
+      // Card
+      ctx.fillStyle = h.done ? '#F0FDF4' : '#FFFFFF';
+      roundRect(ctx, sx + 16, hY, sw - 32, 110, 16);
+      ctx.fill();
+      ctx.strokeStyle = h.done ? '#BBF7D0' : '#E5E7EB';
+      ctx.lineWidth = 1;
+      roundRect(ctx, sx + 16, hY, sw - 32, 110, 16);
+      ctx.stroke();
+
+      // Icon circle
+      ctx.fillStyle = h.done ? '#D1FAE5' : '#F3F4F6';
+      ctx.beginPath();
+      ctx.arc(sx + 54, hY + 45, 24, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(h.icon, sx + 54, hY + 54);
+
+      // Name & time
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#111';
+      ctx.font = '700 20px -apple-system, sans-serif';
+      ctx.fillText(h.name, sx + 90, hY + 36);
+      ctx.fillStyle = '#888';
+      ctx.font = '400 15px -apple-system, sans-serif';
+      ctx.fillText('⏰ ' + h.time, sx + 90, hY + 58);
+
+      // Points badge
+      ctx.fillStyle = '#EDE9FE';
+      roundRect(ctx, sx + 90, hY + 70, 70, 26, 13);
+      ctx.fill();
+      ctx.fillStyle = '#7C3AED';
+      ctx.font = '700 14px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('+' + h.pts + ' pts', sx + 125, hY + 88);
+
+      // Streak badge
+      if (h.streak > 0) {
+        ctx.fillStyle = '#FEF3C7';
+        roundRect(ctx, sx + 170, hY + 70, 80, 26, 13);
+        ctx.fill();
+        ctx.fillStyle = '#D97706';
+        ctx.font = '700 14px -apple-system, sans-serif';
+        ctx.fillText('🔥 ' + h.streak + ' days', sx + 210, hY + 88);
+      }
+
+      // Check/pending icon
+      ctx.textAlign = 'right';
+      if (h.done) {
+        ctx.fillStyle = '#10B981';
+        ctx.beginPath();
+        ctx.arc(sx + sw - 44, hY + 45, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFF';
+        ctx.font = '700 20px -apple-system, sans-serif';
+        ctx.fillText('✓', sx + sw - 37, hY + 52);
+      } else {
+        ctx.strokeStyle = '#D1D5DB';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(sx + sw - 44, hY + 45, 18, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.textAlign = 'left';
+      hY += 122;
+    });
+
+    // Bottom summary card
+    ctx.fillStyle = '#1A1A2E';
+    roundRect(ctx, sx + 16, hY + 10, sw - 32, 80, 16);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = '700 20px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ 60 / 120 pts earned today', sx + sw/2, hY + 45);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '400 15px -apple-system, sans-serif';
+    ctx.fillText('Complete all habits to maintain your streak!', sx + sw/2, hY + 70);
+
+  } else if (type === 'addhabit') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    // Header
+    ctx.fillStyle = '#111';
+    ctx.font = '800 34px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('New Habit', sx + 24, sy + 55);
+
+    // Habit name field
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('HABIT NAME', sx + 24, sy + 105);
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 115, sw - 32, 56, 14);
+    ctx.fill();
+    ctx.strokeStyle = '#7C3AED';
+    ctx.lineWidth = 2;
+    roundRect(ctx, sx + 16, sy + 115, sw - 32, 56, 14);
+    ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.font = '500 20px -apple-system, sans-serif';
+    ctx.fillText('Morning Workout', sx + 32, sy + 150);
+
+    // Habit Type Section
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('HABIT TYPE', sx + 24, sy + 205);
+    const types = [
+      { icon: '💪', name: 'Health', selected: true },
+      { icon: '📚', name: 'Learning', selected: false },
+      { icon: '🧘', name: 'Mindfulness', selected: false },
+      { icon: '💼', name: 'Productivity', selected: false },
+    ];
+    let tX = sx + 16;
+    types.forEach(t => {
+      const w = 120;
+      ctx.fillStyle = t.selected ? '#7C3AED' : '#FFFFFF';
+      roundRect(ctx, tX, sy + 218, w, 52, 14);
+      ctx.fill();
+      if (!t.selected) {
+        ctx.strokeStyle = '#E5E7EB';
+        ctx.lineWidth = 1;
+        roundRect(ctx, tX, sy + 218, w, 52, 14);
+        ctx.stroke();
+      }
+      ctx.font = '20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.icon, tX + 30, sy + 251);
+      ctx.fillStyle = t.selected ? '#FFF' : '#333';
+      ctx.font = '600 16px -apple-system, sans-serif';
+      ctx.fillText(t.name, tX + 75, sy + 251);
+      tX += w + 10;
+    });
+    ctx.textAlign = 'left';
+
+    // Frequency section
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('FREQUENCY', sx + 24, sy + 310);
+    const freqs = ['Daily', 'Weekdays', 'Weekends'];
+    let fX = sx + 16;
+    freqs.forEach((f, i) => {
+      const w = (sw - 48) / 3;
+      ctx.fillStyle = i === 0 ? '#7C3AED' : '#FFFFFF';
+      roundRect(ctx, fX, sy + 323, w - 4, 48, 14);
+      ctx.fill();
+      if (i !== 0) {
+        ctx.strokeStyle = '#E5E7EB';
+        ctx.lineWidth = 1;
+        roundRect(ctx, fX, sy + 323, w - 4, 48, 14);
+        ctx.stroke();
+      }
+      ctx.fillStyle = i === 0 ? '#FFF' : '#333';
+      ctx.font = '600 18px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(f, fX + (w - 4)/2, sy + 353);
+      fX += w + 2;
+    });
+    ctx.textAlign = 'left';
+
+    // Reward Points section
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('REWARD POINTS', sx + 24, sy + 412);
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 425, sw - 32, 100, 16);
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx + 16, sy + 425, sw - 32, 100, 16);
+    ctx.stroke();
+
+    // Point value display
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '800 48px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('25', sx + sw/2, sy + 485);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 16px -apple-system, sans-serif';
+    ctx.fillText('points per completion', sx + sw/2, sy + 510);
+
+    // Minus / Plus buttons
+    ctx.fillStyle = '#F3F4F6';
+    ctx.beginPath();
+    ctx.arc(sx + 80, sy + 480, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#333';
+    ctx.font = '800 28px -apple-system, sans-serif';
+    ctx.fillText('−', sx + 80, sy + 490);
+    ctx.fillStyle = '#F3F4F6';
+    ctx.beginPath();
+    ctx.arc(sx + sw - 64, sy + 480, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#333';
+    ctx.fillText('+', sx + sw - 64, sy + 490);
+
+    // Scheduled time
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('SCHEDULED TIME', sx + 24, sy + 565);
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 578, sw - 32, 56, 14);
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx + 16, sy + 578, sw - 32, 56, 14);
+    ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.font = '500 20px -apple-system, sans-serif';
+    ctx.fillText('⏰  6:30 AM', sx + 32, sy + 613);
+    ctx.fillStyle = '#7C3AED';
+    ctx.textAlign = 'right';
+    ctx.font = '600 18px -apple-system, sans-serif';
+    ctx.fillText('Change', sx + sw - 32, sy + 613);
+
+    // Reminder toggle
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText('REMINDER', sx + 24, sy + 670);
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 683, sw - 32, 56, 14);
+    ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.font = '500 20px -apple-system, sans-serif';
+    ctx.fillText('🔔  Notify me at scheduled time', sx + 32, sy + 718);
+    // Toggle
+    ctx.fillStyle = '#10B981';
+    roundRect(ctx, sx + sw - 80, sy + 696, 52, 30, 15);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.beginPath();
+    ctx.arc(sx + sw - 43, sy + 711, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Save button
+    ctx.fillStyle = '#7C3AED';
+    roundRect(ctx, sx + 24, sy + sh - 100, sw - 48, 60, 16);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = '700 22px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Save Habit', sx + sw/2, sy + sh - 62);
+
+  } else if (type === 'analytics') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    ctx.fillStyle = '#111';
+    ctx.font = '800 34px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Analytics', sx + 24, sy + 55);
+
+    // Time filter chips
+    const filters = ['Week', 'Month', '3 Months', 'Year'];
+    let fltX = sx + 16;
+    filters.forEach((f, i) => {
+      const w = (sw - 56) / 4;
+      ctx.fillStyle = i === 0 ? '#7C3AED' : '#F3F4F6';
+      roundRect(ctx, fltX, sy + 75, w, 40, 20);
+      ctx.fill();
+      ctx.fillStyle = i === 0 ? '#FFF' : '#666';
+      ctx.font = '600 16px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(f, fltX + w/2, sy + 100);
+      fltX += w + 8;
+    });
+
+    // Completion rate card
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 135, sw - 32, 160, 20);
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx + 16, sy + 135, sw - 32, 160, 20);
+    ctx.stroke();
+
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('COMPLETION RATE', sx + 36, sy + 165);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 48px -apple-system, sans-serif';
+    ctx.fillText('78%', sx + 36, sy + 220);
+    ctx.fillStyle = '#10B981';
+    ctx.font = '600 16px -apple-system, sans-serif';
+    ctx.fillText('↑ 12% from last week', sx + 36, sy + 246);
+
+    // Mini bar chart on right
+    const barColors = ['#7C3AED', '#7C3AED', '#10B981', '#7C3AED', '#10B981', '#10B981', '#D1D5DB'];
+    const barHeights = [60, 45, 80, 55, 90, 75, 0];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    barColors.forEach((c, i) => {
+      const bx = sx + sw - 240 + i * 30;
+      const bh = barHeights[i];
+      ctx.fillStyle = c;
+      roundRect(ctx, bx, sy + 260 - bh, 20, bh, 4);
+      ctx.fill();
+      ctx.fillStyle = '#888';
+      ctx.font = '400 11px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(days[i], bx + 10, sy + 278);
+    });
+
+    // Weekly streak card
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + 16, sy + 315, (sw - 40)/2, 130, 16);
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx + 16, sy + 315, (sw - 40)/2, 130, 16);
+    ctx.stroke();
+    ctx.fillStyle = '#F59E0B';
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥', sx + 16 + (sw - 40)/4, sy + 365);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 28px -apple-system, sans-serif';
+    ctx.fillText('12', sx + 16 + (sw - 40)/4, sy + 400);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 14px -apple-system, sans-serif';
+    ctx.fillText('Day Streak', sx + 16 + (sw - 40)/4, sy + 420);
+
+    // Total points card
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, sx + (sw + 8)/2, sy + 315, (sw - 40)/2, 130, 16);
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx + (sw + 8)/2, sy + 315, (sw - 40)/2, 130, 16);
+    ctx.stroke();
+    ctx.fillStyle = '#7C3AED';
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡', sx + (sw + 8)/2 + (sw - 40)/4, sy + 365);
+    ctx.fillStyle = '#111';
+    ctx.font = '800 28px -apple-system, sans-serif';
+    ctx.fillText('1,450', sx + (sw + 8)/2 + (sw - 40)/4, sy + 400);
+    ctx.fillStyle = '#888';
+    ctx.font = '400 14px -apple-system, sans-serif';
+    ctx.fillText('Total Points', sx + (sw + 8)/2 + (sw - 40)/4, sy + 420);
+
+    // Per-habit breakdown
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('PER-HABIT BREAKDOWN', sx + 24, sy + 480);
+
+    const habitBreakdown = [
+      { name: 'Morning Workout', icon: '💪', rate: 92, color: '#10B981' },
+      { name: 'Meditation', icon: '🧘', rate: 85, color: '#3B82F6' },
+      { name: 'Read 30 min', icon: '📚', rate: 78, color: '#7C3AED' },
+      { name: 'Cold Shower', icon: '🚿', rate: 65, color: '#F59E0B' },
+      { name: 'Journal', icon: '✍️', rate: 52, color: '#EC4899' },
+      { name: 'No Sugar', icon: '🍎', rate: 45, color: '#EF4444' },
+    ];
+    let aY = sy + 500;
+    habitBreakdown.forEach(h => {
+      ctx.fillStyle = '#FFFFFF';
+      roundRect(ctx, sx + 16, aY, sw - 32, 70, 14);
+      ctx.fill();
+
+      ctx.font = '22px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(h.icon, sx + 32, aY + 42);
+      ctx.fillStyle = '#111';
+      ctx.font = '600 18px -apple-system, sans-serif';
+      ctx.fillText(h.name, sx + 64, aY + 30);
+
+      // Progress bar
+      ctx.fillStyle = '#E5E7EB';
+      roundRect(ctx, sx + 64, aY + 42, sw - 160, 10, 5);
+      ctx.fill();
+      ctx.fillStyle = h.color;
+      roundRect(ctx, sx + 64, aY + 42, (sw - 160) * h.rate / 100, 10, 5);
+      ctx.fill();
+
+      ctx.fillStyle = h.color;
+      ctx.font = '700 16px -apple-system, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(h.rate + '%', sx + sw - 32, aY + 42);
+      ctx.textAlign = 'left';
+      aY += 80;
+    });
+
+  } else if (type === 'achievements') {
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(sx, sy, sw, sh);
+
+    ctx.fillStyle = '#111';
+    ctx.font = '800 34px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Achievements', sx + 24, sy + 55);
+
+    // Rank card
+    ctx.fillStyle = '#1A1A2E';
+    roundRect(ctx, sx + 16, sy + 80, sw - 32, 180, 20);
+    ctx.fill();
+
+    ctx.fillStyle = '#FFF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('CURRENT RANK', sx + sw/2, sy + 115);
+
+    // Rank icon
+    ctx.fillStyle = '#F59E0B';
+    ctx.beginPath();
+    ctx.arc(sx + sw/2, sy + 170, 36, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1A1A2E';
+    ctx.font = '36px sans-serif';
+    ctx.fillText('⚔️', sx + sw/2, sy + 183);
+
+    ctx.fillStyle = '#F59E0B';
+    ctx.font = '800 26px -apple-system, sans-serif';
+    ctx.fillText('WARRIOR', sx + sw/2, sy + 230);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '400 14px -apple-system, sans-serif';
+    ctx.fillText('350 XP to next rank: CHAMPION', sx + sw/2, sy + 252);
+
+    // Badges section
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('EARNED BADGES', sx + 24, sy + 295);
+
+    const badges = [
+      { icon: '🔥', name: 'First Flame', desc: 'Complete 1 habit', earned: true },
+      { icon: '💪', name: 'Week Warrior', desc: '7-day streak', earned: true },
+      { icon: '🌅', name: 'Early Bird', desc: 'Complete before 7 AM', earned: true },
+      { icon: '📚', name: 'Scholar', desc: 'Read 50 wisdoms', earned: true },
+      { icon: '⭐', name: 'Perfectionist', desc: '100% day completion', earned: true },
+      { icon: '🏆', name: 'Champion', desc: '30-day streak', earned: false },
+      { icon: '👑', name: 'Legend', desc: 'Reach max rank', earned: false },
+      { icon: '💎', name: 'Diamond', desc: '1000 total points', earned: false },
+    ];
+    const badgeCols = 2;
+    const badgeW = (sw - 48) / badgeCols;
+    let bY = sy + 315;
+    badges.forEach((b, i) => {
+      const col = i % badgeCols;
+      const bx = sx + 16 + col * (badgeW + 8);
+      if (i > 0 && col === 0) bY += 120;
+
+      ctx.fillStyle = b.earned ? '#FFFFFF' : '#F3F4F6';
+      roundRect(ctx, bx, bY, badgeW, 110, 16);
+      ctx.fill();
+      if (b.earned) {
+        ctx.strokeStyle = '#E5E7EB';
+        ctx.lineWidth = 1;
+        roundRect(ctx, bx, bY, badgeW, 110, 16);
+        ctx.stroke();
+      }
+
+      // Badge icon
+      ctx.globalAlpha = b.earned ? 1 : 0.3;
+      ctx.fillStyle = b.earned ? '#FEF3C7' : '#E5E7EB';
+      ctx.beginPath();
+      ctx.arc(bx + badgeW/2, bY + 38, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.icon, bx + badgeW/2, bY + 46);
+
+      ctx.fillStyle = b.earned ? '#111' : '#999';
+      ctx.font = '700 16px -apple-system, sans-serif';
+      ctx.fillText(b.name, bx + badgeW/2, bY + 78);
+      ctx.fillStyle = b.earned ? '#888' : '#BBB';
+      ctx.font = '400 13px -apple-system, sans-serif';
+      ctx.fillText(b.desc, bx + badgeW/2, bY + 96);
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  ctx.restore();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const lines = text.split('\n');
+  lines.forEach(paragraph => {
+    const words = paragraph.split(' ');
+    let line = '';
+    words.forEach(word => {
+      const testLine = line + word + ' ';
+      if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+        ctx.fillText(line.trim(), x, y);
+        line = word + ' ';
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    });
+    ctx.fillText(line.trim(), x, y);
+    y += lineHeight;
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function downloadOne(canvas, name) {
+  const link = document.createElement('a');
+  link.download = `FORGE_${name}_1284x2778.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function downloadAll() {
+  const canvases = document.querySelectorAll('canvas');
+  canvases.forEach((canvas, i) => {
+    setTimeout(() => {
+      downloadOne(canvas, screenshots[i].id);
+    }, i * 500);
+  });
+}
+
+// Generate all screenshots
+const container = document.getElementById('screenshotContainer');
+screenshots.forEach(config => {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'screenshot-wrapper';
+  const title = document.createElement('h3');
+  title.textContent = config.title;
+  wrapper.appendChild(title);
+  wrapper.appendChild(createCanvas(config));
+  container.appendChild(wrapper);
+});
+</script>
+</body>
+</html>

@@ -44,7 +44,7 @@ struct WatchDashboardView: View {
             }
             .padding(.horizontal, 4)
         }
-        .navigationTitle("FORGE")
+        .navigationTitle("Virtue Forge")
         .navigationBarTitleDisplayMode(.inline)
     }
 

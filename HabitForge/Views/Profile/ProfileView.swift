@@ -402,7 +402,7 @@ struct PremiumSheet: View {
                                 .foregroundStyle(ForgeColor.goldGradient)
                                 .shadow(color: ForgeColor.warning.opacity(0.4), radius: 12)
 
-                            Text("FORGE Premium")
+                            Text("Virtue Forge Premium")
                                 .font(ForgeTypography.displayM)
                                 .foregroundColor(ForgeColor.textPrimary)
 

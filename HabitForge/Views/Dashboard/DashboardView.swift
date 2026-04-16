@@ -36,7 +36,7 @@ struct DashboardView: View {
 
                     // Today's Section Title
                     HStack {
-                        Text("TODAY'S FORGE")
+                        Text("TODAY'S RITUAL")
                             .font(ForgeTypography.labelS)
                             .foregroundColor(ForgeColor.textTertiary)
                             .tracking(2)

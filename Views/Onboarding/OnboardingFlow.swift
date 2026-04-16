@@ -162,12 +162,12 @@ struct WelcomeStep: View {
                 .animation(.spring(response: 0.6).delay(0.1), value: showContent)
 
                 VStack(spacing: 8) {
-                    Text("FORGE")
-                        .font(.system(size: 52, weight: .black, design: .rounded))
+                    Text("VIRTUE FORGE")
+                        .font(.system(size: 44, weight: .black, design: .rounded))
                         .foregroundColor(ForgeColor.textPrimary)
-                        .tracking(4)
+                        .tracking(3)
 
-                    Text("Discipline + Timeless Wisdom")
+                    Text("Wisdom • Mentorship • Ritual")
                         .font(ForgeTypography.h3)
                         .foregroundColor(ForgeColor.textSecondary)
                         .multilineTextAlignment(.center)
@@ -311,7 +311,7 @@ struct PersonalizationStep: View {
                     Text("Make it yours.")
                         .font(ForgeTypography.h1)
                         .foregroundColor(ForgeColor.textPrimary)
-                    Text("Personalize your FORGE experience")
+                    Text("Personalize your Virtue Forge experience")
                         .font(ForgeTypography.bodyS)
                         .foregroundColor(ForgeColor.textSecondary)
                 }

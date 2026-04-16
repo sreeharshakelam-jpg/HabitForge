@@ -1,8 +1,8 @@
-# ⚡ FORGE — Habit Tracker
+# 🔥 Virtue Forge — Wisdom, Mentorship & Ritual
 
-> Build discipline. Forge your future.
+> A daily discipline system powered by timeless wisdom and an adaptive mentor.
 
-A premium, gamified iOS habit tracker with Apple Watch integration.
+Virtue Forge is an iOS app that combines an AI-powered virtue mentor, a curated wisdom library from 6 traditions (Bhagavad Gita, Stoic, Zen, Psychology, Leadership, Modern), and ritual-based habit tracking with gamified progression.
 
 ---
 

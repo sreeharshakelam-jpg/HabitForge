@@ -23,14 +23,14 @@ targets:
       path: Info.plist
       properties:
         CFBundleDevelopmentRegion: en
-        CFBundleDisplayName: FORGE Coach
+        CFBundleDisplayName: Virtue Forge
         CFBundleExecutable: $(EXECUTABLE_NAME)
         CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
         CFBundleInfoDictionaryVersion: "6.0"
         CFBundleName: $(PRODUCT_NAME)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
-        CFBundleShortVersionString: "1.0.6"
-        CFBundleVersion: "10"
+        CFBundleShortVersionString: "2.0.0"
+        CFBundleVersion: "11"
         CFBundleIconName: AppIcon
         LSRequiresIPhoneOS: true
         UILaunchScreen: {}
@@ -46,7 +46,7 @@ targets:
       path: HabitForge.entitlements
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.sreeharshakelam.HabitForge
+        PRODUCT_BUNDLE_IDENTIFIER: com.sreeharshakelam.virtueforge
         SWIFT_VERSION: "5.9"
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
         TARGETED_DEVICE_FAMILY: "1"

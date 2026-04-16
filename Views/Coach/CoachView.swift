@@ -39,11 +39,11 @@ struct CoachView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("FORGE COACH")
+                Text("VIRTUE MENTOR")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.5)
                     .foregroundColor(ForgeColor.textTertiary)
-                Text("Discipline + Timeless Wisdom")
+                Text("Your Virtue Mentor")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(ForgeColor.textPrimary)
             }
@@ -200,7 +200,7 @@ private struct CoachBubble: View {
 
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
                 if message.role == .assistant {
-                    Text("FORGE COACH")
+                    Text("VIRTUE MENTOR")
                         .font(.system(size: 10, weight: .bold))
                         .tracking(1.2)
                         .foregroundColor(ForgeColor.accent)

@@ -58,7 +58,7 @@ struct AchievementsView: View {
                     .padding(.vertical, ForgeSpacing.md)
                 }
             }
-            .navigationTitle("FORGE")
+            .navigationTitle("Virtue Forge")
             .navigationBarTitleDisplayMode(.large)
         }
         .sheet(item: $selectedAchievement) { ach in

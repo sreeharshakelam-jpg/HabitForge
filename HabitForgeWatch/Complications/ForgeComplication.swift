@@ -8,7 +8,7 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
         let descriptors = [
             CLKComplicationDescriptor(
                 identifier: "ForgeProgress",
-                displayName: "FORGE Progress",
+                displayName: "Virtue Forge Progress",
                 supportedFamilies: [
                     .circularSmall,
                     .modularSmall,

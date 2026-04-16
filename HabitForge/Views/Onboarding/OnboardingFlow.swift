@@ -162,12 +162,12 @@ struct WelcomeStep: View {
                 .animation(.spring(response: 0.6).delay(0.1), value: showContent)
 
                 VStack(spacing: 8) {
-                    Text("FORGE")
-                        .font(.system(size: 52, weight: .black, design: .rounded))
+                    Text("VIRTUE FORGE")
+                        .font(.system(size: 44, weight: .black, design: .rounded))
                         .foregroundColor(ForgeColor.textPrimary)
-                        .tracking(4)
+                        .tracking(3)
 
-                    Text("Build discipline.\nForge your future.")
+                    Text("Wisdom • Mentorship • Ritual")
                         .font(ForgeTypography.h3)
                         .foregroundColor(ForgeColor.textSecondary)
                         .multilineTextAlignment(.center)

@@ -123,7 +123,7 @@ struct AchievementLibrary {
             requirement: .streakDays(100), xpReward: 2500, pointsReward: 5000, unlockedAt: nil, progress: 0
         ),
         Achievement(
-            id: "streak_365", title: "Year of FORGE", description: "365 days. You have transcended",
+            id: "streak_365", title: "Year of the Sage", description: "365 days. You have transcended",
             icon: "🌟", category: .streak, rarity: .mythic,
             requirement: .streakDays(365), xpReward: 10000, pointsReward: 20000, unlockedAt: nil, progress: 0
         ),

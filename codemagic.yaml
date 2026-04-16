@@ -1,6 +1,6 @@
 workflows:
   ios-appstore:
-    name: FORGE App Store Release
+    name: Virtue Forge App Store Release
     max_build_duration: 60
     environment:
       xcode: latest
@@ -46,7 +46,7 @@ workflows:
         script: |
           keychain initialize
           app-store-connect fetch-signing-files \
-            com.sreeharshakelam.HabitForge \
+            com.sreeharshakelam.virtueforge \
             --type IOS_APP_STORE \
             --create
           keychain add-certificates

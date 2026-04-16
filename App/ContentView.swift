@@ -10,34 +10,34 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                DashboardView()
+                CoachView()
                     .tag(0)
                     .tabItem {
-                        Label("Today", systemImage: "bolt.circle.fill")
+                        Label("Mentor", systemImage: "brain.head.profile")
+                    }
+
+                DashboardView()
+                    .tag(1)
+                    .tabItem {
+                        Label("Ritual", systemImage: "sunrise.circle.fill")
                     }
 
                 HabitsListView()
-                    .tag(1)
-                    .tabItem {
-                        Label("Habits", systemImage: "list.star")
-                    }
-
-                CoachView()
                     .tag(2)
                     .tabItem {
-                        Label("Coach", systemImage: "brain.head.profile")
+                        Label("Virtues", systemImage: "sparkles")
                     }
 
                 AnalyticsView()
                     .tag(3)
                     .tabItem {
-                        Label("Stats", systemImage: "chart.bar.xaxis")
+                        Label("Journey", systemImage: "chart.line.uptrend.xyaxis")
                     }
 
                 ProfileView()
                     .tag(4)
                     .tabItem {
-                        Label("Profile", systemImage: "person.crop.circle.fill")
+                        Label("Forge", systemImage: "hammer.circle.fill")
                     }
             }
             .accentColor(ForgeColor.accent)
