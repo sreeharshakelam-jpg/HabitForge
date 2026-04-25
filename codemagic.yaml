@@ -77,57 +77,16 @@ workflows:
           xcode-project use-profiles
           xcode-project use-profiles --export-options-plist exportOptions.plist
 
-      - name: Assign watch provisioning profiles
+      - name: Debug installed profiles
         script: |
-          python3 - << 'PYEOF'
-          import subprocess, plistlib, os, glob
-
-          PROFILES_DIR = os.path.expanduser("~/Library/MobileDevice/Provisioning Profiles")
-          PBXPROJ = "HabitForge.xcodeproj/project.pbxproj"
-          WATCH_BUNDLES = {
-              "com.sreeharshakelam.virtueforge.watchkitapp",
-              "com.sreeharshakelam.virtueforge.watchkitapp.ForgeWidget",
-          }
-
-          uuid_map = {}
-          for path in glob.glob(os.path.join(PROFILES_DIR, "*.mobileprovision")):
-              result = subprocess.run(["security", "cms", "-D", "-i", path], capture_output=True)
-              if result.returncode != 0:
-                  continue
-              try:
-                  plist = plistlib.loads(result.stdout)
-                  raw_id = plist.get("Entitlements", {}).get("application-identifier", "")
-                  bundle_id = raw_id.split(".", 1)[-1] if "." in raw_id else raw_id
-                  uuid = plist.get("UUID", "")
-                  if bundle_id in WATCH_BUNDLES and uuid:
-                      uuid_map[bundle_id] = uuid
-                      print(f"Found profile: {bundle_id} = {uuid}")
-              except Exception as e:
-                  print(f"Skipped {path}: {e}")
-
-          if not uuid_map:
-              print("No watch profiles found — skipping patch")
-              exit(0)
-
-          with open(PBXPROJ, encoding="utf-8") as f:
-              lines = f.readlines()
-
-          out = []
-          for i, line in enumerate(lines):
-              out.append(line)
-              for bundle_id, uuid in uuid_map.items():
-                  if f'PRODUCT_BUNDLE_IDENTIFIER = "{bundle_id}";' in line:
-                      look = "".join(lines[i:min(i+15, len(lines))])
-                      if "PROVISIONING_PROFILE_SPECIFIER" not in look:
-                          indent = line[: len(line) - len(line.lstrip())]
-                          out.append(f'{indent}PROVISIONING_PROFILE_SPECIFIER = "{uuid}";\n')
-                          print(f"Patched: {bundle_id}")
-
-          with open(PBXPROJ, "w", encoding="utf-8") as f:
-              f.writelines(out)
-
-          print("Project file patched.")
-          PYEOF
+          echo "=== Installed provisioning profiles ==="
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles directory"
+          for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null; do
+            [ -f "$f" ] || continue
+            name=$(security cms -D -i "$f" 2>/dev/null | /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin 2>/dev/null)
+            app_id=$(security cms -D -i "$f" 2>/dev/null | /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin 2>/dev/null)
+            echo "  $name — $app_id"
+          done
 
       - name: Build and archive
         script: |
@@ -136,6 +95,7 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
+            -allowProvisioningUpdates \
             GENERATE_INFOPLIST_FILE=NO \
             archive
 
