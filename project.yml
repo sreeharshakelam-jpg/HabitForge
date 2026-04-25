@@ -30,7 +30,7 @@ targets:
         CFBundleName: $(PRODUCT_NAME)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
         CFBundleShortVersionString: "2.0.0"
-        CFBundleVersion: "13"
+        CFBundleVersion: "14"
         CFBundleIconName: AppIcon
         LSRequiresIPhoneOS: true
         ITSAppUsesNonExemptEncryption: false
@@ -80,7 +80,7 @@ targets:
       properties:
         CFBundleDisplayName: Virtue Forge
         CFBundleShortVersionString: "2.0.0"
-        CFBundleVersion: "13"
+        CFBundleVersion: "14"
         WKApplication: true
         ITSAppUsesNonExemptEncryption: false
         UISupportedInterfaceOrientations: []
@@ -109,7 +109,7 @@ targets:
       properties:
         CFBundleDisplayName: ForgeWidget
         CFBundleShortVersionString: "2.0.0"
-        CFBundleVersion: "13"
+        CFBundleVersion: "14"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         ITSAppUsesNonExemptEncryption: false
