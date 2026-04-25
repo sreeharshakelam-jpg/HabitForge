@@ -63,7 +63,7 @@ targets:
 
   # ─── watchOS App ──────────────────────────────────────────────────────────────
   HabitForgeWatch:
-    type: watchos.application
+    type: application
     platform: watchOS
     deploymentTarget: "10.0"
     sources:
@@ -99,7 +99,7 @@ targets:
 
   # ─── Watch Widget / Complication Extension ────────────────────────────────────
   ForgeWidgetExtension:
-    type: watchos.extension
+    type: app-extension
     platform: watchOS
     deploymentTarget: "10.0"
     sources:
