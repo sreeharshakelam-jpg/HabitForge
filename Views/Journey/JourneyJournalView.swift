@@ -452,7 +452,8 @@ struct DailyWritingSheet: View {
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $draftText)
                         .focused($focused)
-                        .font(.system(size: 16, lineSpacing: 6))
+                        .font(.system(size: 16))
+                        .lineSpacing(6)
                         .foregroundColor(ForgeColor.textPrimary)
                         .scrollContentBackground(.hidden)
                         .background(Color.clear)
@@ -461,7 +462,8 @@ struct DailyWritingSheet: View {
 
                     if draftText.isEmpty {
                         Text("Write about what you did today, how your habits went, what you're proud of...")
-                            .font(.system(size: 16, lineSpacing: 6))
+                            .font(.system(size: 16))
+                            .lineSpacing(6)
                             .foregroundColor(ForgeColor.textTertiary)
                             .padding(.horizontal, ForgeSpacing.md)
                             .padding(.top, ForgeSpacing.sm + 8)
