@@ -23,7 +23,7 @@ targets:
       path: Info.plist
       properties:
         CFBundleDevelopmentRegion: en
-        CFBundleDisplayName: Virtue Forge
+        CFBundleDisplayName: FORGE - Habit Tracker
         CFBundleExecutable: $(EXECUTABLE_NAME)
         CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
         CFBundleInfoDictionaryVersion: "6.0"
@@ -78,7 +78,7 @@ targets:
     info:
       path: HabitForgeWatch/Info.plist
       properties:
-        CFBundleDisplayName: Virtue Forge
+        CFBundleDisplayName: FORGE - Habit Tracker
         CFBundleShortVersionString: "2.0.0"
         CFBundleVersion: "14"
         WKApplication: true
