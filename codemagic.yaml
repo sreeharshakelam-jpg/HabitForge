@@ -148,7 +148,33 @@ workflows:
           /usr/libexec/PlistBuddy -c "Print :CFBundlePrimaryIcon" "$PLIST" 2>/dev/null || echo "No CFBundlePrimaryIcon"
 
           echo ""
-          echo "=== Re-signing ==="
+          echo "=== Fix watch app icons ==="
+          WATCH_APP="$APP/Watch/HabitForgeWatch.app"
+          WATCH_PLIST="$WATCH_APP/Info.plist"
+          if [ -d "$WATCH_APP" ]; then
+            xcrun actool HabitForgeWatch/Assets.xcassets \
+              --compile "$WATCH_APP" \
+              --platform watchos \
+              --minimum-deployment-target 10.0 \
+              --app-icon AppIcon \
+              --output-partial-info-plist /tmp/watch_assetcatalog_info.plist \
+              2>&1 || echo "actool watch (non-fatal)"
+            /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$WATCH_PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$WATCH_PLIST"
+            if [ -f /tmp/watch_assetcatalog_info.plist ]; then
+              /usr/libexec/PlistBuddy -c "Merge /tmp/watch_assetcatalog_info.plist" "$WATCH_PLIST" 2>/dev/null || true
+            fi
+            echo "Watch plist CFBundleIconName: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconName' "$WATCH_PLIST" 2>/dev/null)"
+            IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
+            codesign -d --entitlements :- "$WATCH_APP" > /tmp/watch_ent.plist 2>/dev/null || true
+            codesign --force --sign "$IDENTITY" --entitlements /tmp/watch_ent.plist "$WATCH_APP"
+            echo "Watch app re-signed"
+          else
+            echo "Watch app not found at $WATCH_APP"
+          fi
+
+          echo ""
+          echo "=== Re-signing main app ==="
           IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
           echo "Identity: $IDENTITY"
           codesign -d --entitlements :- "$APP" > /tmp/ent.plist 2>/dev/null || true
