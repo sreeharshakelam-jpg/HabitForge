@@ -64,11 +64,11 @@ workflows:
             --create
           app-store-connect fetch-signing-files \
             com.sreeharshakelam.virtueforge.watchkitapp \
-            --type WATCH_OS_APP_STORE \
+            --type IOS_APP_STORE \
             --create
           app-store-connect fetch-signing-files \
             com.sreeharshakelam.virtueforge.watchkitapp.ForgeWidget \
-            --type WATCH_OS_APP_STORE \
+            --type IOS_APP_STORE \
             --create
           keychain add-certificates
 
@@ -96,7 +96,6 @@ workflows:
             -scheme HabitForge \
             -configuration Release \
             -archivePath HabitForge.xcarchive \
-            -allowProvisioningUpdates \
             GENERATE_INFOPLIST_FILE=NO \
             archive
 
