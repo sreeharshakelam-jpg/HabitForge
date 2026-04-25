@@ -79,6 +79,7 @@ targets:
       path: HabitForgeWatch/Info.plist
       properties:
         CFBundleDisplayName: FORGE - Habit Tracker
+        CFBundleIconName: AppIcon
         CFBundleShortVersionString: "2.0.0"
         CFBundleVersion: "14"
         WKApplication: true

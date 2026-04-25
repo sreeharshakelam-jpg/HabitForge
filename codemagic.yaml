@@ -49,7 +49,7 @@ workflows:
           cat > "HabitForgeWatch/Assets.xcassets/AppIcon.appiconset/Contents.json" << 'ICONEOF'
           {
             "images" : [
-              { "filename" : "AppIcon.png", "idiom" : "watch", "role" : "appLauncher", "size" : "1024x1024" }
+              { "filename" : "AppIcon.png", "idiom" : "universal", "platform" : "watchos", "size" : "1024x1024" }
             ],
             "info" : { "author" : "xcode", "version" : 1 }
           }
