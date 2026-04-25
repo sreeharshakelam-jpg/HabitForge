@@ -43,6 +43,10 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+    dependencies:
+      - target: HabitForgeWatch
+        embed: true
+
     entitlements:
       path: HabitForge.entitlements
     settings:
@@ -55,4 +59,68 @@ targets:
         DEVELOPMENT_TEAM: B37332G6T2
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: "NO"
+
+  # ─── watchOS App ──────────────────────────────────────────────────────────────
+  HabitForgeWatch:
+    type: watchos.application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: HabitForgeWatch/App
+      - path: HabitForgeWatch/Models
+      - path: HabitForgeWatch/Views
+      - path: HabitForgeWatch/Assets.xcassets
+        type: folder
+    dependencies:
+      - target: ForgeWidgetExtension
+        embed: true
+    info:
+      path: HabitForgeWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Virtue Forge
+        CFBundleShortVersionString: "2.0.0"
+        CFBundleVersion: "13"
+        WKApplication: true
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations: []
+    entitlements:
+      path: HabitForgeWatch/HabitForgeWatch.entitlements
+      properties: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sreeharshakelam.virtueforge.watchkitapp
+        SWIFT_VERSION: "5.9"
+        WATCHOS_DEPLOYMENT_TARGET: "10.0"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: B37332G6T2
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: "NO"
+
+  # ─── Watch Widget / Complication Extension ────────────────────────────────────
+  ForgeWidgetExtension:
+    type: watchos.extension
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: HabitForgeWatch/Complications
+    info:
+      path: HabitForgeWatch/WidgetExtension-Info.plist
+      properties:
+        CFBundleDisplayName: ForgeWidget
+        CFBundleShortVersionString: "2.0.0"
+        CFBundleVersion: "13"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        ITSAppUsesNonExemptEncryption: false
+    entitlements:
+      path: HabitForgeWatch/ForgeWidget.entitlements
+      properties: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sreeharshakelam.virtueforge.watchkitapp.ForgeWidget
+        SWIFT_VERSION: "5.9"
+        WATCHOS_DEPLOYMENT_TARGET: "10.0"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: B37332G6T2
         GENERATE_INFOPLIST_FILE: "NO"

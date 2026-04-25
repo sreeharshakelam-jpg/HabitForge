@@ -111,6 +111,7 @@ struct HabitsListView: View {
 // MARK: - Habit List Row
 struct HabitListRow: View {
     @EnvironmentObject var habitStore: HabitStore
+    @Environment(\.editMode) private var editMode
     let habit: Habit
     @State private var showDetail = false
 
@@ -189,6 +190,7 @@ struct HabitListRow: View {
         .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
         .contentShape(Rectangle())
         .onTapGesture {
+            guard editMode?.wrappedValue != .active else { return }
             showDetail = true
         }
         .sheet(isPresented: $showDetail) {

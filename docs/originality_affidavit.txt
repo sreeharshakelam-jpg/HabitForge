@@ -1,0 +1,90 @@
+VIRTUE FORGE — ORIGINALITY AFFIDAVIT
+Author: Sreeharsha Kelam
+Apple Developer Team ID: B37332G6T2
+Bundle Identifier: com.sreeharshakelam.virtueforge
+App Name: Virtue Forge
+Date: April 16, 2026
+
+------------------------------------------------------------
+STATEMENT OF ORIGINAL AUTHORSHIP
+------------------------------------------------------------
+
+I, Sreeharsha Kelam, sole developer of Virtue Forge, declare under
+penalty of perjury that the following statements are true and
+accurate to the best of my knowledge:
+
+1. OWNERSHIP AND AUTHORSHIP
+   Virtue Forge is an original work conceived, designed, and coded
+   entirely by me. I hold full copyright and intellectual property
+   rights to 100% of the source code, UI design, written content,
+   and product concept.
+
+2. NO AFFILIATION WITH TERMINATED ACCOUNTS
+   I have never operated, been employed by, contracted with, or
+   otherwise affiliated with any Apple Developer Program account
+   that has been terminated by Apple. My Apple Developer Program
+   account (Team ID: B37332G6T2) is my only account. I have not
+   used another person's credit card, bank account, device, or
+   network to register or manage this account.
+
+3. NO CODE REUSE FROM THIRD-PARTY APPS
+   Virtue Forge does not contain any code copied, cloned, templated,
+   forked, or otherwise derived from any third-party application,
+   template marketplace (e.g., CodeCanyon, BuildFire, Appy Pie),
+   or no-code app generator. Every line of Swift code in this
+   codebase was written by me from scratch using Xcode 15 and
+   SwiftUI.
+
+4. VERIFIABLE DEVELOPMENT HISTORY
+   The complete Git commit history for this project, attached as
+   git_history.txt, contains 59 commits authored over 17 days
+   (March 30, 2026 through April 16, 2026). The progressive nature
+   of these commits — including bug fixes, refactors, feature
+   additions, and version bumps — evidences continuous, authentic,
+   single-author development.
+
+5. ORIGINAL PRODUCT CONCEPT
+   Virtue Forge is a habit tracker built around a unique concept
+   that combines:
+   - A "Virtue Mentor" AI-style companion that delivers daily
+     wisdom and guidance drawn from Stoic, Buddhist, and classical
+     philosophical traditions.
+   - A "Discipline Score" gamification system that rewards
+     consistency rather than raw completion count.
+   - A "Forge" personal progression system with seven ranks
+     (Novice → Apprentice → Journeyman → Craftsman → Master →
+     Grandmaster → Sage) tied to long-term habit streaks.
+   - An offline-first architecture. No server-side account, no
+     external database, no third-party analytics.
+
+   This concept was developed independently and is not based on
+   any competitor product I have examined.
+
+6. NO SUBSTITUTIONARY BEHAVIOR
+   Virtue Forge does not impersonate, spoof, or market itself as
+   any other app, brand, trademark, or service. The app name,
+   icon, color scheme, typography, and marketing copy are original
+   works.
+
+7. ACKNOWLEDGEMENT OF APPLE GUIDELINES
+   I have read and understood Apple's App Review Guideline 4.3
+   (Spam) and the broader Guidelines. I affirm that Virtue Forge
+   does not violate 4.3(a), 4.3(b), or any related provision.
+
+8. REQUEST FOR REVIEW
+   I respectfully request that Apple's App Review team re-examine
+   this submission on its merits. If Apple's records indicate an
+   account-level fingerprint match with a terminated account, I
+   request a specific description of the triggering signal so I
+   can address it. To my knowledge, no such match should exist.
+
+------------------------------------------------------------
+SIGNATURE
+------------------------------------------------------------
+
+Signed: Sreeharsha Kelam
+Date:   April 16, 2026
+Email:  (your developer email on file)
+
+I declare under penalty of perjury that the foregoing is true and
+correct.

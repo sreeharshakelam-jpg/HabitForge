@@ -1,0 +1,450 @@
+38988cf | 2026-04-16 11:53:38 -0500 | sreeharshakelam-jpg | Bump build number 11 → 12 (build 11 already uploaded)
+ HabitForge/Info.plist | 2 +-
+ Info.plist            | 2 +-
+ project.yml           | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+0dcea0e | 2026-04-16 11:49:48 -0500 | sreeharshakelam-jpg | Trigger rebuild after creating Virtue Forge app in App Store Connect
+1371c7c | 2026-04-16 11:33:03 -0500 | sreeharshakelam-jpg | Fix leftover FORGE branding in Profile footer + add screenshot resizer
+ HabitForge/Views/Profile/ProfileView.swift |   6 +-
+ Views/Profile/ProfileView.swift            |   6 +-
+ screenshots/resize-real.html               | 215 +++++++++++++++++++++++++++++
+ 3 files changed, 221 insertions(+), 6 deletions(-)
+
+61c6eef | 2026-04-16 11:00:47 -0500 | sreeharshakelam-jpg | Rebrand to Virtue Forge — address Apple 4.3(a) spam rejection
+ App/ContentView.swift                              |   16 +-
+ HabitForge/App/ContentView.swift                   |   18 +-
+ .../Complications/ForgeComplication.swift          |    2 +-
+ .../HabitForgeWatch/Views/WatchRootView.swift      |    2 +-
+ HabitForge/Info.plist                              |    6 +-
+ HabitForge/Models/Achievement.swift                |    2 +-
+ HabitForge/Models/UserProfile.swift                |    2 +-
+ HabitForge/README.md                               |    6 +-
+ HabitForge/Services/NotificationManager.swift      |    2 +-
+ .../Views/Achievements/AchievementsView.swift      |    2 +-
+ HabitForge/Views/Dashboard/DashboardView.swift     |    2 +-
+ HabitForge/Views/Onboarding/OnboardingFlow.swift   |    8 +-
+ HabitForge/Views/Profile/ProfileView.swift         |    2 +-
+ .../Complications/ForgeComplication.swift          |    2 +-
+ HabitForgeWatch/Views/WatchRootView.swift          |    2 +-
+ Info.plist                                         |    6 +-
+ Models/Achievement.swift                           |    2 +-
+ Models/UserProfile.swift                           |    2 +-
+ README.md                                          |    6 +-
+ Services/NotificationManager.swift                 |    2 +-
+ Views/Achievements/AchievementsView.swift          |    2 +-
+ Views/Coach/CoachView.swift                        |    6 +-
+ Views/Dashboard/DashboardView.swift                |    2 +-
+ Views/Onboarding/OnboardingFlow.swift              |   10 +-
+ codemagic.yaml                                     |    4 +-
+ project.yml                                        |    8 +-
+ screenshots/generator.html                         | 1228 ++++++++++++++++++++
+ 27 files changed, 1290 insertions(+), 62 deletions(-)
+
+e874f9f | 2026-04-11 13:14:08 -0500 | sreeharshakelam-jpg | Remove snooze option entirely, keep only Complete and Skip
+ HabitForge/Info.plist               |  2 +-
+ Info.plist                          |  2 +-
+ Views/Dashboard/DashboardView.swift | 14 ----------
+ Views/Habits/HabitDetailView.swift  | 55 +++++++++++--------------------------
+ project.yml                         |  2 +-
+ 5 files changed, 19 insertions(+), 56 deletions(-)
+
+26e5415 | 2026-04-11 12:39:11 -0500 | sreeharshakelam-jpg | Fix snooze: flat -5 points penalty, show in button labels
+ HabitForge/Info.plist               | 2 +-
+ Info.plist                          | 2 +-
+ Stores/HabitStore.swift             | 6 +++---
+ Views/Dashboard/DashboardView.swift | 2 +-
+ Views/Habits/HabitDetailView.swift  | 2 +-
+ project.yml                         | 2 +-
+ 6 files changed, 8 insertions(+), 8 deletions(-)
+
+b06c1c0 | 2026-04-11 12:24:06 -0500 | sreeharshakelam-jpg | Bump build to 8 (build 7 already uploaded)
+ HabitForge/Info.plist | 2 +-
+ Info.plist            | 2 +-
+ project.yml           | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+0ffcb5b | 2026-04-11 12:19:00 -0500 | sreeharshakelam-jpg | Fix light mode: frequency text, time picker, settings row visibility
+ Views/Habits/AddHabitView.swift | 7 +++----
+ Views/Profile/ProfileView.swift | 2 +-
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+c2ac1c8 | 2026-04-11 12:03:22 -0500 | sreeharshakelam-jpg | v1.0.6: Dynamic daily goal, streak requires all habits completed
+ HabitForge/Info.plist               |  4 ++--
+ Info.plist                          |  4 ++--
+ Stores/HabitStore.swift             | 37 +++++++++++++++++++++----------------
+ Views/Dashboard/DashboardView.swift | 25 +++++++++++++++----------
+ Views/Profile/ProfileView.swift     |  2 +-
+ project.yml                         |  4 ++--
+ 6 files changed, 43 insertions(+), 33 deletions(-)
+
+88291e2 | 2026-04-11 11:39:53 -0500 | sreeharshakelam-jpg | Fix build: replace HabitFrequency.allCases with static array
+ Views/Habits/HabitDetailView.swift | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+562947e | 2026-04-11 11:35:11 -0500 | sreeharshakelam-jpg | v1.0.5: Fix edit button, light mode, streak accuracy, missed habit quotes
+ App/HabitForgeApp.swift                            |   3 +
+ Extensions/DesignSystem.swift                      |  65 +++-
+ HabitForge/Extensions/DesignSystem.swift           |   4 +-
+ HabitForge/Info.plist                              |   6 +-
+ .../Views/Achievements/AchievementsView.swift      |   6 +-
+ HabitForge/Views/Analytics/AnalyticsView.swift     |  14 +-
+ HabitForge/Views/Dashboard/DailySummaryView.swift  |  20 +-
+ HabitForge/Views/Dashboard/DashboardView.swift     |  14 +-
+ HabitForge/Views/Habits/AddHabitView.swift         |  22 +-
+ HabitForge/Views/Habits/HabitDetailView.swift      |   6 +-
+ HabitForge/Views/Habits/HabitsListView.swift       |   8 +-
+ HabitForge/Views/Onboarding/OnboardingFlow.swift   |  16 +-
+ HabitForge/Views/Profile/ProfileView.swift         |  34 +-
+ Info.plist                                         |   6 +-
+ Services/NotificationManager.swift                 |  62 +++-
+ Stores/HabitStore.swift                            | 102 +++++-
+ Views/Achievements/AchievementsView.swift          |   6 +-
+ Views/Analytics/AnalyticsView.swift                |  14 +-
+ Views/Coach/CoachView.swift                        |  12 +-
+ Views/Coach/WisdomLibraryView.swift                |   2 +-
+ Views/Dashboard/DailySummaryView.swift             |  71 ++--
+ Views/Dashboard/DashboardView.swift                | 275 ++++++++++++++--
+ Views/Habits/AddHabitView.swift                    |  22 +-
+ Views/Habits/HabitDetailView.swift                 | 356 ++++++++++++++++++++-
+ Views/Habits/HabitsListView.swift                  |  22 +-
+ Views/Onboarding/OnboardingFlow.swift              |  16 +-
+ Views/Profile/ProfileView.swift                    |  88 ++++-
+ project.yml                                        |   5 +-
+ 28 files changed, 1047 insertions(+), 230 deletions(-)
+
+dd15bbc | 2026-04-10 15:21:36 -0500 | sreeharshakelam-jpg | v1.0.4: Manual points, discipline days, schedule toggle fix
+ HabitForge/Info.plist               |  4 +-
+ Info.plist                          |  4 +-
+ Models/UserProfile.swift            |  5 ++-
+ Stores/GamificationEngine.swift     | 36 +++-------------
+ Stores/HabitStore.swift             |  5 ++-
+ Views/Dashboard/DashboardView.swift |  2 +-
+ Views/Habits/AddHabitView.swift     | 83 ++++++++++++++++++++++++-------------
+ Views/Profile/ProfileView.swift     |  2 +-
+ project.yml                         |  4 +-
+ 9 files changed, 76 insertions(+), 69 deletions(-)
+
+a8a925f | 2026-04-10 11:20:59 -0500 | sreeharshakelam-jpg | v1.0.3: Undo habit completion, challenge tracker, daily goal, expanded wisdom
+ HabitForge/Info.plist               |   4 +-
+ Info.plist                          |   4 +-
+ Models/UserProfile.swift            |  66 +++++++
+ Services/NotificationManager.swift  |  15 +-
+ Services/WisdomLibrary.swift        | 164 ++++++++++++++++-
+ Stores/HabitStore.swift             |  65 ++++++-
+ Views/Dashboard/DashboardView.swift | 351 +++++++++++++++++++++++++++++++++++-
+ project.yml                         |   4 +-
+ 8 files changed, 659 insertions(+), 14 deletions(-)
+
+ca85db7 | 2026-04-09 12:08:11 -0500 | sreeharshakelam-jpg | Bump version to 1.0.2 build 3
+ HabitForge/Info.plist | 4 ++--
+ Info.plist            | 4 ++--
+ project.yml           | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+f1b2e84 | 2026-04-09 11:58:18 -0500 | sreeharshakelam-jpg | v1.0.2: 100% free, offline Wisdom Coach + critical scroll/tap bug fix
+ Extensions/DesignSystem.swift         |  13 +-
+ Services/ClaudeCoachService.swift     | 264 ++++++++++++------------
+ Services/WisdomLibrary.swift          | 369 ++++++++++++++++++++++++++++++++++
+ Views/Coach/CoachView.swift           | 246 ++++++++++-------------
+ Views/Coach/WisdomLibraryView.swift   | 161 +++++++++++++++
+ Views/Dashboard/DashboardView.swift   |  43 ++--
+ Views/Habits/HabitsListView.swift     |  18 +-
+ Views/Onboarding/OnboardingFlow.swift |   7 +-
+ Views/Profile/ProfileView.swift       | 168 +---------------
+ 9 files changed, 814 insertions(+), 475 deletions(-)
+
+32c94f3 | 2026-04-09 11:05:27 -0500 | sreeharshakelam-jpg | v1.0.1: AI Discipline Coach (Claude-powered) + critical bug fixes
+ App/ContentView.swift                 |   8 +-
+ App/HabitForgeApp.swift               |  19 ++
+ HabitForge/Info.plist                 |   6 +-
+ Info.plist                            |   6 +-
+ Models/UserProfile.swift              |   2 +-
+ Services/ClaudeCoachService.swift     | 215 ++++++++++++++++++++
+ Services/KeychainService.swift        |  47 +++++
+ Services/NotificationManager.swift    |  31 ++-
+ Stores/GamificationEngine.swift       |   2 +-
+ Stores/HabitStore.swift               |   7 +
+ Views/Coach/CoachView.swift           | 372 ++++++++++++++++++++++++++++++++++
+ Views/Onboarding/OnboardingFlow.swift |   8 +-
+ Views/Profile/ProfileView.swift       |  17 +-
+ docs/privacy-policy.html              |  37 +++-
+ project.yml                           |   6 +-
+ 15 files changed, 732 insertions(+), 51 deletions(-)
+
+702562f | 2026-04-07 15:36:23 -0500 | sreeharshakelam-jpg | Add privacy policy page
+ docs/privacy-policy.html | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+79d3f58 | 2026-04-07 14:39:50 -0500 | sreeharshakelam-jpg | Manually compile asset catalog with actool after archive, re-sign app
+ codemagic.yaml | 110 ++++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 57 insertions(+), 53 deletions(-)
+
+95571c7 | 2026-04-07 14:31:51 -0500 | sreeharshakelam-jpg | Move Assets.xcassets from resources to sources - was not being compiled into Assets.car
+ project.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+f6d9b9c | 2026-04-07 14:22:44 -0500 | sreeharshakelam-jpg | Deep debug: inspect INFOPLIST_FILE path, Assets.car contents, full archive dump
+ codemagic.yaml | 169 ++++++++++++++++++++++++---------------------------------
+ 1 file changed, 71 insertions(+), 98 deletions(-)
+
+8ee5e4f | 2026-04-07 14:09:09 -0500 | sreeharshakelam-jpg | Nuclear fix: patch archive with icons + CFBundleIcons plist + re-sign before export
+ codemagic.yaml | 174 ++++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 116 insertions(+), 58 deletions(-)
+
+5a266ef | 2026-04-07 12:03:51 -0500 | sreeharshakelam-jpg | FIX ROOT CAUSE: duplicate HabitForge/HabitForge/ dir had empty AppIcon and no CFBundleIconName
+ .../Assets.xcassets/AppIcon.appiconset/AppIcon.png | Bin 0 -> 69814 bytes
+ .../AppIcon.appiconset/Contents.json               |   1 +
+ HabitForge/Info.plist                              |   8 ++-
+ codemagic.yaml                                     |  60 ++++++++++++++++-----
+ project.yml                                        |  35 ++++++++----
+ 5 files changed, 76 insertions(+), 28 deletions(-)
+
+326d0ba | 2026-04-06 17:42:28 -0500 | sreeharshakelam-jpg | Remove Info.plist entirely, use GENERATE_INFOPLIST_FILE=YES with INFOPLIST_KEY build settings
+ codemagic.yaml | 29 +++++++++++++----------------
+ project.yml    | 35 ++++++++++-------------------------
+ 2 files changed, 23 insertions(+), 41 deletions(-)
+
+f9562cd | 2026-04-06 17:38:38 -0500 | sreeharshakelam-jpg | Fix root cause: GENERATE_INFOPLIST_FILE=NO, universal icon format, single AppIcon.png
+ Assets.xcassets/AppIcon.appiconset/AppIcon.png    | Bin 0 -> 69814 bytes
+ Assets.xcassets/AppIcon.appiconset/Contents.json  |  54 ++--------------------
+ Assets.xcassets/AppIcon.appiconset/appicon.png    | Bin 55004 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-1024.png  | Bin 55004 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-20@2x.png | Bin 1540 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-20@3x.png | Bin 2505 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-29@2x.png | Bin 2416 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-29@3x.png | Bin 3873 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-40@2x.png | Bin 3580 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-40@3x.png | Bin 5808 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-60@2x.png | Bin 5808 -> 0 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-60@3x.png | Bin 9586 -> 0 bytes
+ codemagic.yaml                                    |  28 ++++++++---
+ project.yml                                       |   2 +-
+ 14 files changed, 26 insertions(+), 58 deletions(-)
+
+e97bafa | 2026-04-06 17:28:13 -0500 | sreeharshakelam-jpg | iPhone only, all icon sizes, proper Contents.json, clean upload pipeline
+ Assets.xcassets/AppIcon.appiconset/Contents.json  |  54 ++++++++++++++++++++--
+ Assets.xcassets/AppIcon.appiconset/icon-1024.png  | Bin 0 -> 55004 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-20@2x.png | Bin 0 -> 1540 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-20@3x.png | Bin 0 -> 2505 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-29@2x.png | Bin 0 -> 2416 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-29@3x.png | Bin 0 -> 3873 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-40@2x.png | Bin 0 -> 3580 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-40@3x.png | Bin 0 -> 5808 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-60@2x.png | Bin 0 -> 5808 bytes
+ Assets.xcassets/AppIcon.appiconset/icon-60@3x.png | Bin 0 -> 9586 bytes
+ codemagic.yaml                                    |  39 ++--------------
+ project.yml                                       |  10 +---
+ 12 files changed, 57 insertions(+), 46 deletions(-)
+
+3976b45 | 2026-04-06 17:23:18 -0500 | sreeharshakelam-jpg | Inspect IPA contents, fix CFBundleIconName inside IPA if missing, upload via CLI
+ codemagic.yaml | 76 +++++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 41 insertions(+), 35 deletions(-)
+
+e981700 | 2026-04-06 17:18:49 -0500 | sreeharshakelam-jpg | Nuclear fix: GENERATE_INFOPLIST_FILE=NO, force PlistBuddy inject, re-sign if needed
+ codemagic.yaml | 44 +++++++++++++++++++++++++++-----------------
+ project.yml    |  2 ++
+ 2 files changed, 29 insertions(+), 17 deletions(-)
+
+ee7d650 | 2026-04-06 17:14:22 -0500 | sreeharshakelam-jpg | Restore info.path for XcodeGen, ensure CFBundleIconName in both plist and properties
+ Info.plist  | 6 +-----
+ project.yml | 1 +
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+fd80b3e | 2026-04-06 17:12:09 -0500 | sreeharshakelam-jpg | Fix CFBundleIconName: remove Info.plist path, generate from properties, fix icon alpha
+ Assets.xcassets/AppIcon.appiconset/appicon.png | Bin 79512 -> 55004 bytes
+ codemagic.yaml                                 |  27 ++++++++++++++++++++-----
+ project.yml                                    |  19 ++++++++++++++++-
+ 3 files changed, 40 insertions(+), 6 deletions(-)
+
+42d9577 | 2026-04-06 17:07:32 -0500 | sreeharshakelam-jpg | Force-inject CFBundleIconName into archive Info.plist before export
+ codemagic.yaml | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+f8ee8ed | 2026-04-06 17:04:02 -0500 | sreeharshakelam-jpg | Add app icon and CFBundleIconName to Info.plist for App Store validation
+ Assets.xcassets/AppIcon.appiconset/Contents.json |   1 +
+ Assets.xcassets/AppIcon.appiconset/appicon.png   | Bin 0 -> 79512 bytes
+ Info.plist                                       |   2 ++
+ 3 files changed, 3 insertions(+)
+
+707819f | 2026-04-06 16:57:01 -0500 | sreeharshakelam-jpg | Add CFBundleIconName to Info.plist for App Store validation
+ project.yml | 1 +
+ 1 file changed, 1 insertion(+)
+
+fd5ff76 | 2026-04-06 16:48:15 -0500 | sreeharshakelam-jpg | Fix export: auto-generate exportOptions with profiles, set manual signing with team ID
+ codemagic.yaml | 24 ++++--------------------
+ project.yml    |  4 ++--
+ 2 files changed, 6 insertions(+), 22 deletions(-)
+
+6ad4e15 | 2026-04-06 16:44:45 -0500 | sreeharshakelam-jpg | Remove HealthKit dependency for v1.0 release (avoids provisioning profile issue)
+ App/HabitForgeApp.swift         |  1 -
+ HabitForge.entitlements         |  2 -
+ Services/HealthKitManager.swift | 98 ++---------------------------------------
+ project.yml                     |  4 --
+ 4 files changed, 4 insertions(+), 101 deletions(-)
+
+1c6bbd0 | 2026-04-06 16:23:24 -0500 | sreeharshakelam-jpg | Remove HealthKit health-records entitlement (not needed for basic health data)
+ HabitForge.entitlements | 2 --
+ project.yml             | 1 -
+ 2 files changed, 3 deletions(-)
+
+43508e4 | 2026-04-06 16:10:21 -0500 | sreeharshakelam-jpg | Add environment variable group reference to load APP_STORE_CONNECT_PRIVATE_KEY
+ codemagic.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+f5ca8a6 | 2026-04-06 14:48:58 -0500 | sreeharshakelam-jpg | Use environment variables for App Store Connect credentials
+ codemagic.yaml | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+34dc3ce | 2026-04-06 14:43:39 -0500 | sreeharshakelam-jpg | Move integrations to workflow level (not inside environment)
+ codemagic.yaml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+9634c62 | 2026-04-06 14:41:32 -0500 | sreeharshakelam-jpg | Add integrations section to expose App Store Connect credentials to scripts
+ codemagic.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+5cdf8de | 2026-04-06 14:33:22 -0500 | sreeharshakelam-jpg | Add key_id and issuer_id to publishing section
+ codemagic.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+9cbbbe0 | 2026-04-06 14:32:45 -0500 | sreeharshakelam-jpg | Remove app_store_connect from environment section
+ codemagic.yaml | 2 --
+ 1 file changed, 2 deletions(-)
+
+84caba8 | 2026-04-06 14:32:28 -0500 | sreeharshakelam-jpg | Fix codemagic.yaml App Store Connect key reference
+ codemagic.yaml | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+19ebd93 | 2026-04-06 14:30:48 -0500 | sreeharshakelam-jpg | Configure App Store signing and submission with API key
+ codemagic.yaml | 66 ++++++++++++++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 53 insertions(+), 13 deletions(-)
+
+82f4966 | 2026-04-01 14:09:21 -0500 | sreeharshakelam-jpg | Fix Habit init argument order in UserProfile (scheduledTime/durationMinutes before difficulty)
+ Models/UserProfile.swift | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
+
+9275413 | 2026-04-01 14:00:12 -0500 | sreeharshakelam-jpg | Use generic iOS Simulator destination, no specific device model
+ codemagic.yaml | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+ffd9439 | 2026-04-01 13:55:03 -0500 | sreeharshakelam-jpg | Fix LinearGradient type mismatch error
+ Views/Onboarding/OnboardingFlow.swift | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+5eb8309 | 2026-04-01 13:51:03 -0500 | sreeharshakelam-jpg | Fix simulator destination and build path
+ codemagic.yaml | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+95bc2d6 | 2026-04-01 13:46:09 -0500 | sreeharshakelam-jpg | Build for simulator
+ codemagic.yaml | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
+
+c35b332 | 2026-04-01 10:42:37 -0500 | sreeharshakelam-jpg | Switch to development signing
+ ExportOptions.plist |  8 +++-----
+ codemagic.yaml      | 10 +++-------
+ 2 files changed, 6 insertions(+), 12 deletions(-)
+
+4ff1bf2 | 2026-04-01 10:31:20 -0500 | sreeharshakelam-jpg | Add real device build config
+ ExportOptions.plist | 14 ++++++++++++++
+ codemagic.yaml      | 26 +++++++++++++++++---------
+ 2 files changed, 31 insertions(+), 9 deletions(-)
+
+a787da0 | 2026-04-01 10:26:14 -0500 | sreeharshakelam-jpg | Fix structure and add XcodeGen config
+ HabitForge                                         |   1 -
+ HabitForge/App/ContentView.swift                   |  73 +++
+ HabitForge/App/HabitForgeApp.swift                 |  76 +++
+ .../AccentColor.colorset/Contents.json             |  20 +
+ .../AppIcon.appiconset/Contents.json               |  13 +
+ HabitForge/Assets.xcassets/Contents.json           |   6 +
+ HabitForge/Extensions/DesignSystem.swift           | 396 +++++++++++++
+ HabitForge/HabitForge.entitlements                 |  10 +
+ .../HabitForgeWatch/App/HabitForgeWatchApp.swift   |  32 ++
+ .../Complications/ForgeComplication.swift          |  67 +++
+ .../HabitForgeWatch/Models/WatchHabitStore.swift   | 155 ++++++
+ .../HabitForgeWatch/Views/WatchRootView.swift      | 211 +++++++
+ HabitForge/Info.plist                              |  56 ++
+ HabitForge/Models/Achievement.swift                | 263 +++++++++
+ HabitForge/Models/Habit.swift                      | 407 ++++++++++++++
+ HabitForge/Models/UserProfile.swift                | 297 ++++++++++
+ HabitForge/Package.swift                           |  25 +
+ HabitForge/README.md                               | 202 +++++++
+ HabitForge/Services/HealthKitManager.swift         | 144 +++++
+ HabitForge/Services/NotificationManager.swift      | 214 +++++++
+ HabitForge/Services/WatchConnectivityManager.swift | 150 +++++
+ HabitForge/Stores/GamificationEngine.swift         | 274 +++++++++
+ HabitForge/Stores/HabitStore.swift                 | 458 +++++++++++++++
+ .../Views/Achievements/AchievementsView.swift      | 318 +++++++++++
+ HabitForge/Views/Analytics/AnalyticsView.swift     | 489 ++++++++++++++++
+ HabitForge/Views/Dashboard/DailySummaryView.swift  | 398 +++++++++++++
+ HabitForge/Views/Dashboard/DashboardView.swift     | 602 ++++++++++++++++++++
+ HabitForge/Views/Habits/AddHabitView.swift         | 614 +++++++++++++++++++++
+ HabitForge/Views/Habits/HabitDetailView.swift      | 302 ++++++++++
+ HabitForge/Views/Habits/HabitsListView.swift       | 262 +++++++++
+ HabitForge/Views/Onboarding/OnboardingFlow.swift   | 459 +++++++++++++++
+ HabitForge/Views/Profile/ProfileView.swift         | 596 ++++++++++++++++++++
+ HabitForge/codemagic.yaml                          |  17 +
+ codemagic.yaml                                     |  30 +-
+ project.yml                                        |  48 ++
+ 35 files changed, 7677 insertions(+), 8 deletions(-)
+
+a634b11 | 2026-03-31 12:41:09 -0500 | sreeharshakelam-jpg | adding windows nd mac
+ .../AppIcon.appiconset/Contents.json               | 13 ++++++++++
+ HabitForgeWatch/Assets.xcassets/Contents.json      |  6 +++++
+ HabitForgeWatch/Info.plist                         | 30 ++++++++++++++++++++++
+ 3 files changed, 49 insertions(+)
+
+ef170db | 2026-03-31 13:18:09 -0500 | sreeharshakelam-jpg | WIP on master: 3f375cc adding windows nd mac
+3397ffc | 2026-03-31 13:18:09 -0500 | sreeharshakelam-jpg | index on master: 3f375cc adding windows nd mac
+724116b | 2026-03-31 13:18:09 -0500 | sreeharshakelam-jpg | untracked files on master: 3f375cc adding windows nd mac
+ codemagic.yaml | 28 ++++++++++++++++++++++
+ project.yml    | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+)
+
+3f375cc | 2026-03-31 12:41:09 -0500 | sreeharshakelam-jpg | adding windows nd mac
+ .../AppIcon.appiconset/Contents.json               | 13 ++++++++++
+ HabitForgeWatch/Assets.xcassets/Contents.json      |  6 +++++
+ HabitForgeWatch/Info.plist                         | 30 ++++++++++++++++++++++
+ 3 files changed, 49 insertions(+)
+
+b6a9ec5 | 2026-03-30 11:51:12 -0500 | sreeharshakelam-jpg | add codemagic config
+ Assets.xcassets/AccentColor.colorset/Contents.json | 20 ++++++++
+ Assets.xcassets/AppIcon.appiconset/Contents.json   | 13 +++++
+ Assets.xcassets/Contents.json                      |  6 +++
+ HabitForge.entitlements                            | 10 ++++
+ Info.plist                                         | 56 ++++++++++++++++++++++
+ codemagic.yaml                                     | 17 +++++++
+ 6 files changed, 122 insertions(+)
+
+66b21be | 2026-03-30 10:47:38 -0500 | Harsha | FORGE habit tracker app
+ App/ContentView.swift                     |  73 ++++
+ App/HabitForgeApp.swift                   |  76 ++++
+ Extensions/DesignSystem.swift             | 396 +++++++++++++++++++
+ Models/Achievement.swift                  | 263 +++++++++++++
+ Models/Habit.swift                        | 407 ++++++++++++++++++++
+ Models/UserProfile.swift                  | 297 +++++++++++++++
+ Services/HealthKitManager.swift           | 144 +++++++
+ Services/NotificationManager.swift        | 214 +++++++++++
+ Services/WatchConnectivityManager.swift   | 150 ++++++++
+ Stores/GamificationEngine.swift           | 274 +++++++++++++
+ Stores/HabitStore.swift                   | 458 ++++++++++++++++++++++
+ Views/Achievements/AchievementsView.swift | 318 ++++++++++++++++
+ Views/Analytics/AnalyticsView.swift       | 489 ++++++++++++++++++++++++
+ Views/Dashboard/DailySummaryView.swift    | 398 +++++++++++++++++++
+ Views/Dashboard/DashboardView.swift       | 602 +++++++++++++++++++++++++++++
+ Views/Habits/AddHabitView.swift           | 614 ++++++++++++++++++++++++++++++
+ Views/Habits/HabitDetailView.swift        | 302 +++++++++++++++
+ Views/Habits/HabitsListView.swift         | 262 +++++++++++++
+ Views/Onboarding/OnboardingFlow.swift     | 459 ++++++++++++++++++++++
+ Views/Profile/ProfileView.swift           | 596 +++++++++++++++++++++++++++++
+ 20 files changed, 6792 insertions(+)
+
+aa76f78 | 2026-03-30 10:59:17 -0500 | Harsha | forge habit tracker
+ HabitForge                                         |   1 +
+ HabitForgeWatch/App/HabitForgeWatchApp.swift       |  32 ++++
+ .../Complications/ForgeComplication.swift          |  67 +++++++
+ HabitForgeWatch/Models/WatchHabitStore.swift       | 155 +++++++++++++++
+ HabitForgeWatch/Views/WatchRootView.swift          | 211 +++++++++++++++++++++
+ Package.swift                                      |  25 +++
+ README.md                                          | 202 ++++++++++++++++++++
+ 7 files changed, 693 insertions(+)

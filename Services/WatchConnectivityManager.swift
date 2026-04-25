@@ -123,28 +123,28 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
             payload["todayEntries"] = entriesData
         }
 
-        payload["currentStreak"] = store.userProfile.currentStreak
-        payload["totalPoints"] = store.userProfile.totalPoints
-        payload["level"] = store.userProfile.level
+        payload["currentStreak"]  = store.userProfile.currentStreak
+        payload["totalPoints"]    = store.userProfile.totalPoints
+        payload["totalXP"]        = store.userProfile.totalXP
+        payload["level"]          = store.userProfile.level
         payload["completionRate"] = store.todayCompletionRate
         payload["disciplineScore"] = store.userProfile.disciplineScore
-        payload["rank"] = store.userProfile.rank.displayName
-        payload["rankEmoji"] = store.userProfile.rank.emoji
-        payload["lastSync"] = Date().timeIntervalSince1970
+        payload["rank"]           = store.userProfile.rank.displayName
+        payload["rankEmoji"]      = store.userProfile.rank.emoji
+        payload["pendingCount"]   = store.todayEntries.filter { $0.status == .pending }.count
+        payload["lastSync"]       = Date().timeIntervalSince1970
 
         return payload
     }
 
     func sendComplicationUpdate() {
         guard let store = habitStore else { return }
-
         let data: [String: Any] = [
-            "currentStreak": store.userProfile.currentStreak,
-            "todayProgress": store.todayCompletionRate,
-            "pendingCount": store.todayEntries.filter { $0.status == .pending }.count,
-            "level": store.userProfile.level
+            "complication_progress": store.todayCompletionRate,
+            "complication_streak":   store.userProfile.currentStreak,
+            "complication_pending":  store.todayEntries.filter { $0.status == .pending }.count,
+            "wc_level":              store.userProfile.level
         ]
-
         try? session?.updateApplicationContext(data)
     }
 }

@@ -8,6 +8,13 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     /// Weak reference so the delegate can complete/snooze/skip habits from notifications.
     weak var habitStore: HabitStore?
 
+    override init() {
+        super.init()
+        // Register delegate immediately so notification actions work even when the
+        // app is launched from a killed state before onAppear fires.
+        UNUserNotificationCenter.current().delegate = self
+    }
+
     // MARK: - UNUserNotificationCenterDelegate
 
     /// Handle the user tapping an action button (Complete / Snooze / Skip) from a notification.

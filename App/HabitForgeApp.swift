@@ -10,7 +10,6 @@ struct HabitForgeApp: App {
     @StateObject private var watchConnectivity = WatchConnectivityManager()
     @StateObject private var coach = ClaudeCoachService()
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @AppStorage("colorSchemePreference") private var colorSchemePreference = "dark"
 
     var body: some Scene {
         WindowGroup {
@@ -31,7 +30,6 @@ struct HabitForgeApp: App {
                         .environmentObject(coach)
                 }
             }
-            .preferredColorScheme(colorSchemePreference == "dark" ? .dark : (colorSchemePreference == "light" ? .light : nil))
             .onAppear {
                 setupApp()
             }

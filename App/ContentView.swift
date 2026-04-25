@@ -6,6 +6,15 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showDailySummary = false
     @State private var showDailyCheckIn = false
+    @AppStorage("colorSchemePreference") private var colorSchemePreference = "dark"
+
+    private var preferredScheme: ColorScheme? {
+        switch colorSchemePreference {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -42,6 +51,7 @@ struct MainTabView: View {
             }
             .accentColor(ForgeColor.accent)
         }
+        .preferredColorScheme(preferredScheme)
         .background(ForgeColor.background)
         .onAppear {
             checkDailyCheckIn()

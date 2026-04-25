@@ -10,8 +10,8 @@ struct ProfileView: View {
     @State private var showResetConfirm = false
     @State private var exportItems: [Any] = []
     @State private var showExportSheet = false
+    @State private var showExportError = false
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = true
-    @AppStorage("colorSchemePreference") var colorSchemePreference = "dark"
 
     var body: some View {
         NavigationView {
@@ -64,9 +64,12 @@ struct ProfileView: View {
             Text("This permanently deletes all habits, entries, and resets your stats. This cannot be undone.")
         }
         .sheet(isPresented: $showExportSheet) {
-            if !exportItems.isEmpty {
-                ActivityShareView(items: exportItems)
-            }
+            ActivityShareView(items: exportItems)
+        }
+        .alert("Export Failed", isPresented: $showExportError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Could not generate export file. Please try again.")
         }
     }
 
@@ -144,15 +147,7 @@ struct ProfileView: View {
     var settingsSection: some View {
         VStack(spacing: 2) {
             SettingsGroup(title: "PREFERENCES") {
-                SettingsRow(icon: "moon.fill", color: .indigo, title: "Appearance") {
-                    Picker("", selection: $colorSchemePreference) {
-                        Text("Dark").tag("dark")
-                        Text("Light").tag("light")
-                        Text("System").tag("system")
-                    }
-                    .pickerStyle(.menu)
-                    .tint(ForgeColor.accent)
-                }
+                AppearanceRow()
 
                 SettingsToggleRow(
                     icon: "bell.fill", color: .red, title: "Notifications",
@@ -224,13 +219,21 @@ struct ProfileView: View {
         encoder.dateEncodingStrategy = .iso8601
 
         guard let jsonData = try? encoder.encode(payload),
-              let jsonString = String(data: jsonData, encoding: .utf8) else { return }
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            showExportError = true
+            return
+        }
 
         let timestamp = Int(Date().timeIntervalSince1970)
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("forge_export_\(timestamp).json")
-        try? jsonString.write(to: url, atomically: true, encoding: .utf8)
-        exportItems = [url]
+        do {
+            try jsonString.write(to: url, atomically: true, encoding: .utf8)
+            exportItems = [url]
+        } catch {
+            // Fallback: share the string directly if file write fails
+            exportItems = [jsonString]
+        }
         showExportSheet = true
     }
 }
@@ -473,6 +476,23 @@ struct ForgeTextField: View {
                 .background(ForgeColor.card)
                 .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
                 .overlay(RoundedRectangle(cornerRadius: ForgeRadius.md).stroke(ForgeColor.border, lineWidth: 1))
+        }
+    }
+}
+
+// MARK: - Appearance Row (owns AppStorage so changes propagate to MainTabView)
+struct AppearanceRow: View {
+    @AppStorage("colorSchemePreference") private var colorSchemePreference = "dark"
+
+    var body: some View {
+        SettingsRow(icon: "moon.fill", color: .indigo, title: "Appearance") {
+            Picker("", selection: $colorSchemePreference) {
+                Text("Dark").tag("dark")
+                Text("Light").tag("light")
+                Text("System").tag("system")
+            }
+            .pickerStyle(.menu)
+            .tint(ForgeColor.accent)
         }
     }
 }

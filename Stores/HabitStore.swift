@@ -41,27 +41,31 @@ class HabitStore: ObservableObject {
             }
         }
 
-        // Recalculate global streak from actual data
-        // Streak requires ALL active habits completed (not skipped) for a day
+        // Recalculate global streak: count consecutive days with ≥1 habit completed.
+        // Empty days (no entries) are skipped rather than breaking the streak, up to 7 in a row.
         var streak = 0
         var checkDate = calendar.date(byAdding: .day, value: -1, to: todayStart)!
-        while true {
+        var consecutiveEmpty = 0
+        for _ in 0..<400 {
             let dayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: checkDate) }
-            let active = dayEntries.filter { $0.status != .skipped }
-            if active.isEmpty {
-                break // No active habits that day — stop counting
+            if dayEntries.isEmpty {
+                consecutiveEmpty += 1
+                if consecutiveEmpty > 7 { break }
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+                continue
             }
-            if active.allSatisfy({ $0.status == .completed }) {
+            consecutiveEmpty = 0
+            if dayEntries.contains(where: { $0.status == .completed }) {
                 streak += 1
                 checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
             } else {
-                break // Not all habits completed — streak broken
+                break // Had entries but none completed — streak broken
             }
         }
 
-        // Add today if ALL active habits are already completed
-        let todayActive = allEntries.filter { calendar.isDate($0.date, inSameDayAs: todayStart) && $0.status != .skipped }
-        if !todayActive.isEmpty && todayActive.allSatisfy({ $0.status == .completed }) {
+        // Include today if at least 1 habit is already completed
+        let todayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: todayStart) }
+        if todayEntries.contains(where: { $0.status == .completed }) {
             streak += 1
         }
 
@@ -359,8 +363,8 @@ class HabitStore: ObservableObject {
         let calendar = Calendar.current
         let todayStart = calendar.startOfDay(for: Date())
 
-        // Only count a streak day when ALL active habits are completed today
-        guard allCompletedToday else { return }
+        // Count a streak day when at least 1 habit is completed today
+        guard anyCompletedToday else { return }
 
         // Guard: only increment the streak once per calendar day
         let lastIncrementDate = defaults.object(forKey: "streakLastIncrementDate") as? Date
@@ -371,10 +375,9 @@ class HabitStore: ObservableObject {
         let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart)!
         let yesterdayEntries = entriesForDate(yesterday)
 
-        // Yesterday is OK if: no habits were scheduled, OR all were completed
-        let yesterdayActive = yesterdayEntries.filter { $0.status != .skipped }
-        let yesterdayOK = yesterdayActive.isEmpty
-            || yesterdayActive.allSatisfy { $0.status == .completed }
+        // Yesterday is OK if: no habits were scheduled (empty day), OR at least 1 was completed
+        let yesterdayOK = yesterdayEntries.isEmpty
+            || yesterdayEntries.contains { $0.status == .completed }
 
         if yesterdayOK {
             userProfile.currentStreak += 1
@@ -383,9 +386,15 @@ class HabitStore: ObservableObject {
         }
     }
 
+    /// True when every non-skipped habit today is completed (perfect day).
     var allCompletedToday: Bool {
         let active = todayEntries.filter { $0.status != .skipped }
         return !active.isEmpty && active.allSatisfy { $0.status == .completed }
+    }
+
+    /// True when at least one habit is completed today (used for streak counting).
+    var anyCompletedToday: Bool {
+        todayEntries.contains { $0.status == .completed }
     }
 
     var todayCompletionRate: Double {
@@ -458,17 +467,16 @@ class HabitStore: ObservableObject {
             }
         }
 
-        // Reset global streak if not ALL habits were completed yesterday
+        // Reset global streak only if yesterday had entries but NONE were completed
         let yesterdayFinal = allEntries.filter {
             Calendar.current.isDate($0.date, inSameDayAs: yesterdayStart)
         }
-        let yesterdayActive = yesterdayFinal.filter { $0.status != .skipped }
-        let allDoneYesterday = !yesterdayActive.isEmpty && yesterdayActive.allSatisfy { $0.status == .completed }
-        if !allDoneYesterday {
+        let yesterdayHadCompletion = yesterdayFinal.contains { $0.status == .completed }
+        if !yesterdayFinal.isEmpty && !yesterdayHadCompletion {
             userProfile.currentStreak = 0
-            // Clear the streak-increment guard so it can fire again on the next completion
             defaults.removeObject(forKey: "streakLastIncrementDate")
         }
+        // If yesterdayFinal is empty (no habits that day) the streak is preserved
 
         // Update challenge tracker
         updateChallengeDay(for: yesterday)
@@ -616,5 +624,9 @@ class HabitStore: ObservableObject {
         defaults.removeObject(forKey: "dailyReports")
         defaults.removeObject(forKey: "streakLastIncrementDate")
         defaults.removeObject(forKey: "didMigrateDisciplineV101")
+        defaults.removeObject(forKey: "lastDailyCheckIn")
+
+        // Persist the clean state so next launch loads correctly
+        saveAll()
     }
 }

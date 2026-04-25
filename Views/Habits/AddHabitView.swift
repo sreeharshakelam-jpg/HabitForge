@@ -567,7 +567,7 @@ struct AppearancePage: View {
                         .foregroundColor(ForgeColor.textTertiary)
                         .tracking(2)
 
-                    Text("Decide how many of your daily goal this habit is worth.")
+                    Text("Points awarded each time you complete this habit.")
                         .font(ForgeTypography.labelXS)
                         .foregroundColor(ForgeColor.textSecondary)
 
@@ -581,12 +581,12 @@ struct AppearancePage: View {
                         Spacer()
                     }
 
-                    Slider(value: $customPoints, in: 5...100, step: 5)
+                    Slider(value: $customPoints, in: 5...500, step: 5)
                         .tint(ForgeColor.accent)
 
                     // Quick-pick chips
                     HStack(spacing: 8) {
-                        ForEach([10, 20, 25, 50], id: \.self) { pts in
+                        ForEach([10, 25, 50, 100, 200], id: \.self) { pts in
                             Button {
                                 customPoints = Double(pts)
                                 ForgeHaptics.light()

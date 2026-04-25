@@ -42,12 +42,33 @@ workflows:
           grep -c "Assets.xcassets" HabitForge.xcodeproj/project.pbxproj || echo "NOT FOUND"
           grep "Assets.xcassets" HabitForge.xcodeproj/project.pbxproj | head -5
 
+      - name: Sync AppIcon to watch assets
+        script: |
+          WATCH_ICON="HabitForgeWatch/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+          cp Assets.xcassets/AppIcon.appiconset/AppIcon.png "$WATCH_ICON" 2>/dev/null || true
+          cat > "HabitForgeWatch/Assets.xcassets/AppIcon.appiconset/Contents.json" << 'ICONEOF'
+          {
+            "images" : [
+              { "filename" : "AppIcon.png", "idiom" : "watch", "role" : "appLauncher", "size" : "1024x1024" }
+            ],
+            "info" : { "author" : "xcode", "version" : 1 }
+          }
+          ICONEOF
+
       - name: Set up code signing
         script: |
           keychain initialize
           app-store-connect fetch-signing-files \
             com.sreeharshakelam.virtueforge \
             --type IOS_APP_STORE \
+            --create
+          app-store-connect fetch-signing-files \
+            com.sreeharshakelam.virtueforge.watchkitapp \
+            --type WATCH_OS_APP_STORE \
+            --create
+          app-store-connect fetch-signing-files \
+            com.sreeharshakelam.virtueforge.watchkitapp.ForgeWidget \
+            --type WATCH_OS_APP_STORE \
             --create
           keychain add-certificates
 

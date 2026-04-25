@@ -28,21 +28,22 @@ struct DashboardView: View {
                         .padding(.horizontal, ForgeSpacing.md)
                         .padding(.top, ForgeSpacing.md)
 
-                    // Motivation Banner (comeback mode or streak)
+                    // Comeback banner (if applicable)
                     if habitStore.isInComebackMode {
                         ComebackBanner()
                             .padding(.horizontal, ForgeSpacing.md)
                             .padding(.top, ForgeSpacing.md)
-                    } else if habitStore.userProfile.currentStreak > 0 {
-                        Button {
-                            showStreakDetail = true
-                        } label: {
-                            StreakBanner(streak: habitStore.userProfile.currentStreak)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, ForgeSpacing.md)
-                        .padding(.top, ForgeSpacing.md)
                     }
+
+                    // Streak banner — always visible and tappable
+                    Button {
+                        showStreakDetail = true
+                    } label: {
+                        StreakBanner(streak: habitStore.userProfile.currentStreak)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, ForgeSpacing.md)
+                    .padding(.top, ForgeSpacing.md)
 
                     // Wisdom of the Day (Bhagavad Gita, Stoic, or modern classic)
                     DailyWisdomCard(quote: WisdomLibrary.quoteOfTheDay()) {
@@ -248,6 +249,7 @@ struct DashboardHeader: View {
 struct HeroStatsCard: View {
     @EnvironmentObject var habitStore: HabitStore
     @EnvironmentObject var gamificationEngine: GamificationEngine
+    @State private var showStreakDetail = false
 
     var body: some View {
         VStack(spacing: ForgeSpacing.md) {
@@ -272,17 +274,25 @@ struct HeroStatsCard: View {
                     }
                 }
 
-                // Stats
+                // Stats — flame row is tappable to open streak detail
                 VStack(alignment: .leading, spacing: 10) {
                     StatRow(icon: "bolt.fill", color: ForgeColor.accent,
                             label: "Points Today", value: "\(habitStore.todayPointsEarned)/\(habitStore.todayPossiblePoints)")
-                    StatRow(icon: "flame.fill", color: .orange,
-                            label: "Streak", value: "\(habitStore.userProfile.currentStreak) days")
+                    Button {
+                        showStreakDetail = true
+                    } label: {
+                        StatRow(icon: "flame.fill", color: .orange,
+                                label: "Streak", value: "\(habitStore.userProfile.currentStreak) days 🔥")
+                    }
+                    .buttonStyle(.plain)
                     StatRow(icon: "chart.bar.fill", color: ForgeColor.success,
                             label: "Disciplined Days", value: "\(habitStore.userProfile.totalDisciplinedDays) days")
                 }
 
                 Spacer()
+            }
+            .sheet(isPresented: $showStreakDetail) {
+                StreakDetailView().environmentObject(habitStore)
             }
 
             // XP Bar
@@ -583,10 +593,10 @@ struct StreakBanner: View {
             FlameBadge(count: streak, size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(streak)-Day Streak")
+                Text(streak > 0 ? "\(streak)-Day Streak 🔥" : "Start Your Streak!")
                     .font(ForgeTypography.h4)
                     .foregroundColor(ForgeColor.textPrimary)
-                Text("Don't break the chain. Keep forging.")
+                Text(streak > 0 ? "Don't break the chain. Keep forging." : "Complete a habit today to begin.")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textSecondary)
             }
@@ -597,16 +607,22 @@ struct StreakBanner: View {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 18))
                     .foregroundStyle(ForgeColor.goldGradient)
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(ForgeColor.textTertiary)
             }
         }
         .padding(ForgeSpacing.md)
         .background(
             RoundedRectangle(cornerRadius: ForgeRadius.lg)
-                .fill(Color(hex: "#1A0800") ?? .black)
+                .fill(streak > 0 ? (Color(hex: "#1A0800") ?? .black) : ForgeColor.card)
                 .overlay(
                     RoundedRectangle(cornerRadius: ForgeRadius.lg)
                         .stroke(
-                            LinearGradient(colors: [.orange.opacity(0.5), .red.opacity(0.2)], startPoint: .leading, endPoint: .trailing),
+                            streak > 0
+                                ? LinearGradient(colors: [.orange.opacity(0.5), .red.opacity(0.2)], startPoint: .leading, endPoint: .trailing)
+                                : LinearGradient(colors: [ForgeColor.border, ForgeColor.border], startPoint: .leading, endPoint: .trailing),
                             lineWidth: 1
                         )
                 )
@@ -1081,17 +1097,24 @@ struct StreakDetailView: View {
                                 .foregroundColor(ForgeColor.textTertiary)
                                 .tracking(2)
 
-                            HStack(spacing: 6) {
+                            HStack(spacing: 4) {
                                 ForEach(last14Days, id: \.date) { item in
                                     VStack(spacing: 4) {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 6)
                                                 .fill(item.completed > 0 ? .orange.opacity(0.8) : ForgeColor.card)
-                                                .frame(width: 20, height: 36)
-                                            if item.completed > 0 {
-                                                Image(systemName: "flame.fill")
-                                                    .font(.system(size: 10, weight: .bold))
-                                                    .foregroundColor(ForgeColor.textPrimary)
+                                                .frame(width: 20, height: 44)
+                                            VStack(spacing: 1) {
+                                                if item.completed > 0 {
+                                                    Image(systemName: "flame.fill")
+                                                        .font(.system(size: 8, weight: .bold))
+                                                        .foregroundColor(ForgeColor.textPrimary)
+                                                }
+                                                if item.total > 0 {
+                                                    Text("\(item.completed)/\(item.total)")
+                                                        .font(.system(size: 7, weight: .bold, design: .rounded))
+                                                        .foregroundColor(item.completed > 0 ? ForgeColor.textPrimary : ForgeColor.textTertiary)
+                                                }
                                             }
                                         }
                                         Text(item.date.dayName)

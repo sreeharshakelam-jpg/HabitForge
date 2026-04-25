@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "screenshots",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "screenshots", "-p", "3456"],
+      "port": 3456
+    }
+  ]
+}

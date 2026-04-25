@@ -377,7 +377,7 @@ struct EditHabitView: View {
                                 .toggleStyle(ForgeToggleStyle())
                             if hasScheduledTime {
                                 DatePicker("Time", selection: $scheduledTime, displayedComponents: .hourAndMinute)
-                                    .colorScheme(.dark)
+                                    .tint(ForgeColor.accent)
                             }
                             Toggle("Set duration", isOn: $hasDuration)
                                 .toggleStyle(ForgeToggleStyle())
@@ -462,6 +462,7 @@ struct EditHabitView: View {
         updated.durationMinutes = hasDuration ? durationMinutes : nil
         updated.difficulty = selectedDifficulty
         updated.rewardPoints = Int(customPoints)
+        updated.xpReward = max(1, Int(customPoints) / 2)
         updated.reminderMinutesBefore = reminderMinutesBefore
         updated.snoozeAllowed = snoozeAllowed
         habitStore.updateHabit(updated)

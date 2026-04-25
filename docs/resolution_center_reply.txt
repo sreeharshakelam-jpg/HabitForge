@@ -1,0 +1,128 @@
+RESOLUTION CENTER REPLY — VIRTUE FORGE (Submission ID: [fill in])
+Guideline cited: 4.3(a) Design — Spam
+Date: April 16, 2026
+
+------------------------------------------------------------
+Paste the text below into the "Reply" box inside App Store
+Connect > your app > App Review > Resolution Center.
+
+Keep it factual. Do NOT be defensive or apologetic. You are
+presenting evidence, not pleading.
+------------------------------------------------------------
+
+Hello App Review Team,
+
+Thank you for reviewing Virtue Forge. I am writing to respectfully
+contest the 4.3(a) rejection and provide evidence of original
+authorship.
+
+I am the sole developer of this app. I have never held, used, or
+been associated with any Apple Developer Program account that has
+been terminated. My Apple Developer account (Team ID: B37332G6T2)
+is my only account, and I have used only my own personal financial
+instruments, devices, and network identity throughout its lifetime.
+
+Virtue Forge was developed entirely from scratch in Swift/SwiftUI
+over the past 17 days. I can provide the following evidence:
+
+1. GIT COMMIT HISTORY
+   The full commit log (attached / available on request) shows 59
+   commits authored by me between March 30, 2026 and April 16, 2026.
+   The progression — feature additions, bug fixes, refactors,
+   version bumps, and iterative polish — reflects authentic
+   single-author development and is inconsistent with a cloned or
+   templated app.
+
+2. ORIGINAL PRODUCT CONCEPT
+   Virtue Forge is a habit tracker built around a Virtue Mentor
+   that surfaces daily philosophical wisdom (Stoic, Buddhist,
+   classical), a Discipline Score that rewards consistency, and a
+   seven-rank Forge progression system (Novice through Sage). The
+   app is fully offline, has no server backend, no account system,
+   and no third-party analytics SDKs.
+
+3. SCREEN RECORDING
+   I have recorded a brief walkthrough (attached / link provided)
+   showing the five unique tabs — Mentor, Ritual, Virtues, Journey,
+   and Forge — and the Discipline Score mechanic in action, which
+   demonstrate that the product is not a template or clone.
+
+4. SIGNED ORIGINALITY AFFIDAVIT
+   Attached as a separate document, signed April 16, 2026.
+
+If Apple's internal records indicate an account-level association
+with a terminated account, I respectfully request the specific
+signal that triggered the match so that I can investigate and
+address it. To the best of my knowledge, no such association
+exists.
+
+I also request an App Review Appointment to discuss this directly
+if that would be helpful to resolve the matter efficiently.
+
+Thank you for your time and careful re-review.
+
+Best regards,
+Sreeharsha Kelam
+Team ID: B37332G6T2
+Bundle ID: com.sreeharshakelam.virtueforge
+App: Virtue Forge (version 2.0.0, build 12)
+
+------------------------------------------------------------
+ATTACHMENTS TO UPLOAD WITH THE REPLY
+------------------------------------------------------------
+1. docs/git_history.txt          (59 commits, 450 lines)
+2. docs/originality_affidavit.txt (signed statement)
+3. screen_recording_60s.mov      (record per checklist below)
+
+Note: App Store Connect Resolution Center does accept file
+attachments, but if the upload size/format is restricted, host
+the recording on a private unlisted YouTube / Vimeo / iCloud
+Drive link and paste the link into the reply.
+
+------------------------------------------------------------
+60-SECOND SCREEN RECORDING CHECKLIST
+------------------------------------------------------------
+Record with iOS Screen Recording (Control Center > record button)
+or QuickTime (Mac connected to phone via cable).
+
+Keep it under 60 seconds. Narration optional but helpful.
+
+Order of what to show:
+1. (0:00–0:05) App icon on Home Screen, tap to open
+2. (0:05–0:15) Mentor tab — tap a wisdom card, show the daily
+   quote and the mentor response panel
+3. (0:15–0:25) Ritual tab — complete a habit, show the
+   Discipline Score change in real time
+4. (0:25–0:35) Virtues tab — show the habits list, tap into one
+   to show frequency/time settings
+5. (0:35–0:45) Journey tab — show the analytics/streak charts
+6. (0:45–0:55) Forge tab — show the rank progression
+   (Novice → Sage), show the Profile footer with "Virtue Forge
+   / Version 2.0.0 / Wisdom • Mentorship • Ritual"
+7. (0:55–0:60) End on the app logo / onboarding "VIRTUE FORGE
+   — Wisdom • Mentorship • Ritual" screen.
+
+Save as screen_recording_60s.mov (or .mp4) in the project root.
+
+------------------------------------------------------------
+PARALLEL ACTIONS (do these TODAY, not tomorrow)
+------------------------------------------------------------
+A. Book an App Review Appointment (Webex) —
+   https://developer.apple.com/contact/app-review/
+   Pick the earliest Tuesday or Thursday slot. You can still
+   keep the Resolution Center reply pending while the call
+   happens; they are separate channels.
+
+B. Do NOT create a new Apple Developer account to "start clean."
+   Per the analysis you received, creating a second account while
+   an existing one has a 4.3(a) flag will almost certainly get
+   both accounts terminated for circumvention.
+
+C. If the Resolution Center reply comes back with a boilerplate
+   re-rejection, file a formal App Review Board appeal at
+   https://developer.apple.com/contact/app-store/?topic=appeal
+   (this is the escalation layer above the initial reviewers)
+
+D. Phone line (English, US business hours):
+   1-800-633-2152 — Apple Developer Support.
+   Useful if the Resolution Center goes silent for 72+ hours.
