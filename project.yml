@@ -83,6 +83,7 @@ targets:
         CFBundleShortVersionString: "2.0.0"
         CFBundleVersion: "14"
         WKApplication: true
+        WKCompanionAppBundleIdentifier: com.sreeharshakelam.virtueforge
         ITSAppUsesNonExemptEncryption: false
         UISupportedInterfaceOrientations: []
     entitlements:

@@ -26,6 +26,8 @@
 	</array>
 	<key>WKApplication</key>
 	<true/>
+	<key>WKCompanionAppBundleIdentifier</key>
+	<string>com.sreeharshakelam.virtueforge</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 </dict>
