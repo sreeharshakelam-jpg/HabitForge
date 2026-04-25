@@ -58,7 +58,7 @@ struct WatchProgressRingView: View {
                 .trim(from: 0, to: animated)
                 .stroke(
                     AngularGradient(
-                        colors: [Color(hex: "#7C3AED"), Color(hex: "#3B82F6"), Color(hex: "#7C3AED")],
+                        colors: [Color(hex: "#7C3AED") ?? .purple, Color(hex: "#3B82F6") ?? .blue, Color(hex: "#7C3AED") ?? .purple],
                         center: .center
                     ),
                     style: StrokeStyle(lineWidth: 7, lineCap: .round)
@@ -110,7 +110,7 @@ struct WatchXPBarView: View {
                         .fill(Color.white.opacity(0.08))
                     RoundedRectangle(cornerRadius: 3)
                         .fill(
-                            LinearGradient(colors: [Color(hex: "#7C3AED"), Color(hex: "#3B82F6")],
+                            LinearGradient(colors: [Color(hex: "#7C3AED") ?? .purple, Color(hex: "#3B82F6") ?? .blue],
                                            startPoint: .leading, endPoint: .trailing)
                         )
                         .frame(width: geo.size.width * animated)
