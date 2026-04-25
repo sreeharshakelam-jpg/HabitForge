@@ -80,12 +80,13 @@ workflows:
       - name: Debug installed profiles
         script: |
           echo "=== Installed provisioning profiles ==="
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "No profiles directory"
-          for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null; do
+          PROF_DIR=~/Library/MobileDevice/Provisioning\ Profiles
+          ls "$PROF_DIR" 2>/dev/null || echo "No profiles directory"
+          for f in "$PROF_DIR"/*.mobileprovision; do
             [ -f "$f" ] || continue
             name=$(security cms -D -i "$f" 2>/dev/null | /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin 2>/dev/null)
             app_id=$(security cms -D -i "$f" 2>/dev/null | /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin 2>/dev/null)
-            echo "  $name — $app_id"
+            echo "  $name | $app_id"
           done
 
       - name: Build and archive
