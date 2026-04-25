@@ -708,8 +708,8 @@ private struct AddPartnerView: View {
                             .buttonStyle(.plain)
                         }
                     }
-                    ForgeTextField(placeholder: "Partner name", text: $name)
-                    ForgeTextField(placeholder: "Their commitment (optional)", text: $commitment)
+                    PartnerTextField(placeholder: "Partner name", text: $name)
+                    PartnerTextField(placeholder: "Their commitment (optional)", text: $commitment)
                     Spacer()
                 }
                 .padding(ForgeSpacing.md)
@@ -734,7 +734,7 @@ private struct AddPartnerView: View {
     }
 }
 
-private struct ForgeTextField: View {
+private struct PartnerTextField: View {
     let placeholder: String
     @Binding var text: String
     var body: some View {
