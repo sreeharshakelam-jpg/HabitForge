@@ -33,6 +33,37 @@ enum ForgeJournalStore {
     }
 }
 
+// MARK: - Daily Entry Model
+
+struct DailyEntry: Identifiable, Codable {
+    let id: UUID
+    let date: Date
+    var text: String
+
+    init(text: String) {
+        self.id = UUID()
+        self.date = Date()
+        self.text = text
+    }
+}
+
+enum DailyJournalStore {
+    private static let key = "forgeDailyJournal_v1"
+
+    static func load() -> [DailyEntry] {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let decoded = try? JSONDecoder().decode([DailyEntry].self, from: data)
+        else { return [] }
+        return decoded
+    }
+
+    static func save(_ entries: [DailyEntry]) {
+        if let data = try? JSONEncoder().encode(entries) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+}
+
 // MARK: - Law Session Data
 
 struct LawSession {
@@ -75,23 +106,45 @@ let atomicLawSessions: [LawSession] = [
 // MARK: - Main Journal View
 
 struct JourneyJournalView: View {
-    @State private var entries: [ForgeJournalEntry] = ForgeJournalStore.load()
+    @State private var dailyEntries: [DailyEntry] = DailyJournalStore.load()
+    @State private var lawEntries: [ForgeJournalEntry] = ForgeJournalStore.load()
+    @State private var showDailyWriter = false
     @State private var writingForLaw: Int? = nil
     @State private var draftText = ""
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 14) {
-                journalHeader
+                // Daily journal — what I did today
+                DailyJournalSection(
+                    entries: dailyEntries,
+                    onWrite: { draftText = ""; showDailyWriter = true },
+                    onDelete: { entry in
+                        dailyEntries.removeAll { $0.id == entry.id }
+                        DailyJournalStore.save(dailyEntries)
+                    }
+                )
+
+                // Divider between daily and law sessions
+                HStack(spacing: 10) {
+                    Rectangle().fill(ForgeColor.border).frame(height: 1)
+                    Text("4 LAW SESSIONS")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.textTertiary)
+                        .tracking(2)
+                        .fixedSize()
+                    Rectangle().fill(ForgeColor.border).frame(height: 1)
+                }
+                .padding(.vertical, 4)
 
                 ForEach(Array(atomicLawSessions.enumerated()), id: \.offset) { idx, session in
                     LawJournalCard(
                         session: session,
-                        entries: entries.filter { $0.lawIndex == idx }.sorted { $0.date > $1.date },
+                        entries: lawEntries.filter { $0.lawIndex == idx }.sorted { $0.date > $1.date },
                         onWrite: { draftText = ""; writingForLaw = idx },
                         onDelete: { entry in
-                            entries.removeAll { $0.id == entry.id }
-                            ForgeJournalStore.save(entries)
+                            lawEntries.removeAll { $0.id == entry.id }
+                            ForgeJournalStore.save(lawEntries)
                         }
                     )
                 }
@@ -101,6 +154,15 @@ struct JourneyJournalView: View {
             .padding(.horizontal, ForgeSpacing.md)
             .padding(.vertical, 16)
         }
+        // Daily free-write sheet
+        .sheet(isPresented: $showDailyWriter) {
+            DailyWritingSheet(draftText: $draftText) { text in
+                let entry = DailyEntry(text: text)
+                dailyEntries.insert(entry, at: 0)
+                DailyJournalStore.save(dailyEntries)
+            }
+        }
+        // Law-specific sheet
         .sheet(item: Binding(
             get: { writingForLaw.map { WritingContext(lawIndex: $0) } },
             set: { writingForLaw = $0?.lawIndex }
@@ -110,46 +172,138 @@ struct JourneyJournalView: View {
                 draftText: $draftText
             ) { text in
                 let entry = ForgeJournalEntry(lawIndex: context.lawIndex, text: text)
-                entries.insert(entry, at: 0)
-                ForgeJournalStore.save(entries)
+                lawEntries.insert(entry, at: 0)
+                ForgeJournalStore.save(lawEntries)
             }
         }
     }
 
-    private var journalHeader: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(ForgeColor.accentGradient)
-                    .frame(width: 52, height: 52)
-                    .shadow(color: ForgeColor.accent.opacity(0.4), radius: 10)
-                Image(systemName: "book.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
+}
+
+// MARK: - Daily Journal Section
+
+private struct DailyJournalSection: View {
+    let entries: [DailyEntry]
+    let onWrite: () -> Void
+    let onDelete: (DailyEntry) -> Void
+
+    private var todayEntry: DailyEntry? {
+        entries.first { Calendar.current.isDateInToday($0.date) }
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            // Header
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(ForgeColor.accentGradient)
+                        .frame(width: 50, height: 50)
+                        .shadow(color: ForgeColor.accent.opacity(0.4), radius: 10)
+                    Image(systemName: "pencil.and.outline")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("DAILY JOURNAL")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.textTertiary)
+                        .tracking(2)
+                    Text("What did I do today?")
+                        .font(ForgeTypography.h3)
+                        .foregroundColor(ForgeColor.textPrimary)
+                }
+
+                Spacer()
+
+                Button(action: onWrite) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(ForgeColor.accentGradient)
+                        .clipShape(Circle())
+                        .shadow(color: ForgeColor.accent.opacity(0.4), radius: 6)
+                }
+                .buttonStyle(.plain)
             }
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text("ATOMIC JOURNAL")
-                    .font(ForgeTypography.labelXS)
-                    .foregroundColor(ForgeColor.textTertiary)
-                    .tracking(2)
-                Text("4 Law Sessions")
-                    .font(ForgeTypography.h3)
-                    .foregroundColor(ForgeColor.textPrimary)
-                Text("Writing cements who you are becoming")
-                    .font(ForgeTypography.labelXS)
-                    .foregroundColor(ForgeColor.textSecondary)
+            // Today's entry or write prompt
+            if let today = todayEntry {
+                // Already written today — show it
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(ForgeColor.success)
+                            .font(.system(size: 13))
+                        Text("Written today")
+                            .font(ForgeTypography.labelXS)
+                            .foregroundColor(ForgeColor.success)
+                        Spacer()
+                        Text(today.date, style: .time)
+                            .font(ForgeTypography.labelXS)
+                            .foregroundColor(ForgeColor.textTertiary)
+                    }
+
+                    Text(today.text)
+                        .font(ForgeTypography.bodyM)
+                        .foregroundColor(ForgeColor.textSecondary)
+                        .lineLimit(4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(ForgeSpacing.md)
+                .background(ForgeColor.success.opacity(0.07))
+                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.success.opacity(0.2), lineWidth: 1))
+            } else {
+                // Not written today
+                Button(action: onWrite) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 22))
+                            .foregroundColor(ForgeColor.accent)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Write today's entry")
+                                .font(ForgeTypography.h4)
+                                .foregroundColor(ForgeColor.textPrimary)
+                            Text("Reflect on what you did, how you felt, what you learned")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(ForgeColor.textTertiary)
+                    }
+                    .padding(ForgeSpacing.md)
+                    .background(ForgeColor.accent.opacity(0.07))
+                    .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+                    .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.accent.opacity(0.25), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
             }
 
-            Spacer()
+            // Past entries
+            if entries.count > (todayEntry != nil ? 1 : 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("PAST ENTRIES")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.textTertiary)
+                        .tracking(2)
 
-            VStack(spacing: 2) {
-                Text("\(entries.count)")
-                    .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundColor(ForgeColor.accent)
-                Text("total")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(ForgeColor.textTertiary)
+                    let past = entries.filter { !Calendar.current.isDateInToday($0.date) }.prefix(5)
+                    ForEach(past) { entry in
+                        DailyEntryRow(entry: entry) { onDelete(entry) }
+                    }
+
+                    if entries.filter({ !Calendar.current.isDateInToday($0.date) }).count > 5 {
+                        Text("+ more entries")
+                            .font(ForgeTypography.labelXS)
+                            .foregroundColor(ForgeColor.textTertiary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
             }
         }
         .padding(ForgeSpacing.md)
@@ -157,6 +311,177 @@ struct JourneyJournalView: View {
         .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.xl))
         .overlay(RoundedRectangle(cornerRadius: ForgeRadius.xl).stroke(ForgeColor.accent.opacity(0.2), lineWidth: 1))
     }
+}
+
+private struct DailyEntryRow: View {
+    let entry: DailyEntry
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(spacing: 2) {
+                Text(dayNumber)
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .foregroundColor(ForgeColor.accent)
+                Text(monthName)
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(ForgeColor.textTertiary)
+            }
+            .frame(width: 36)
+            .padding(.vertical, 6)
+            .background(ForgeColor.accent.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(entry.date, style: .date)
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textTertiary)
+                Text(entry.text)
+                    .font(ForgeTypography.labelS)
+                    .foregroundColor(ForgeColor.textSecondary)
+                    .lineLimit(2)
+            }
+
+            Spacer()
+
+            Button(role: .destructive, action: onDelete) {
+                Image(systemName: "trash")
+                    .font(.system(size: 11))
+                    .foregroundColor(ForgeColor.error.opacity(0.6))
+                    .padding(7)
+                    .background(ForgeColor.error.opacity(0.08))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(ForgeSpacing.sm)
+        .background(ForgeColor.surfaceElevated)
+        .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
+    }
+
+    private var dayNumber: String {
+        let f = DateFormatter(); f.dateFormat = "d"; return f.string(from: entry.date)
+    }
+
+    private var monthName: String {
+        let f = DateFormatter(); f.dateFormat = "MMM"; return f.string(from: entry.date).uppercased()
+    }
+}
+
+// MARK: - Daily Writing Sheet
+
+struct DailyWritingSheet: View {
+    @Binding var draftText: String
+    let onSave: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focused: Bool
+
+    private var canSave: Bool {
+        !draftText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        ZStack {
+            ForgeColor.background.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Nav bar
+                HStack {
+                    Button("Cancel") { dismiss() }
+                        .font(ForgeTypography.labelM)
+                        .foregroundColor(ForgeColor.textSecondary)
+
+                    Spacer()
+
+                    VStack(spacing: 1) {
+                        Text(Date(), style: .date)
+                            .font(ForgeTypography.h4)
+                            .foregroundColor(ForgeColor.textPrimary)
+                        Text("Daily Entry")
+                            .font(ForgeTypography.labelXS)
+                            .foregroundColor(ForgeColor.textTertiary)
+                    }
+
+                    Spacer()
+
+                    Button {
+                        onSave(draftText.trimmingCharacters(in: .whitespacesAndNewlines))
+                        dismiss()
+                    } label: {
+                        Text("Save")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(canSave ? .white : ForgeColor.textTertiary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 7)
+                            .background(canSave ? AnyView(ForgeColor.accentGradient) : AnyView(ForgeColor.surfaceElevated))
+                            .clipShape(Capsule())
+                    }
+                    .disabled(!canSave)
+                }
+                .padding(.horizontal, ForgeSpacing.md)
+                .padding(.top, 20)
+                .padding(.bottom, 16)
+
+                // Prompt chips
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(prompts, id: \.self) { prompt in
+                            Button {
+                                let prefix = draftText.isEmpty ? "" : "\n\n"
+                                draftText += prefix + prompt
+                            } label: {
+                                Text(prompt)
+                                    .font(ForgeTypography.labelXS)
+                                    .foregroundColor(ForgeColor.accent)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(ForgeColor.accent.opacity(0.1))
+                                    .clipShape(Capsule())
+                                    .overlay(Capsule().stroke(ForgeColor.accent.opacity(0.25), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, ForgeSpacing.md)
+                }
+                .padding(.bottom, 12)
+
+                Divider().opacity(0.15)
+
+                // Editor
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $draftText)
+                        .focused($focused)
+                        .font(.system(size: 16, lineSpacing: 6))
+                        .foregroundColor(ForgeColor.textPrimary)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+                        .padding(.horizontal, ForgeSpacing.md - 5)
+                        .padding(.vertical, ForgeSpacing.sm)
+
+                    if draftText.isEmpty {
+                        Text("Write about what you did today, how your habits went, what you're proud of...")
+                            .font(.system(size: 16, lineSpacing: 6))
+                            .foregroundColor(ForgeColor.textTertiary)
+                            .padding(.horizontal, ForgeSpacing.md)
+                            .padding(.top, ForgeSpacing.sm + 8)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+                Spacer()
+            }
+        }
+        .onAppear { focused = true }
+    }
+
+    private let prompts = [
+        "✅ Completed habits:",
+        "💭 How I felt:",
+        "🏆 Proud of:",
+        "🔁 Tomorrow I'll:",
+        "💡 Learned:",
+    ]
 }
 
 private struct WritingContext: Identifiable {

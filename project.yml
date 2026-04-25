@@ -30,7 +30,7 @@ targets:
         CFBundleName: $(PRODUCT_NAME)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
         CFBundleShortVersionString: "2.0.0"
-        CFBundleVersion: "16"
+        CFBundleVersion: "17"
         CFBundleIconName: AppIcon
         LSRequiresIPhoneOS: true
         ITSAppUsesNonExemptEncryption: false
@@ -81,7 +81,7 @@ targets:
         CFBundleDisplayName: FORGE - Habit Tracker
         CFBundleIconName: AppIcon
         CFBundleShortVersionString: "2.0.0"
-        CFBundleVersion: "16"
+        CFBundleVersion: "17"
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.sreeharshakelam.virtueforge
         ITSAppUsesNonExemptEncryption: false
@@ -111,7 +111,7 @@ targets:
       properties:
         CFBundleDisplayName: ForgeWidget
         CFBundleShortVersionString: "2.0.0"
-        CFBundleVersion: "16"
+        CFBundleVersion: "17"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         ITSAppUsesNonExemptEncryption: false
