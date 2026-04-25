@@ -889,10 +889,11 @@ struct ChallengeSetupView: View {
     @State private var selectedDays: Int = 30
 
     let options = [
-        (days: 21, label: "21-Day Kickstart", desc: "Build the foundation"),
-        (days: 30, label: "30-Day Forge", desc: "Cement a new habit"),
-        (days: 75, label: "75 Hard", desc: "The classic mental toughness test"),
-        (days: 100, label: "100-Day Warrior", desc: "Transform your identity")
+        (days: 7,   label: "7-Day Sprint",      desc: "Build your first week of momentum"),
+        (days: 21,  label: "21-Day Kickstart",   desc: "Build the foundation"),
+        (days: 30,  label: "30-Day Forge",        desc: "Cement a new habit"),
+        (days: 75,  label: "75 Hard",             desc: "The classic mental toughness test"),
+        (days: 100, label: "100-Day Warrior",     desc: "Transform your identity")
     ]
 
     var body: some View {

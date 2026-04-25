@@ -479,9 +479,20 @@ private struct LegendDot: View {
 
 // MARK: - Accountability Partners
 
+// UIViewControllerRepresentable wrapper for UIActivityViewController
+struct ForgeShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
+}
+
 struct AccountabilityView: View {
+    @EnvironmentObject var habitStore: HabitStore
     @State private var partners: [AccountabilityPartner] = AccountabilityStore.load()
     @State private var showAddPartner = false
+    @State private var showShareSheet = false
     @State private var contractText = UserDefaults.standard.string(forKey: "habitContract") ?? ""
     @State private var editingContract = false
 
@@ -489,6 +500,7 @@ struct AccountabilityView: View {
         ScrollView {
             VStack(spacing: 20) {
                 accountabilityHeader
+                shareProgressButton
                 partnersSection
                 contractSection
             }
@@ -501,6 +513,34 @@ struct AccountabilityView: View {
                 AccountabilityStore.save(partners)
             }
         }
+        .sheet(isPresented: $showShareSheet) {
+            ForgeShareSheet(activityItems: [buildShareText()])
+        }
+    }
+
+    private func buildShareText() -> String {
+        let p = habitStore.userProfile
+        return "🔥 My FORGE habit progress:\n• \(p.currentStreak)-day streak 🔥\n• \(p.rank.displayName) (Level \(p.level))\n• \(habitStore.habits.count) active habits\n• \(p.totalPoints) total points ⭐\n\nForging better habits one day at a time! 💪"
+    }
+
+    private var shareProgressButton: some View {
+        Button {
+            showShareSheet = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("Share My Progress")
+                    .font(ForgeTypography.labelM)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(ForgeSpacing.md)
+            .background(ForgeColor.accentGradient)
+            .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+            .shadow(color: ForgeColor.accent.opacity(0.35), radius: 8)
+        }
+        .buttonStyle(.plain)
     }
 
     private var accountabilityHeader: some View {

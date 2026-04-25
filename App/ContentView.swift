@@ -19,17 +19,19 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                CoachView()
-                    .tag(0)
-                    .tabItem {
-                        Label("Mentor", systemImage: "brain.head.profile")
-                    }
-
                 DashboardView()
-                    .tag(1)
+                    .tag(0)
                     .tabItem {
                         Label("Ritual", systemImage: "sunrise.circle.fill")
                     }
+
+                NavigationView {
+                    JourneyView()
+                }
+                .tag(1)
+                .tabItem {
+                    Label("Journey", systemImage: "figure.walk")
+                }
 
                 HabitsListView()
                     .tag(2)
@@ -37,18 +39,16 @@ struct MainTabView: View {
                         Label("Virtues", systemImage: "sparkles")
                     }
 
-                NavigationView {
-                    JourneyView()
-                }
-                .tag(3)
-                .tabItem {
-                    Label("Journey", systemImage: "figure.walk")
-                }
-
                 ProfileView()
-                    .tag(4)
+                    .tag(3)
                     .tabItem {
                         Label("Forge", systemImage: "hammer.circle.fill")
+                    }
+
+                CoachView()
+                    .tag(4)
+                    .tabItem {
+                        Label("Mentor", systemImage: "brain.head.profile")
                     }
             }
             .accentColor(ForgeColor.accent)
