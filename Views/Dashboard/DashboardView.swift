@@ -412,14 +412,27 @@ struct HabitRowCard: View {
                             .foregroundColor(isOverdue ? ForgeColor.error : ForgeColor.textTertiary)
                         }
 
-                        Text("+\(habit.rewardPoints)pts")
-                            .font(ForgeTypography.labelXS)
-                            .foregroundColor(ForgeColor.accent)
+                        if habit.hasTimeTarget {
+                            HStack(spacing: 3) {
+                                Image(systemName: "timer")
+                                    .font(.system(size: 9))
+                                Text("\(habit.dailyTargetMinutes)m")
+                                    .font(ForgeTypography.labelXS)
+                            }
+                            .foregroundColor(ForgeColor.info)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(ForgeColor.accent.opacity(0.1))
+                            .background(ForgeColor.info.opacity(0.1))
                             .clipShape(Capsule())
-
+                        } else {
+                            Text("+\(habit.rewardPoints)pts")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.accent)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(ForgeColor.accent.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
                     }
                 }
 
@@ -427,7 +440,16 @@ struct HabitRowCard: View {
 
                 // Quick Action Button
                 if entry.status == .pending || entry.status == .snoozed {
-                    CompleteButton(habit: habit, entry: entry)
+                    HabitActionButton(habit: habit, entry: entry)
+                } else if entry.status == .partiallyCompleted {
+                    HStack(spacing: 6) {
+                        StatusBadge(status: entry.status)
+                        if let mins = entry.actualValue {
+                            Text("\(Int(mins))m")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.warning)
+                        }
+                    }
                 } else if entry.status == .completed {
                     // Tap completed badge to undo
                     Button {
@@ -515,11 +537,21 @@ struct HabitRowCard: View {
     @ViewBuilder
     var habitContextMenu: some View {
         if entry.status == .pending || entry.status == .snoozed {
-            Button {
-                withAnimation { habitStore.completeHabit(entry) }
-                ForgeHaptics.success()
-            } label: {
-                Label("Complete", systemImage: "checkmark.circle.fill")
+            if !habit.hasTimeTarget {
+                Button {
+                    withAnimation { habitStore.completeHabit(entry) }
+                    ForgeHaptics.success()
+                } label: {
+                    Label("Complete", systemImage: "checkmark.circle.fill")
+                }
+            }
+
+            if habit.snoozeAllowed {
+                Button {
+                    habitStore.snoozeHabit(entry)
+                } label: {
+                    Label("Snooze (-5pts)", systemImage: "clock.badge.exclamationmark")
+                }
             }
 
             Button(role: .destructive) {
@@ -527,49 +559,68 @@ struct HabitRowCard: View {
             } label: {
                 Label("Skip Today", systemImage: "minus.circle")
             }
-        } else if entry.status == .completed {
+        } else if entry.status == .completed || entry.status == .partiallyCompleted {
             Button {
                 withAnimation { habitStore.uncompleteHabit(entry) }
                 ForgeHaptics.impact(.medium)
             } label: {
-                Label("Undo Completion", systemImage: "arrow.uturn.backward.circle")
+                Label("Undo", systemImage: "arrow.uturn.backward.circle")
             }
         }
     }
 }
 
-// MARK: - Complete Button
-struct CompleteButton: View {
+// MARK: - Habit Action Button (smart: log time or complete)
+struct HabitActionButton: View {
     @EnvironmentObject var habitStore: HabitStore
     let habit: Habit
     let entry: HabitEntry
     @State private var scale: CGFloat = 1.0
+    @State private var showLogTime = false
 
     var body: some View {
-        Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                scale = 1.2
+        if habit.hasTimeTarget {
+            Button {
+                ForgeHaptics.impact(.medium)
+                showLogTime = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "timer")
+                        .font(.system(size: 13, weight: .bold))
+                    Text("Log")
+                        .font(.system(size: 9, weight: .semibold))
+                }
+                .foregroundColor(habit.color)
+                .frame(width: 44, height: 40)
+                .background(habit.color.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(habit.color.opacity(0.35), lineWidth: 1))
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                withAnimation(.spring(response: 0.3)) { scale = 1.0 }
-                habitStore.completeHabit(entry)
-                ForgeHaptics.success()
+            .buttonStyle(.plain)
+            .sheet(isPresented: $showLogTime) {
+                LogTimeView(habit: habit, entry: entry)
+                    .environmentObject(habitStore)
             }
-        } label: {
-            ZStack {
-                Circle()
-                    .fill(habit.color.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                Circle()
-                    .stroke(habit.color.opacity(0.4), lineWidth: 1.5)
-                    .frame(width: 40, height: 40)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(habit.color)
+        } else {
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { scale = 1.2 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    withAnimation(.spring(response: 0.3)) { scale = 1.0 }
+                    habitStore.completeHabit(entry)
+                    ForgeHaptics.success()
+                }
+            } label: {
+                ZStack {
+                    Circle().fill(habit.color.opacity(0.15)).frame(width: 40, height: 40)
+                    Circle().stroke(habit.color.opacity(0.4), lineWidth: 1.5).frame(width: 40, height: 40)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(habit.color)
+                }
+                .scaleEffect(scale)
             }
-            .scaleEffect(scale)
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
     }
 }
 

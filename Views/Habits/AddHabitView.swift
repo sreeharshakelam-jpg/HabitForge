@@ -22,6 +22,8 @@ struct AddHabitView: View {
     @State private var hasTarget = false
     @State private var targetValue: Double = 10
     @State private var targetUnit = ""
+    @State private var hasWeeklyTarget = false
+    @State private var weeklyTargetMinutes = 60
     @State private var currentPage = 0
 
     private let totalPages = 3
@@ -65,6 +67,8 @@ struct AddHabitView: View {
                             hasTarget: $hasTarget,
                             targetValue: $targetValue,
                             targetUnit: $targetUnit,
+                            hasWeeklyTarget: $hasWeeklyTarget,
+                            weeklyTargetMinutes: $weeklyTargetMinutes,
                             selectedType: selectedType
                         )
                         .tag(1)
@@ -159,7 +163,8 @@ struct AddHabitView: View {
             reminderMinutesBefore: reminderMinutesBefore,
             snoozeAllowed: snoozeAllowed,
             targetValue: hasTarget ? targetValue : nil,
-            targetUnit: hasTarget ? targetUnit : nil
+            targetUnit: hasTarget ? targetUnit : nil,
+            targetMinutesPerWeek: hasWeeklyTarget ? weeklyTargetMinutes : nil
         )
         habitStore.addHabit(habit)
         ForgeHaptics.success()
@@ -334,6 +339,8 @@ struct SchedulePage: View {
     @Binding var hasTarget: Bool
     @Binding var targetValue: Double
     @Binding var targetUnit: String
+    @Binding var hasWeeklyTarget: Bool
+    @Binding var weeklyTargetMinutes: Int
     let selectedType: HabitType
 
     var body: some View {
@@ -452,6 +459,49 @@ struct SchedulePage: View {
                     .background(ForgeColor.card)
                     .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
                 }
+
+                // Weekly Time Target (Atomic Habits style)
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle(isOn: $hasWeeklyTarget.animation()) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("WEEKLY TIME TARGET")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.textTertiary)
+                                .tracking(2)
+                            Text(hasWeeklyTarget ? "\(weeklyTargetMinutes) min/week · \(max(1, weeklyTargetMinutes/7)) min/day" : "Off — simple yes/no habit")
+                                .font(ForgeTypography.labelM)
+                                .foregroundColor(hasWeeklyTarget ? ForgeColor.accent : ForgeColor.textSecondary)
+                        }
+                    }
+                    .tint(ForgeColor.accent)
+
+                    if hasWeeklyTarget {
+                        Divider().background(ForgeColor.border)
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("\(weeklyTargetMinutes) min/week")
+                                    .font(ForgeTypography.h3)
+                                    .foregroundColor(ForgeColor.textPrimary)
+                                Spacer()
+                                Text("≈ \(max(1, weeklyTargetMinutes / 7)) min/day")
+                                    .font(ForgeTypography.labelS)
+                                    .foregroundColor(ForgeColor.textSecondary)
+                            }
+                            Slider(value: Binding(
+                                get: { Double(weeklyTargetMinutes) },
+                                set: { weeklyTargetMinutes = Int($0) }
+                            ), in: 10...600, step: 10)
+                            .tint(ForgeColor.accent)
+                            Text("Completed ≥80% · Partial 50–79% · Missed <50%")
+                                .font(ForgeTypography.labelXS)
+                                .foregroundColor(ForgeColor.textTertiary)
+                        }
+                    }
+                }
+                .padding(ForgeSpacing.md)
+                .background(ForgeColor.card)
+                .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.md))
+                .overlay(RoundedRectangle(cornerRadius: ForgeRadius.md).stroke(hasWeeklyTarget ? ForgeColor.accent.opacity(0.3) : ForgeColor.border, lineWidth: 1))
             }
             .padding(ForgeSpacing.md)
         }

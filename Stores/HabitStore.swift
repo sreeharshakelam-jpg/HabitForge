@@ -55,7 +55,7 @@ class HabitStore: ObservableObject {
                 continue
             }
             consecutiveEmpty = 0
-            if dayEntries.contains(where: { $0.status == .completed }) {
+            if dayEntries.contains(where: { $0.status == .completed || $0.status == .partiallyCompleted }) {
                 streak += 1
                 checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
             } else {
@@ -256,6 +256,27 @@ class HabitStore: ObservableObject {
         saveEntries()
     }
 
+    func logTime(_ entry: HabitEntry, minutes: Int) {
+        guard let habit = habits.first(where: { $0.id == entry.habitId }) else { return }
+        let daily = habit.dailyTargetMinutes
+        let pct = daily > 0 ? Double(minutes) / Double(daily) : 1.0
+        let (status, mult): (CompletionStatus, Double)
+        switch pct {
+        case 0.8...: (status, mult) = (.completed, 1.0)
+        case 0.5..<0.8: (status, mult) = (.partiallyCompleted, 0.5)
+        default: (status, mult) = (.missed, 0.0)
+        }
+        let (basePoints, baseXP) = gamificationEngine?.calculateReward(for: habit, entry: entry) ?? (habit.rewardPoints, habit.xpReward)
+        let points = Int(Double(basePoints) * mult)
+        let xp = Int(Double(baseXP) * mult)
+        updateEntry(entry.id, status: status, completedAt: Date(), pointsEarned: points, xpEarned: xp, actualValue: Double(minutes))
+        if mult > 0 {
+            updateUserStats(pointsEarned: points, xpEarned: xp)
+            gamificationEngine?.checkAchievements(store: self)
+        }
+        checkDailySummary()
+    }
+
     func completeHabit(_ entry: HabitEntry, value: Double? = nil) {
         guard let habit = habits.first(where: { $0.id == entry.habitId }) else { return }
 
@@ -400,8 +421,39 @@ class HabitStore: ObservableObject {
     var todayCompletionRate: Double {
         let active = todayEntries.filter { $0.status != .skipped }
         guard !active.isEmpty else { return 0 }
-        let completed = active.filter { $0.status == .completed }.count
-        return Double(completed) / Double(active.count)
+        let score = active.reduce(0.0) { sum, e in
+            switch e.status {
+            case .completed: return sum + 1.0
+            case .partiallyCompleted: return sum + 0.5
+            default: return sum
+            }
+        }
+        return score / Double(active.count)
+    }
+
+    var journeySteps: Int {
+        allEntries.reduce(0) { sum, e in
+            switch e.status {
+            case .completed: return sum + 2
+            case .partiallyCompleted: return sum + 1
+            default: return sum
+            }
+        }
+    }
+
+    func weeklyMinutesLogged(for habitId: UUID) -> Int {
+        let startDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
+        return allEntries
+            .filter { $0.habitId == habitId && $0.date >= startDate }
+            .compactMap { $0.actualValue }
+            .reduce(0) { $0 + Int($1) }
+    }
+
+    func shouldSuggestReduction(for habitId: UUID) -> Bool {
+        let entries = entriesForHabit(habitId, last: 28)
+        guard entries.count >= 4 else { return false }
+        let partialOrMissed = entries.filter { $0.status == .missed || $0.status == .partiallyCompleted }.count
+        return Double(partialOrMissed) / Double(entries.count) > 0.6
     }
 
     var todayPointsEarned: Int {

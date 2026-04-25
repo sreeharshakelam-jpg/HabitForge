@@ -25,6 +25,13 @@ struct Habit: Identifiable, Codable, Equatable {
     var maxSnoozePenaltyPercent: Int
     var targetValue: Double?
     var targetUnit: String?
+    var targetMinutesPerWeek: Int?
+
+    var dailyTargetMinutes: Int {
+        if let w = targetMinutesPerWeek { return max(1, w / 7) }
+        return durationMinutes ?? 0
+    }
+    var hasTimeTarget: Bool { targetMinutesPerWeek != nil || durationMinutes != nil }
 
     init(
         id: UUID = UUID(),
@@ -48,7 +55,8 @@ struct Habit: Identifiable, Codable, Equatable {
         snoozeAllowed: Bool = true,
         maxSnoozePenaltyPercent: Int = 50,
         targetValue: Double? = nil,
-        targetUnit: String? = nil
+        targetUnit: String? = nil,
+        targetMinutesPerWeek: Int? = nil
     ) {
         self.id = id
         self.name = name
@@ -72,6 +80,7 @@ struct Habit: Identifiable, Codable, Equatable {
         self.maxSnoozePenaltyPercent = maxSnoozePenaltyPercent
         self.targetValue = targetValue
         self.targetUnit = targetUnit
+        self.targetMinutesPerWeek = targetMinutesPerWeek
     }
 
     var color: Color {

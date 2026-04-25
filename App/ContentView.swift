@@ -37,11 +37,13 @@ struct MainTabView: View {
                         Label("Virtues", systemImage: "sparkles")
                     }
 
-                AnalyticsView()
-                    .tag(3)
-                    .tabItem {
-                        Label("Journey", systemImage: "chart.line.uptrend.xyaxis")
-                    }
+                NavigationView {
+                    JourneyView()
+                }
+                .tag(3)
+                .tabItem {
+                    Label("Journey", systemImage: "figure.walk")
+                }
 
                 ProfileView()
                     .tag(4)
