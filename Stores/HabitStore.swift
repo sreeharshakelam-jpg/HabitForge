@@ -2,6 +2,13 @@ import Foundation
 import SwiftUI
 import Combine
 
+// MARK: - Reconciliation Item
+struct ReconciliationItem: Identifiable {
+    var id: UUID { entry.id }
+    let entry: HabitEntry
+    let habit: Habit
+}
+
 // MARK: - Habit Store (Main State Management)
 class HabitStore: ObservableObject {
     @Published var habits: [Habit] = []
@@ -12,6 +19,7 @@ class HabitStore: ObservableObject {
     @Published var dailyReports: [DailyReport] = []
     @Published var shouldShowDailySummary = false
     @Published var isInComebackMode = false
+    @Published var pendingReconciliationEntries: [ReconciliationItem] = []
 
     weak var gamificationEngine: GamificationEngine?
     weak var notificationManager: NotificationManager?
@@ -26,23 +34,131 @@ class HabitStore: ObservableObject {
         checkComebackMode()
     }
 
-    /// On launch, mark any pending entries from previous days as missed and
-    /// recalculate the global streak so the counter is always accurate.
+    /// On launch, mark pending entries from before yesterday as missed,
+    /// expose yesterday's pending entries for user reconciliation,
+    /// and recalculate the global streak.
     private func catchUpMissedDays() {
         let calendar = Calendar.current
         let todayStart = calendar.startOfDay(for: Date())
+        let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart)!
 
-        // Mark all pending entries from before today as missed
         var didMiss = false
+        var reconciliationPairs: [ReconciliationItem] = []
+
         for (i, entry) in allEntries.enumerated() {
-            if entry.status == .pending && !calendar.isDate(entry.date, inSameDayAs: todayStart) && entry.date < todayStart {
+            guard entry.status == .pending, entry.date < todayStart else { continue }
+            if calendar.isDate(entry.date, inSameDayAs: yesterdayStart) {
+                // Yesterday's pending entries — surface for user reconciliation
+                if let habit = habits.first(where: { $0.id == entry.habitId }) {
+                    reconciliationPairs.append(ReconciliationItem(entry: entry, habit: habit))
+                }
+            } else {
+                // Older entries — auto-mark missed
                 allEntries[i].status = .missed
                 didMiss = true
             }
         }
 
-        // Recalculate global streak: count consecutive days with ≥1 habit completed.
-        // Empty days (no entries) are skipped rather than breaking the streak, up to 7 in a row.
+        // Recalculate streak; if yesterday is still pending (unreconciled), skip it
+        // so the displayed streak stays accurate until the user resolves the modal.
+        var streak = 0
+        var checkDate = yesterdayStart
+        var consecutiveEmpty = 0
+        for _ in 0..<400 {
+            let dayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: checkDate) }
+            if dayEntries.isEmpty {
+                consecutiveEmpty += 1
+                if consecutiveEmpty > 7 { break }
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+                continue
+            }
+            consecutiveEmpty = 0
+
+            // If yesterday's entries are all still pending (not yet reconciled), skip them
+            let isYesterday = calendar.isDate(checkDate, inSameDayAs: yesterdayStart)
+            if isYesterday && !reconciliationPairs.isEmpty && dayEntries.allSatisfy({ $0.status == .pending }) {
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+                continue
+            }
+
+            if dayEntries.contains(where: { $0.status == .completed || $0.status == .partiallyCompleted }) {
+                streak += 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+            } else {
+                break
+            }
+        }
+
+        let todayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: todayStart) }
+        if todayEntries.contains(where: { $0.status == .completed }) { streak += 1 }
+
+        userProfile.currentStreak = streak
+        userProfile.longestStreak = max(userProfile.longestStreak, streak)
+
+        if didMiss { saveEntries() }
+        saveUserProfile()
+
+        if !reconciliationPairs.isEmpty {
+            pendingReconciliationEntries = reconciliationPairs
+        }
+    }
+
+    // MARK: - Reconciliation
+
+    func reconcileEntry(_ entryId: UUID, asCompleted: Bool) {
+        if asCompleted {
+            if let idx = allEntries.firstIndex(where: { $0.id == entryId }),
+               let habit = habits.first(where: { $0.id == allEntries[idx].habitId }) {
+                allEntries[idx].status = .completed
+                allEntries[idx].completedAt = allEntries[idx].date
+                allEntries[idx].pointsEarned = habit.rewardPoints
+                allEntries[idx].xpEarned = habit.xpReward
+                userProfile.totalPoints += habit.rewardPoints
+                userProfile.totalXP += habit.xpReward
+                userProfile.totalHabitsCompleted += 1
+            }
+        } else {
+            if let idx = allEntries.firstIndex(where: { $0.id == entryId }) {
+                allEntries[idx].status = .missed
+            }
+            userProfile.disciplineScore = max(0, userProfile.disciplineScore - 5)
+        }
+        pendingReconciliationEntries.removeAll { $0.entry.id == entryId }
+        if pendingReconciliationEntries.isEmpty {
+            recalculateStreak()
+            saveEntries()
+            saveUserProfile()
+        }
+    }
+
+    func reconcileAll(asCompleted: Bool) {
+        for item in pendingReconciliationEntries {
+            if asCompleted {
+                if let idx = allEntries.firstIndex(where: { $0.id == item.entry.id }) {
+                    allEntries[idx].status = .completed
+                    allEntries[idx].completedAt = allEntries[idx].date
+                    allEntries[idx].pointsEarned = item.habit.rewardPoints
+                    allEntries[idx].xpEarned = item.habit.xpReward
+                    userProfile.totalPoints += item.habit.rewardPoints
+                    userProfile.totalXP += item.habit.xpReward
+                    userProfile.totalHabitsCompleted += 1
+                }
+            } else {
+                if let idx = allEntries.firstIndex(where: { $0.id == item.entry.id }) {
+                    allEntries[idx].status = .missed
+                }
+                userProfile.disciplineScore = max(0, userProfile.disciplineScore - 5)
+            }
+        }
+        pendingReconciliationEntries = []
+        recalculateStreak()
+        saveEntries()
+        saveUserProfile()
+    }
+
+    private func recalculateStreak() {
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: Date())
         var streak = 0
         var checkDate = calendar.date(byAdding: .day, value: -1, to: todayStart)!
         var consecutiveEmpty = 0
@@ -58,24 +174,43 @@ class HabitStore: ObservableObject {
             if dayEntries.contains(where: { $0.status == .completed || $0.status == .partiallyCompleted }) {
                 streak += 1
                 checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
-            } else {
-                break // Had entries but none completed — streak broken
-            }
+            } else { break }
         }
-
-        // Include today if at least 1 habit is already completed
         let todayEntries = allEntries.filter { calendar.isDate($0.date, inSameDayAs: todayStart) }
-        if todayEntries.contains(where: { $0.status == .completed }) {
-            streak += 1
-        }
-
+        if todayEntries.contains(where: { $0.status == .completed }) { streak += 1 }
         userProfile.currentStreak = streak
         userProfile.longestStreak = max(userProfile.longestStreak, streak)
+    }
 
-        if didMiss {
-            saveEntries()
+    // MARK: - Quantitative Habit Completion
+
+    func completeQuantitativeHabit(_ entry: HabitEntry, actualValue: Double) {
+        guard let habit = habits.first(where: { $0.id == entry.habitId }),
+              let target = habit.targetValue, target > 0 else {
+            completeHabit(entry)
+            return
         }
-        saveUserProfile()
+        let pct = actualValue / target
+        let (basePoints, baseXP) = gamificationEngine?.calculateReward(for: habit, entry: entry)
+            ?? (habit.rewardPoints, habit.xpReward)
+        let (status, multiplier): (CompletionStatus, Double)
+        if pct >= 1.0 {
+            (status, multiplier) = (.completed, 1.0)
+        } else if pct >= 0.5 {
+            (status, multiplier) = (.partiallyCompleted, pct)
+        } else if pct > 0 {
+            (status, multiplier) = (.partiallyCompleted, pct * 0.5)
+        } else {
+            (status, multiplier) = (.missed, 0.0)
+        }
+        let points = max(0, Int(Double(basePoints) * multiplier))
+        let xp = max(0, Int(Double(baseXP) * multiplier))
+        updateEntry(entry.id, status: status, completedAt: Date(), pointsEarned: points, xpEarned: xp, actualValue: actualValue)
+        if multiplier > 0 {
+            updateUserStats(pointsEarned: points, xpEarned: xp)
+            gamificationEngine?.checkAchievements(store: self)
+        }
+        checkDailySummary()
     }
 
     // MARK: - Load / Save

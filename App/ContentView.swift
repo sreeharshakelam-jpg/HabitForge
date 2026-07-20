@@ -6,6 +6,7 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showDailySummary = false
     @State private var showDailyCheckIn = false
+    @State private var showReconciliation = false
     @AppStorage("colorSchemePreference") private var colorSchemePreference = "dark"
 
     private var preferredScheme: ColorScheme? {
@@ -57,6 +58,15 @@ struct MainTabView: View {
         .background(ForgeColor.background)
         .onAppear {
             checkDailyCheckIn()
+            showReconciliation = !habitStore.pendingReconciliationEntries.isEmpty
+        }
+        .onReceive(habitStore.$pendingReconciliationEntries) { entries in
+            showReconciliation = !entries.isEmpty
+        }
+        .sheet(isPresented: $showReconciliation) {
+            ReconciliationModal()
+                .environmentObject(habitStore)
+                .environmentObject(gamificationEngine)
         }
         .sheet(isPresented: $showDailyCheckIn) {
             DailyCheckInView()

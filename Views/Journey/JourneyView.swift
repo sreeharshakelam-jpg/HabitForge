@@ -81,32 +81,65 @@ private struct JourneyHeader: View {
     }
 }
 
-// MARK: - Journey Path View
+// MARK: - Conduit Day Data
+
+struct ConduitDayData {
+    let date: Date
+    let completedCount: Int
+    let partialCount: Int
+    let totalCount: Int
+    let pointsEarned: Int
+    let isToday: Bool
+
+    var completionRate: Double {
+        guard totalCount > 0 else { return 0 }
+        return (Double(completedCount) + Double(partialCount) * 0.5) / Double(totalCount)
+    }
+}
+
+// MARK: - Journey Path View (Progression Conduit)
 
 struct JourneyPathView: View {
     @EnvironmentObject var habitStore: HabitStore
+    @State private var pulsing = false
 
-    private let pathLength = 20
-    private var steps: Int { min(habitStore.journeySteps, pathLength * 10) }
-    private var currentNode: Int { (steps / 2) % pathLength }
-    private var cycleCount: Int { steps / (pathLength * 2) }
+    private var conduitDays: [ConduitDayData] {
+        let calendar = Calendar.current
+        return (0..<30).map { offset -> ConduitDayData in
+            let date = calendar.date(byAdding: .day, value: -offset, to: Date())!
+            let entries = habitStore.entriesForDate(date)
+            let completed = entries.filter { $0.status == .completed }.count
+            let partial = entries.filter { $0.status == .partiallyCompleted }.count
+            let total = entries.filter { $0.status != .skipped }.count
+            let pts = entries.reduce(0) { $0 + $1.pointsEarned }
+            return ConduitDayData(date: date, completedCount: completed, partialCount: partial,
+                                  totalCount: total, pointsEarned: pts, isToday: offset == 0)
+        }
+    }
 
-    private let columns: [GridItem] = Array(repeating: GridItem(.flexible()), count: 4)
+    private var steps: Int { min(habitStore.journeySteps, 2000) }
+    private var cycleCount: Int { habitStore.journeySteps / 40 }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 characterBanner
-                pathGrid
-                milestoneCard
+                progressionConduit
+                streakMilestoneCard
                 goalSuggestions
             }
             .padding(.horizontal, ForgeSpacing.md)
             .padding(.vertical, 16)
         }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) {
+                pulsing = true
+            }
+        }
     }
 
-    // Character banner at top
+    // MARK: - Character Banner
+
     private var characterBanner: some View {
         VStack(spacing: 12) {
             ZStack {
@@ -136,22 +169,53 @@ struct JourneyPathView: View {
         )
     }
 
-    // Winding grid path
-    private var pathGrid: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("JOURNEY PATH")
-                .font(ForgeTypography.labelXS)
-                .foregroundColor(ForgeColor.textTertiary)
-                .tracking(2)
+    // MARK: - Progression Conduit
 
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(0..<pathLength, id: \.self) { i in
-                    PathNode(
-                        index: i,
-                        isCurrent: i == currentNode,
-                        isCompleted: i < currentNode || (cycleCount > 0 && i != currentNode),
-                        isMilestone: (i + 1) % 5 == 0
-                    )
+    private var progressionConduit: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("PROGRESSION CONDUIT")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.textTertiary)
+                        .tracking(2)
+                    Text("Last 30 Days")
+                        .font(ForgeTypography.h4)
+                        .foregroundColor(ForgeColor.textPrimary)
+                }
+                Spacer()
+                // Mini legend
+                HStack(spacing: 8) {
+                    ConduitLegendDot(color: ForgeColor.success, label: "Full")
+                    ConduitLegendDot(color: ForgeColor.warning, label: "Partial")
+                    ConduitLegendDot(color: ForgeColor.error, label: "Miss")
+                }
+            }
+
+            ForEach(conduitDays.indices, id: \.self) { i in
+                let day = conduitDays[i]
+                HStack(alignment: .top, spacing: 14) {
+                    // Left rail: node + vertical line
+                    VStack(spacing: 0) {
+                        conduitNodeView(for: day)
+                        if i < conduitDays.count - 1 {
+                            Rectangle()
+                                .fill(conduitLineColor(for: day))
+                                .frame(width: 2)
+                                .frame(height: day.isToday ? 20 : 12)
+                                .frame(maxWidth: 32)
+                        }
+                    }
+
+                    // Right: metric block
+                    Group {
+                        if day.isToday {
+                            TodayConduitBlock(day: day, pulsing: pulsing, streak: habitStore.userProfile.currentStreak)
+                        } else {
+                            PastConduitBlock(day: day)
+                        }
+                    }
+                    .padding(.bottom, i < conduitDays.count - 1 ? 4 : 0)
                 }
             }
         }
@@ -163,21 +227,93 @@ struct JourneyPathView: View {
         )
     }
 
-    private var milestoneCard: some View {
-        let nextMilestone = ((currentNode / 5) + 1) * 5
-        let stepsToNext = (nextMilestone - currentNode) * 2
-        return VStack(alignment: .leading, spacing: 8) {
+    @ViewBuilder
+    private func conduitNodeView(for day: ConduitDayData) -> some View {
+        if day.isToday {
+            ZStack {
+                Circle()
+                    .stroke(ForgeColor.accent.opacity(pulsing ? 0.7 : 0.15), lineWidth: pulsing ? 2.5 : 1)
+                    .frame(width: 38, height: 38)
+                    .scaleEffect(pulsing ? 1.18 : 1.0)
+                    .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true), value: pulsing)
+
+                Circle()
+                    .fill(ForgeColor.accent)
+                    .frame(width: 28, height: 28)
+                    .overlay(
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                    )
+                    .shadow(color: ForgeColor.accent.opacity(0.8), radius: 6)
+            }
+            .frame(width: 32, height: 38)
+        } else {
+            let c = nodeStatusColor(for: day)
+            ZStack {
+                Circle()
+                    .fill(c.opacity(0.18))
+                    .frame(width: 22, height: 22)
+                Image(systemName: nodeStatusIcon(for: day))
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(c)
+            }
+            .frame(width: 32, height: 22)
+        }
+    }
+
+    private func conduitLineColor(for day: ConduitDayData) -> Color {
+        if day.totalCount == 0 { return ForgeColor.border.opacity(0.4) }
+        if day.completionRate >= 0.8 { return ForgeColor.success.opacity(0.4) }
+        if day.completionRate >= 0.4 { return ForgeColor.warning.opacity(0.35) }
+        return ForgeColor.error.opacity(0.25)
+    }
+
+    private func nodeStatusColor(for day: ConduitDayData) -> Color {
+        if day.totalCount == 0 { return ForgeColor.textTertiary }
+        if day.completionRate >= 0.8 { return ForgeColor.success }
+        if day.completionRate >= 0.4 { return ForgeColor.warning }
+        return ForgeColor.error
+    }
+
+    private func nodeStatusIcon(for day: ConduitDayData) -> String {
+        if day.totalCount == 0 { return "minus" }
+        if day.completionRate >= 0.8 { return "checkmark" }
+        if day.completionRate >= 0.4 { return "circle.righthalf.filled" }
+        return "xmark"
+    }
+
+    // MARK: - Streak Milestone Card
+
+    private var streakMilestoneCard: some View {
+        let streak = habitStore.userProfile.currentStreak
+        let (milestone, label): (Int, String) = {
+            switch streak {
+            case 0..<3:   return (3, "3-Day Kickstart")
+            case 3..<7:   return (7, "One Week")
+            case 7..<21:  return (21, "21-Day Habit Lock")
+            case 21..<30: return (30, "Iron Month")
+            case 30..<75: return (75, "75-Day Warrior")
+            case 75..<100:return (100, "Century Club")
+            default:      return (streak + 30, "Keep the chain alive")
+            }
+        }()
+        let progress = milestone > 0 ? min(1.0, Double(streak) / Double(milestone)) : 1.0
+
+        return VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("NEXT MILESTONE")
+                Text("STREAK MILESTONE")
                     .font(ForgeTypography.labelXS)
                     .foregroundColor(ForgeColor.textTertiary)
                     .tracking(2)
                 Spacer()
-                Text("Node \(nextMilestone)")
+                Text(label)
                     .font(ForgeTypography.labelS)
                     .foregroundColor(ForgeColor.accent)
             }
-            Text("Complete \(stepsToNext) more habit logs to reach the next checkpoint")
+            Text(streak >= milestone
+                 ? "Milestone reached! Next target: \(milestone + 1)+"
+                 : "\(milestone - streak) more days to \(label)")
                 .font(ForgeTypography.h4)
                 .foregroundColor(ForgeColor.textPrimary)
 
@@ -186,11 +322,21 @@ struct JourneyPathView: View {
                     RoundedRectangle(cornerRadius: 4).fill(ForgeColor.surfaceElevated)
                     RoundedRectangle(cornerRadius: 4)
                         .fill(ForgeColor.accentGradient)
-                        .frame(width: geo.size.width * Double(currentNode % 5) / 5.0)
-                        .animation(.spring(response: 0.5), value: currentNode)
+                        .frame(width: geo.size.width * progress)
+                        .animation(.spring(response: 0.5), value: progress)
                 }
             }
             .frame(height: 8)
+
+            HStack {
+                Text("\(streak) days")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.accent)
+                Spacer()
+                Text("Goal: \(milestone) days")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textTertiary)
+            }
         }
         .padding(ForgeSpacing.md)
         .background(
@@ -206,8 +352,7 @@ struct JourneyPathView: View {
         if !flaggedHabits.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Image(systemName: "lightbulb.fill")
-                        .foregroundColor(.yellow)
+                    Image(systemName: "lightbulb.fill").foregroundColor(.yellow)
                     Text("1% IMPROVEMENTS")
                         .font(ForgeTypography.labelXS)
                         .foregroundColor(ForgeColor.textTertiary)
@@ -215,16 +360,11 @@ struct JourneyPathView: View {
                 }
                 ForEach(flaggedHabits) { habit in
                     HStack(spacing: 10) {
-                        Image(systemName: habit.icon)
-                            .foregroundColor(habit.color)
-                            .frame(width: 24)
+                        Image(systemName: habit.icon).foregroundColor(habit.color).frame(width: 24)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(habit.name)
-                                .font(ForgeTypography.h4)
-                                .foregroundColor(ForgeColor.textPrimary)
+                            Text(habit.name).font(ForgeTypography.h4).foregroundColor(ForgeColor.textPrimary)
                             Text("Struggling consistently — consider reducing target by 20%")
-                                .font(ForgeTypography.labelXS)
-                                .foregroundColor(ForgeColor.textSecondary)
+                                .font(ForgeTypography.labelXS).foregroundColor(ForgeColor.textSecondary)
                         }
                     }
                 }
@@ -239,51 +379,167 @@ struct JourneyPathView: View {
     }
 }
 
-private struct PathNode: View {
-    let index: Int
-    let isCurrent: Bool
-    let isCompleted: Bool
-    let isMilestone: Bool
+// MARK: - Today's Conduit Block
+
+private struct TodayConduitBlock: View {
+    let day: ConduitDayData
+    let pulsing: Bool
+    let streak: Int
 
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(bgColor)
-                .frame(width: nodeSize, height: nodeSize)
-                .overlay(Circle().stroke(borderColor, lineWidth: isCurrent ? 2 : 1))
-                .shadow(color: isCurrent ? ForgeColor.accent.opacity(0.5) : .clear, radius: 8)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("TODAY")
+                        .font(ForgeTypography.labelXS)
+                        .foregroundColor(ForgeColor.accent)
+                        .tracking(2)
+                    Text(day.date.formatted(date: .abbreviated, time: .omitted))
+                        .font(ForgeTypography.h4)
+                        .foregroundColor(ForgeColor.textPrimary)
+                }
+                Spacer()
+                Text("\(Int(day.completionRate * 100))%")
+                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .foregroundColor(day.completionRate >= 1.0 ? ForgeColor.success :
+                                     day.completionRate >= 0.5 ? ForgeColor.accent : ForgeColor.warning)
+                    .contentTransition(.numericText())
+            }
 
-            if isCurrent {
-                Text("🏃")
-                    .font(.system(size: 16))
-            } else if isMilestone {
-                Image(systemName: isCompleted ? "star.fill" : "star")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(isCompleted ? .yellow : ForgeColor.textTertiary)
-            } else if isCompleted {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(ForgeColor.success)
-            } else {
-                Text("\(index + 1)")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundColor(ForgeColor.textTertiary)
+            HStack(spacing: 14) {
+                ConduitMiniStat(icon: "checkmark.circle.fill", color: ForgeColor.success,
+                                value: "\(day.completedCount)/\(day.totalCount)", label: "Done")
+                ConduitMiniStat(icon: "bolt.fill", color: ForgeColor.accent,
+                                value: "\(day.pointsEarned)pts", label: "Points")
+                ConduitMiniStat(icon: "flame.fill", color: .orange,
+                                value: "\(streak)d", label: "Streak")
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4).fill(ForgeColor.surfaceElevated)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(day.completionRate >= 1.0 ? ForgeColor.greenGradient : ForgeColor.accentGradient)
+                        .frame(width: geo.size.width * min(1.0, day.completionRate))
+                        .animation(.spring(response: 0.5), value: day.completionRate)
+                }
+            }
+            .frame(height: 6)
+        }
+        .padding(ForgeSpacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                .fill(ForgeColor.surfaceElevated)
+                .overlay(
+                    RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                        .stroke(
+                            LinearGradient(
+                                colors: [ForgeColor.accent.opacity(pulsing ? 0.75 : 0.25),
+                                         ForgeColor.accent.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+        )
+        .shadow(color: ForgeColor.accent.opacity(0.12), radius: 10)
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - Past Day Conduit Block
+
+private struct PastConduitBlock: View {
+    let day: ConduitDayData
+
+    private var statusColor: Color {
+        if day.totalCount == 0 { return ForgeColor.textTertiary }
+        if day.completionRate >= 0.8 { return ForgeColor.success }
+        if day.completionRate >= 0.4 { return ForgeColor.warning }
+        return ForgeColor.error
+    }
+
+    private var dayLabel: String {
+        if Calendar.current.isDateInYesterday(day.date) { return "Yesterday" }
+        let fmt = DateFormatter()
+        fmt.dateFormat = "EEE d"
+        return fmt.string(from: day.date)
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(dayLabel)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(ForgeColor.textSecondary)
+
+                if day.totalCount > 0 {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3).fill(ForgeColor.surfaceElevated)
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(statusColor)
+                                .frame(width: geo.size.width * min(1.0, day.completionRate))
+                        }
+                    }
+                    .frame(height: 4)
+                    .frame(maxWidth: 110)
+                } else {
+                    Text("No habits")
+                        .font(.system(size: 10))
+                        .foregroundColor(ForgeColor.textTertiary)
+                }
+            }
+
+            Spacer()
+
+            if day.totalCount > 0 {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(day.completedCount)/\(day.totalCount)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(statusColor)
+                    if day.pointsEarned > 0 {
+                        Text("+\(day.pointsEarned)pts")
+                            .font(.system(size: 10))
+                            .foregroundColor(ForgeColor.textTertiary)
+                    }
+                }
             }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: ForgeRadius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: ForgeRadius.md)
+                .stroke(statusColor.opacity(day.totalCount > 0 ? 0.18 : 0.06), lineWidth: 1)
+        )
+        .frame(maxWidth: .infinity)
     }
+}
 
-    private var nodeSize: CGFloat { isCurrent ? 56 : isMilestone ? 44 : 38 }
+// MARK: - Conduit Supporting Views
 
-    private var bgColor: Color {
-        if isCurrent { return ForgeColor.accent.opacity(0.2) }
-        if isCompleted { return ForgeColor.success.opacity(0.15) }
-        return ForgeColor.surfaceElevated
+private struct ConduitMiniStat: View {
+    let icon: String; let color: Color; let value: String; let label: String
+    var body: some View {
+        VStack(spacing: 2) {
+            HStack(spacing: 3) {
+                Image(systemName: icon).font(.system(size: 10, weight: .bold)).foregroundColor(color)
+                Text(value).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundColor(ForgeColor.textPrimary)
+            }
+            Text(label).font(.system(size: 10)).foregroundColor(ForgeColor.textTertiary)
+        }
     }
+}
 
-    private var borderColor: Color {
-        if isCurrent { return ForgeColor.accent }
-        if isCompleted { return ForgeColor.success.opacity(0.4) }
-        return ForgeColor.border
+private struct ConduitLegendDot: View {
+    let color: Color; let label: String
+    var body: some View {
+        HStack(spacing: 3) {
+            Circle().fill(color).frame(width: 6, height: 6)
+            Text(label).font(.system(size: 9)).foregroundColor(ForgeColor.textTertiary)
+        }
     }
 }
 

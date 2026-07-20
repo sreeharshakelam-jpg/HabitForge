@@ -570,16 +570,39 @@ struct HabitRowCard: View {
     }
 }
 
-// MARK: - Habit Action Button (smart: log time or complete)
+// MARK: - Habit Action Button (smart: quantity intercept / log time / complete)
 struct HabitActionButton: View {
     @EnvironmentObject var habitStore: HabitStore
     let habit: Habit
     let entry: HabitEntry
     @State private var scale: CGFloat = 1.0
     @State private var showLogTime = false
+    @State private var showVerification = false
 
     var body: some View {
-        if habit.hasTimeTarget {
+        if habit.hasQuantityTarget {
+            Button {
+                ForgeHaptics.impact(.medium)
+                showVerification = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "number.circle.fill")
+                        .font(.system(size: 13, weight: .bold))
+                    Text("Log")
+                        .font(.system(size: 9, weight: .semibold))
+                }
+                .foregroundColor(habit.color)
+                .frame(width: 44, height: 40)
+                .background(habit.color.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(habit.color.opacity(0.35), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .sheet(isPresented: $showVerification) {
+                QuantitativeVerificationPanel(habit: habit, entry: entry)
+                    .environmentObject(habitStore)
+            }
+        } else if habit.hasTimeTarget {
             Button {
                 ForgeHaptics.impact(.medium)
                 showLogTime = true

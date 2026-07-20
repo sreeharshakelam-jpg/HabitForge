@@ -32,6 +32,7 @@ struct Habit: Identifiable, Codable, Equatable {
         return durationMinutes ?? 0
     }
     var hasTimeTarget: Bool { targetMinutesPerWeek != nil || durationMinutes != nil }
+    var hasQuantityTarget: Bool { type == .quantity && targetValue != nil }
 
     init(
         id: UUID = UUID(),
