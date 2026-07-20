@@ -3,32 +3,46 @@ import SwiftUI
 // MARK: - FORGE Design System
 
 struct ForgeColor {
-    // MARK: - Adaptive Backgrounds (respond to preferredColorScheme)
-    static let background = Color(UIColor { t in
-        t.userInterfaceStyle == .dark
-            ? UIColor(red: 6/255,  green: 6/255,  blue: 9/255,  alpha: 1)   // #060609
-            : UIColor(red: 242/255, green: 242/255, blue: 247/255, alpha: 1) // iOS system grouped bg
-    })
-    static let surface = Color(UIColor { t in
-        t.userInterfaceStyle == .dark
-            ? UIColor(red: 14/255, green: 14/255, blue: 24/255, alpha: 1)   // #0E0E18
-            : UIColor(red: 229/255, green: 229/255, blue: 234/255, alpha: 1)
-    })
-    static let surfaceElevated = Color(UIColor { t in
-        t.userInterfaceStyle == .dark
-            ? UIColor(red: 20/255, green: 20/255, blue: 37/255, alpha: 1)   // #141425
-            : UIColor.systemBackground
-    })
-    static let card = Color(UIColor { t in
-        t.userInterfaceStyle == .dark
-            ? UIColor(red: 18/255, green: 18/255, blue: 30/255, alpha: 1)   // #12121E
-            : UIColor.secondarySystemGroupedBackground
-    })
+    // MARK: - Themed Adaptive Backgrounds
+    // Dark mode uses the active theme's tinted background palette;
+    // light mode stays on standard iOS system backgrounds.
+    static var background: Color {
+        let theme = ForgeThemeManager.current
+        return Color(UIColor { t in
+            t.userInterfaceStyle == .dark
+                ? UIColor(forgeHex: theme.darkBackgroundHex)
+                : UIColor(red: 242/255, green: 242/255, blue: 247/255, alpha: 1)
+        })
+    }
+    static var surface: Color {
+        let theme = ForgeThemeManager.current
+        return Color(UIColor { t in
+            t.userInterfaceStyle == .dark
+                ? UIColor(forgeHex: theme.darkSurfaceHex)
+                : UIColor(red: 229/255, green: 229/255, blue: 234/255, alpha: 1)
+        })
+    }
+    static var surfaceElevated: Color {
+        let theme = ForgeThemeManager.current
+        return Color(UIColor { t in
+            t.userInterfaceStyle == .dark
+                ? UIColor(forgeHex: theme.darkSurfaceElevatedHex)
+                : UIColor.systemBackground
+        })
+    }
+    static var card: Color {
+        let theme = ForgeThemeManager.current
+        return Color(UIColor { t in
+            t.userInterfaceStyle == .dark
+                ? UIColor(forgeHex: theme.darkCardHex)
+                : UIColor.secondarySystemGroupedBackground
+        })
+    }
 
-    // Primary (unchanged — brand accent colors look good on both backgrounds)
-    static let accent = Color(hex: "#7C3AED") ?? .purple
-    static let accentBright = Color(hex: "#9D5FFF") ?? .purple
-    static let accentGlow = Color(hex: "#7C3AED").map { $0.opacity(0.4) } ?? .purple.opacity(0.4)
+    // MARK: - Themed Accent System
+    static var accent: Color { ForgeThemeManager.current.accent }
+    static var accentBright: Color { ForgeThemeManager.current.accentBright }
+    static var accentGlow: Color { ForgeThemeManager.current.accent.opacity(0.4) }
 
     // State
     static let success = Color(hex: "#10B981") ?? .green
@@ -62,10 +76,7 @@ struct ForgeColor {
     })
 
     // Gradients
-    static let accentGradient = LinearGradient(
-        colors: [Color(hex: "#7C3AED") ?? .purple, Color(hex: "#4F46E5") ?? .indigo],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-    )
+    static var accentGradient: LinearGradient { ForgeThemeManager.current.gradient }
 
     static let fireGradient = LinearGradient(
         colors: [Color(hex: "#F97316") ?? .orange, Color(hex: "#EF4444") ?? .red],

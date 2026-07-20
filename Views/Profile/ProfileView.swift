@@ -26,6 +26,9 @@ struct ProfileView: View {
                         // Stats Overview
                         statsOverviewSection
 
+                        // Theme Studio
+                        ThemeStudioSection()
+
                         // Settings Sections
                         settingsSection
 
@@ -504,4 +507,116 @@ struct ActivityShareView: UIViewControllerRepresentable {
         UIActivityViewController(activityItems: items, applicationActivities: nil)
     }
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// MARK: - Theme Studio
+
+struct ThemeStudioSection: View {
+    @AppStorage(ForgeThemeManager.storageKey) private var activeThemeId = "royal"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "paintpalette.fill")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(ForgeColor.accentGradient)
+                Text("THEME STUDIO")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textTertiary)
+                    .tracking(2)
+                Spacer()
+                Text(ForgeThemeManager.current.name)
+                    .font(ForgeTypography.labelS)
+                    .foregroundColor(ForgeColor.accent)
+            }
+            .padding(.horizontal, ForgeSpacing.md)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(ForgeTheme.all) { theme in
+                        ThemeCard(theme: theme, isActive: theme.id == activeThemeId) {
+                            ForgeHaptics.impact(.medium)
+                            withAnimation(.spring(response: 0.4)) {
+                                activeThemeId = theme.id
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, ForgeSpacing.md)
+                .padding(.vertical, 4)
+            }
+        }
+    }
+}
+
+private struct ThemeCard: View {
+    let theme: ForgeTheme
+    let isActive: Bool
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            VStack(alignment: .leading, spacing: 0) {
+                // Gradient hero band with emoji + mini mock UI
+                ZStack(alignment: .topLeading) {
+                    RoundedRectangle(cornerRadius: 0)
+                        .fill(theme.previewGradient)
+                        .frame(height: 74)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(theme.emoji)
+                            .font(.system(size: 22))
+                        // Mock progress bar to preview the accent in action
+                        HStack(spacing: 4) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(.white.opacity(0.9))
+                                .frame(width: 42, height: 4)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(.white.opacity(0.35))
+                                .frame(width: 20, height: 4)
+                        }
+                    }
+                    .padding(10)
+
+                    if isActive {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+                                .shadow(color: .black.opacity(0.3), radius: 3)
+                                .padding(8)
+                        }
+                    }
+                }
+
+                // Name plate on the theme's dark card color
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(theme.name)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    Text(theme.tagline)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.white.opacity(0.55))
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(Color(hex: theme.darkCardHex) ?? .black)
+            }
+            .frame(width: 148)
+            .clipShape(RoundedRectangle(cornerRadius: ForgeRadius.lg))
+            .overlay(
+                RoundedRectangle(cornerRadius: ForgeRadius.lg)
+                    .stroke(
+                        isActive ? theme.accentBright : ForgeColor.border,
+                        lineWidth: isActive ? 2 : 1
+                    )
+            )
+            .shadow(color: isActive ? theme.accent.opacity(0.45) : .clear, radius: 10)
+            .scaleEffect(isActive ? 1.0 : 0.96)
+        }
+        .buttonStyle(.plain)
+    }
 }

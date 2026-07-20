@@ -8,6 +8,7 @@ struct MainTabView: View {
     @State private var showDailyCheckIn = false
     @State private var showReconciliation = false
     @AppStorage("colorSchemePreference") private var colorSchemePreference = "dark"
+    @AppStorage(ForgeThemeManager.storageKey) private var activeThemeId = "royal"
 
     private var preferredScheme: ColorScheme? {
         switch colorSchemePreference {
@@ -54,6 +55,7 @@ struct MainTabView: View {
             }
             .accentColor(ForgeColor.accent)
         }
+        .id(activeThemeId)
         .preferredColorScheme(preferredScheme)
         .background(ForgeColor.background)
         .onAppear {
