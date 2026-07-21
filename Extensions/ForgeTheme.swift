@@ -93,7 +93,15 @@ extension ForgeTheme {
         darkSurfaceElevatedHex: "#0A1930", darkCardHex: "#081527"
     )
 
-    static let all: [ForgeTheme] = [.royalForge, .emberForge, .aurora, .midnightGold, .neonPulse, .oceanDepth]
+    static let sakuraBlade = ForgeTheme(
+        id: "sakura", name: "Sakura Blade", tagline: "Anime spirit. Petals and steel.", emoji: "🌸",
+        accentHex: "#E8365F", accentBrightHex: "#FF7A9C",
+        gradientStartHex: "#E8365F", gradientEndHex: "#8B1538",
+        darkBackgroundHex: "#0C0307", darkSurfaceHex: "#180810",
+        darkSurfaceElevatedHex: "#240C18", darkCardHex: "#1E0A13"
+    )
+
+    static let all: [ForgeTheme] = [.royalForge, .sakuraBlade, .emberForge, .aurora, .midnightGold, .neonPulse, .oceanDepth]
 }
 
 // MARK: - Theme Manager
