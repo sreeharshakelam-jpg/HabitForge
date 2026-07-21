@@ -21,10 +21,10 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                DashboardView()
+                AvatarHomeView()
                     .tag(0)
                     .tabItem {
-                        Label("Ritual", systemImage: "sunrise.circle.fill")
+                        Label("Avatar", systemImage: "figure.arms.open")
                     }
 
                 NavigationView {

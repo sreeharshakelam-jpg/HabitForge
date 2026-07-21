@@ -13,11 +13,10 @@ struct JourneyView: View {
                 JourneyHeader(selectedTab: $selectedTab)
                 TabView(selection: $selectedTab) {
                     JourneyPathView().tag(0)
-                    SelfImageView().tag(1)
-                    ChainCalendarView().tag(2)
-                    AccountabilityView().tag(3)
-                    FourLawsView().tag(4)
-                    JourneyJournalView().tag(5)
+                    ChainCalendarView().tag(1)
+                    AccountabilityView().tag(2)
+                    FourLawsView().tag(3)
+                    JourneyJournalView().tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
             }
@@ -30,8 +29,8 @@ struct JourneyView: View {
 
 private struct JourneyHeader: View {
     @Binding var selectedTab: Int
-    private let tabs = ["Path", "Self", "Chain", "Partners", "4 Laws", "Journal"]
-    private let icons = ["figure.walk", "figure.arms.open", "link", "person.2.fill", "4.circle.fill", "book.fill"]
+    private let tabs = ["Path", "Chain", "Partners", "4 Laws", "Journal"]
+    private let icons = ["figure.walk", "link", "person.2.fill", "4.circle.fill", "book.fill"]
 
     var body: some View {
         VStack(spacing: 0) {

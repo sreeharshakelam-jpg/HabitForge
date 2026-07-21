@@ -4,7 +4,7 @@ import SwiftUI
 // "The self-image sets the boundaries of individual accomplishment."
 // The avatar is a living visualization of the user's self-image: it gains
 // visible muscle as habits are completed, flexes on wins, and changes
-// pose/facing daily.
+// pose/facing daily. These components are composed into the Avatar home tab.
 
 // MARK: - Physique Model
 
@@ -53,59 +53,22 @@ enum AvatarGender: String {
     case man, woman
 }
 
-// MARK: - Main View
+// MARK: - Avatar Hero Card (the star: flexes on completion)
 
-struct SelfImageView: View {
+struct AvatarHeroCard: View {
     @EnvironmentObject var habitStore: HabitStore
     @AppStorage("avatarGender") private var genderRaw = "man"
-    @AppStorage("selfImageStatement") private var selfImageStatement = ""
     @State private var flexing = false
-    @State private var editingStatement = false
-    @State private var draftStatement = ""
 
     private var gender: AvatarGender { AvatarGender(rawValue: genderRaw) ?? .man }
     private var completions: Int { habitStore.userProfile.totalHabitsCompleted }
     private var stage: PhysiqueStage { PhysiqueStage.stage(for: completions) }
     private var muscle: Double { PhysiqueStage.muscleFactor(for: completions) }
     private var completedToday: Int { habitStore.todayEntries.filter { $0.status == .completed }.count }
-
-    /// The avatar faces a different way each day and alternates raised arm.
     private var dayOfYear: Int { Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 1 }
     private var facingRight: Bool { dayOfYear % 2 == 0 }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                avatarStage
-                physiqueProgressCard
-                selfImageStatementCard
-                dailyPrincipleCard
-                MentalRehearsalCard()
-            }
-            .padding(.horizontal, ForgeSpacing.md)
-            .padding(.vertical, 16)
-        }
-        .onChange(of: completedToday) { _ in
-            triggerFlex()
-        }
-        .onAppear {
-            if completedToday > 0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { triggerFlex() }
-            }
-        }
-    }
-
-    private func triggerFlex() {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) { flexing = true }
-        ForgeHaptics.success()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
-            withAnimation(.spring(response: 0.6)) { flexing = false }
-        }
-    }
-
-    // MARK: - Avatar Stage
-
-    private var avatarStage: some View {
         VStack(spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
@@ -118,7 +81,6 @@ struct SelfImageView: View {
                         .foregroundColor(ForgeColor.textPrimary)
                 }
                 Spacer()
-                // Gender toggle
                 HStack(spacing: 4) {
                     genderButton("♂", .man)
                     genderButton("♀", .woman)
@@ -126,7 +88,6 @@ struct SelfImageView: View {
             }
 
             ZStack {
-                // Glow ring behind avatar, intensity grows with muscle
                 Circle()
                     .fill(
                         RadialGradient(
@@ -143,7 +104,6 @@ struct SelfImageView: View {
                     .onTapGesture { triggerFlex() }
             }
 
-            // Stage badge
             HStack(spacing: 8) {
                 Image(systemName: "figure.strengthtraining.traditional")
                     .font(.system(size: 13, weight: .bold))
@@ -167,6 +127,20 @@ struct SelfImageView: View {
                 .fill(ForgeColor.card)
                 .overlay(RoundedRectangle(cornerRadius: ForgeRadius.xl).stroke(ForgeColor.accent.opacity(0.25), lineWidth: 1))
         )
+        .onChange(of: completedToday) { _ in triggerFlex() }
+        .onAppear {
+            if completedToday > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { triggerFlex() }
+            }
+        }
+    }
+
+    private func triggerFlex() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) { flexing = true }
+        ForgeHaptics.success()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+            withAnimation(.spring(response: 0.6)) { flexing = false }
+        }
     }
 
     private func genderButton(_ symbol: String, _ g: AvatarGender) -> some View {
@@ -182,12 +156,24 @@ struct SelfImageView: View {
         }
         .buttonStyle(.plain)
     }
+}
 
-    // MARK: - Physique Progress
+// MARK: - Physique Progress Card
 
-    private var physiqueProgressCard: some View {
+struct PhysiqueProgressCard: View {
+    @EnvironmentObject var habitStore: HabitStore
+
+    private var completions: Int { habitStore.userProfile.totalHabitsCompleted }
+    private var stage: PhysiqueStage { PhysiqueStage.stage(for: completions) }
+    private var progressToNext: Double {
+        guard let next = PhysiqueStage(rawValue: stage.rawValue + 1) else { return 1 }
+        let span = Double(next.threshold - stage.threshold)
+        return min(1, Double(completions - stage.threshold) / span)
+    }
+
+    var body: some View {
         let nextStage = PhysiqueStage(rawValue: stage.rawValue + 1)
-        return VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("PHYSIQUE PROGRESS")
                     .font(ForgeTypography.labelXS)
@@ -216,13 +202,9 @@ struct SelfImageView: View {
                 .frame(height: 8)
 
                 HStack {
-                    Text(stage.name)
-                        .font(ForgeTypography.labelXS)
-                        .foregroundColor(ForgeColor.accent)
+                    Text(stage.name).font(ForgeTypography.labelXS).foregroundColor(ForgeColor.accent)
                     Spacer()
-                    Text(next.name)
-                        .font(ForgeTypography.labelXS)
-                        .foregroundColor(ForgeColor.textTertiary)
+                    Text(next.name).font(ForgeTypography.labelXS).foregroundColor(ForgeColor.textTertiary)
                 }
             } else {
                 Text("Maximum physique reached. You ARE the legend.")
@@ -237,16 +219,16 @@ struct SelfImageView: View {
                 .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
         )
     }
+}
 
-    private var progressToNext: Double {
-        guard let next = PhysiqueStage(rawValue: stage.rawValue + 1) else { return 1 }
-        let span = Double(next.threshold - stage.threshold)
-        return min(1, Double(completions - stage.threshold) / span)
-    }
+// MARK: - Self-Image Statement Card
 
-    // MARK: - Self-Image Statement
+struct SelfImageStatementCard: View {
+    @AppStorage("selfImageStatement") private var selfImageStatement = ""
+    @State private var editingStatement = false
+    @State private var draftStatement = ""
 
-    private var selfImageStatementCard: some View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: "person.crop.circle.badge.checkmark")
@@ -297,12 +279,14 @@ struct SelfImageView: View {
                 .overlay(RoundedRectangle(cornerRadius: ForgeRadius.lg).stroke(ForgeColor.border, lineWidth: 1))
         )
     }
+}
 
-    // MARK: - Daily Psycho-Cybernetics Principle
+// MARK: - Daily Psycho-Cybernetics Principle Card
 
-    private var dailyPrincipleCard: some View {
+struct DailyPrincipleCard: View {
+    var body: some View {
         let principle = PsychoCyberneticsLibrary.principleOfTheDay()
-        return VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: "brain.head.profile")
                     .foregroundColor(ForgeColor.accent)
@@ -458,7 +442,6 @@ struct AnimeAvatarView: View {
     let muscle: Double
     let flexing: Bool
 
-    // Derived proportions — everything scales with muscle
     private var m: CGFloat { CGFloat(muscle) }
     private var shoulderHalf: CGFloat {
         gender == .man ? 36 + 24 * m : 30 + 15 * m
@@ -487,21 +470,16 @@ struct AnimeAvatarView: View {
         .frame(width: 220, height: 300)
     }
 
-    // MARK: Body parts
-
     private var neckAndHead: some View {
         ZStack {
-            // Neck
             Rectangle()
                 .fill(skinShade)
                 .frame(width: 15 + 6 * m, height: 18)
                 .position(x: 110, y: 100)
-            // Head
             Ellipse()
                 .fill(skin)
                 .frame(width: 62, height: 66)
                 .position(x: 110, y: 66)
-            // Ears
             Circle().fill(skin).frame(width: 12, height: 12).position(x: 79, y: 68)
             Circle().fill(skin).frame(width: 12, height: 12).position(x: 141, y: 68)
         }
@@ -509,10 +487,8 @@ struct AnimeAvatarView: View {
 
     private var face: some View {
         ZStack {
-            // Big anime eyes
             eyeView.position(x: 96, y: 70)
             eyeView.position(x: 124, y: 70)
-            // Eyebrows — determined when flexing
             Capsule().fill(hairColor.opacity(0.9))
                 .frame(width: 15, height: 3)
                 .rotationEffect(.degrees(flexing ? 12 : 4))
@@ -521,7 +497,6 @@ struct AnimeAvatarView: View {
                 .frame(width: 15, height: 3)
                 .rotationEffect(.degrees(flexing ? -12 : -4))
                 .position(x: 124, y: flexing ? 57 : 59)
-            // Mouth — grin when flexing
             if flexing {
                 Capsule().fill(Color(hex: "#B4553C") ?? .red)
                     .frame(width: 16, height: 7)
@@ -531,7 +506,6 @@ struct AnimeAvatarView: View {
                     .frame(width: 10, height: 3)
                     .position(x: 110, y: 86)
             }
-            // Blush
             if gender == .woman {
                 Ellipse().fill(Color.pink.opacity(0.35)).frame(width: 10, height: 5).position(x: 90, y: 79)
                 Ellipse().fill(Color.pink.opacity(0.35)).frame(width: 10, height: 5).position(x: 130, y: 79)
@@ -556,23 +530,18 @@ struct AnimeAvatarView: View {
     }
 
     private var womanBackHair: some View {
-        ZStack {
-            // Long back panel
-            RoundedRectangle(cornerRadius: 24)
-                .fill(hairColor.opacity(0.85))
-                .frame(width: 84, height: 130)
-                .position(x: 110, y: 105)
-        }
+        RoundedRectangle(cornerRadius: 24)
+            .fill(hairColor.opacity(0.85))
+            .frame(width: 84, height: 130)
+            .position(x: 110, y: 105)
     }
 
     private var womanFrontHair: some View {
         ZStack {
-            // Top cover
             Ellipse()
                 .fill(hairColor)
                 .frame(width: 68, height: 42)
                 .position(x: 110, y: 48)
-            // Side strands
             Capsule().fill(hairColor).frame(width: 13, height: 62).rotationEffect(.degrees(6)).position(x: 82, y: 92)
             Capsule().fill(hairColor).frame(width: 13, height: 62).rotationEffect(.degrees(-6)).position(x: 138, y: 92)
         }
@@ -587,7 +556,6 @@ struct AnimeAvatarView: View {
 
     private var muscleDetail: some View {
         ZStack {
-            // Pecs — appear with muscle
             Ellipse()
                 .stroke(skinShade, lineWidth: 2.5)
                 .frame(width: 26 + 10 * m, height: 16 + 6 * m)
@@ -599,7 +567,6 @@ struct AnimeAvatarView: View {
                 .position(x: 110 + (14 + 5 * m), y: 126)
                 .opacity(Double(m) * 0.9 + 0.1)
 
-            // Abs grid — unlocks past 40% muscle
             if m > 0.4 {
                 VStack(spacing: 7) {
                     ForEach(0..<3, id: \.self) { _ in
@@ -627,7 +594,6 @@ struct AnimeAvatarView: View {
     private func armView(left: Bool) -> some View {
         let sx: CGFloat = left ? -1 : 1
         let shoulderX = 110 + sx * (shoulderHalf - 4)
-        // Flexing raises the arms into a double-bicep pose
         let angle: Double = flexing ? Double(sx) * 125 : Double(sx) * 18
         return ZStack {
             Capsule()
@@ -635,7 +601,6 @@ struct AnimeAvatarView: View {
                 .frame(width: armW, height: 58)
                 .offset(y: 26)
                 .rotationEffect(.degrees(angle), anchor: .top)
-            // Bicep bulge
             Circle()
                 .fill(skin)
                 .frame(width: bicep, height: bicep)
@@ -652,7 +617,6 @@ struct AnimeAvatarView: View {
                 .fill(ForgeColor.accentGradient)
                 .frame(width: waistHalf * 2 + 8, height: 30)
                 .position(x: 110, y: 200)
-            // Top band (sports bra for woman)
             if gender == .woman {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(ForgeColor.accentGradient)
@@ -666,7 +630,6 @@ struct AnimeAvatarView: View {
         ZStack {
             Capsule().fill(skin).frame(width: 17 + 7 * m, height: 72).position(x: 96, y: 240)
             Capsule().fill(skin).frame(width: 17 + 7 * m, height: 72).position(x: 124, y: 240)
-            // Shoes
             Capsule().fill(Color(hex: "#2A2A35") ?? .black).frame(width: 26, height: 12).position(x: 94, y: 277)
             Capsule().fill(Color(hex: "#2A2A35") ?? .black).frame(width: 26, height: 12).position(x: 126, y: 277)
         }
@@ -711,7 +674,6 @@ struct SpikyHairShape: Shape {
         let h = rect.height
         let baseY = rect.maxY
         p.move(to: CGPoint(x: rect.minX, y: baseY))
-        // 5 anime spikes across the top
         let spikes = 5
         let step = w / CGFloat(spikes)
         for i in 0..<spikes {
