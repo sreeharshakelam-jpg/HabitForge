@@ -16,7 +16,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                ForgeColor.background.ignoresSafeArea()
+                ForgeAuroraBackground()
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: ForgeSpacing.md) {

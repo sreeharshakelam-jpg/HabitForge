@@ -8,7 +8,13 @@ struct LogTimeView: View {
 
     @State private var selectedMinutes = 0
 
-    private let presets = [10, 15, 20, 30, 45, 60, 90, 120]
+    /// Steps up to the habit's own target so a 5-hour habit offers 1h, 2h… not 10m.
+    private var presets: [Int] {
+        guard dailyTarget > 0 else { return [10, 15, 20, 30, 45, 60, 90, 120] }
+        let steps = (1...8).map { max(5, Int((Double(dailyTarget) * Double($0) / 8 / 5).rounded()) * 5) }
+        return Array(Set(steps)).sorted()
+    }
+    private var stepSize: Int { dailyTarget >= 120 ? 15 : 5 }
     private var dailyTarget: Int { habit.dailyTargetMinutes }
     private var pct: Double {
         dailyTarget > 0 ? min(1.5, Double(selectedMinutes) / Double(dailyTarget)) : (selectedMinutes > 0 ? 1.0 : 0)
@@ -21,6 +27,7 @@ struct LogTimeView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         habitHeader
+                        if dailyTarget > 0 { didItAllButton }
                         if selectedMinutes > 0 { completionRing }
                         presetGrid
                         customStepper
@@ -67,6 +74,32 @@ struct LogTimeView: View {
                     .foregroundColor(ForgeColor.textSecondary)
             }
         }
+    }
+
+    /// "Did you complete everything?" — one tap logs the full target.
+    private var didItAllButton: some View {
+        VStack(spacing: 10) {
+            Text("Did you complete everything?")
+                .font(ForgeTypography.h4)
+                .foregroundColor(ForgeColor.textPrimary)
+            Button {
+                habitStore.logTime(entry, minutes: dailyTarget)
+                ForgeHaptics.success()
+                dismiss()
+            } label: {
+                Label("Yes, all \(formatMin(dailyTarget))", systemImage: "checkmark.seal.fill")
+                    .font(ForgeTypography.h4)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(ForgeSpacing.md)
+                    .background(RoundedRectangle(cornerRadius: ForgeRadius.lg).fill(habit.color))
+            }
+            .buttonStyle(.plain)
+            Text("Not quite? Pick how much you did below.")
+                .font(ForgeTypography.labelS)
+                .foregroundColor(ForgeColor.textSecondary)
+        }
+        .padding(.horizontal, ForgeSpacing.md)
     }
 
     private var completionRing: some View {
@@ -139,7 +172,7 @@ struct LogTimeView: View {
                 .padding(.horizontal, 4)
             HStack(spacing: 0) {
                 Button {
-                    if selectedMinutes >= 5 { selectedMinutes -= 5 }
+                    selectedMinutes = max(0, selectedMinutes - stepSize)
                     ForgeHaptics.light()
                 } label: {
                     Image(systemName: "minus.circle.fill")
@@ -148,18 +181,18 @@ struct LogTimeView: View {
                 }
                 Spacer()
                 VStack(spacing: 0) {
-                    Text("\(selectedMinutes)")
-                        .font(.system(size: 52, weight: .black, design: .rounded))
+                    Text(formatMin(selectedMinutes))
+                        .font(.system(size: 44, weight: .black, design: .rounded))
                         .foregroundColor(ForgeColor.textPrimary)
                         .contentTransition(.numericText())
                         .animation(.spring(response: 0.2), value: selectedMinutes)
-                    Text("minutes")
+                    Text("time done")
                         .font(ForgeTypography.labelS)
                         .foregroundColor(ForgeColor.textSecondary)
                 }
                 Spacer()
                 Button {
-                    selectedMinutes += 5
+                    selectedMinutes += stepSize
                     ForgeHaptics.light()
                 } label: {
                     Image(systemName: "plus.circle.fill")

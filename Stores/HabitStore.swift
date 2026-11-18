@@ -31,6 +31,7 @@ class HabitStore: ObservableObject {
         loadAll()
         catchUpMissedDays()
         refreshTodayEntries()
+        syncDayStats()
         checkComebackMode()
     }
 
@@ -125,7 +126,7 @@ class HabitStore: ObservableObject {
         }
         pendingReconciliationEntries.removeAll { $0.entry.id == entryId }
         if pendingReconciliationEntries.isEmpty {
-            recalculateStreak()
+            updateStreak()
             saveEntries()
             saveUserProfile()
         }
@@ -151,7 +152,7 @@ class HabitStore: ObservableObject {
             }
         }
         pendingReconciliationEntries = []
-        recalculateStreak()
+        updateStreak()
         saveEntries()
         saveUserProfile()
     }
@@ -440,6 +441,7 @@ class HabitStore: ObservableObject {
 
         // Reset entry back to pending — pass .some(nil) to clear completedAt
         updateEntry(entry.id, status: .pending, completedAt: .some(nil), pointsEarned: 0, xpEarned: 0)
+        updateStreak()
         saveUserProfile()
     }
 
@@ -462,7 +464,7 @@ class HabitStore: ObservableObject {
     func missHabit(_ entry: HabitEntry) {
         updateEntry(entry.id, status: .missed)
         userProfile.disciplineScore = max(0, userProfile.disciplineScore - 5)
-        userProfile.currentStreak = 0
+        updateStreak()
         saveUserProfile()
     }
 
@@ -516,30 +518,37 @@ class HabitStore: ObservableObject {
     }
 
     private func updateStreak() {
-        let calendar = Calendar.current
-        let todayStart = calendar.startOfDay(for: Date())
+        recalculateStreak()
+        syncDayStats()
+    }
 
-        // Count a streak day when at least 1 habit is completed today
-        guard anyCompletedToday else { return }
+    /// Perfect / disciplined days derived from history. performDailyReset only runs
+    /// when the app is open at midnight, so counters it maintained stayed at 0.
+    func syncDayStats() {
+        let cal = Calendar.current
+        let byDay = Dictionary(grouping: allEntries) { cal.startOfDay(for: $0.date) }
+        let rates = byDay.values.map { Self.completionRate($0) }
+        userProfile.perfectDays = rates.filter { $0 >= 1.0 }.count
+        userProfile.totalDisciplinedDays = rates.filter { $0 >= 0.8 }.count
+    }
 
-        // Guard: only increment the streak once per calendar day
-        let lastIncrementDate = defaults.object(forKey: "streakLastIncrementDate") as? Date
-        if let lastDate = lastIncrementDate, calendar.isDate(lastDate, inSameDayAs: todayStart) {
-            return
+    /// Consecutive days since the challenge started with ≥80% of habits done.
+    /// Days with no habits are neutral; an unfinished today doesn't break the run.
+    var challengeDayCount: Int {
+        guard userProfile.challengeDays > 0, let start = userProfile.challengeStartDate else { return 0 }
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        var day = cal.startOfDay(for: start)
+        var count = 0
+        while day <= today {
+            let entries = entriesForDate(day)
+            if !entries.isEmpty {
+                if Self.completionRate(entries) >= 0.8 { count += 1 }
+                else if day < today { count = 0 }
+            }
+            day = cal.date(byAdding: .day, value: 1, to: day)!
         }
-
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart)!
-        let yesterdayEntries = entriesForDate(yesterday)
-
-        // Yesterday is OK if: no habits were scheduled (empty day), OR at least 1 was completed
-        let yesterdayOK = yesterdayEntries.isEmpty
-            || yesterdayEntries.contains { $0.status == .completed }
-
-        if yesterdayOK {
-            userProfile.currentStreak += 1
-            userProfile.longestStreak = max(userProfile.longestStreak, userProfile.currentStreak)
-            defaults.set(Date(), forKey: "streakLastIncrementDate")
-        }
+        return min(count, userProfile.challengeDays)
     }
 
     /// True when every non-skipped habit today is completed (perfect day).
@@ -553,8 +562,11 @@ class HabitStore: ObservableObject {
         todayEntries.contains { $0.status == .completed }
     }
 
-    var todayCompletionRate: Double {
-        let active = todayEntries.filter { $0.status != .skipped }
+    var todayCompletionRate: Double { Self.completionRate(todayEntries) }
+
+    /// Completed = 1, partial = 0.5, skipped entries ignored.
+    static func completionRate(_ entries: [HabitEntry]) -> Double {
+        let active = entries.filter { $0.status != .skipped }
         guard !active.isEmpty else { return 0 }
         let score = active.reduce(0.0) { sum, e in
             switch e.status {
@@ -660,13 +672,10 @@ class HabitStore: ObservableObject {
         }
         let yesterdayHadCompletion = yesterdayFinal.contains { $0.status == .completed }
         if !yesterdayFinal.isEmpty && !yesterdayHadCompletion {
-            userProfile.currentStreak = 0
             defaults.removeObject(forKey: "streakLastIncrementDate")
         }
+        updateStreak()
         // If yesterdayFinal is empty (no habits that day) the streak is preserved
-
-        // Update challenge tracker
-        updateChallengeDay(for: yesterday)
 
         // Refresh today
         refreshTodayEntries()
@@ -686,11 +695,6 @@ class HabitStore: ObservableObject {
         let points = entries.reduce(0) { $0 + $1.pointsEarned }
         let xp = entries.reduce(0) { $0 + $1.xpEarned }
         let isPerfect = !entries.isEmpty && entries.allSatisfy { $0.status == .completed }
-
-        if isPerfect {
-            userProfile.perfectDays += 1
-            userProfile.totalDisciplinedDays += 1
-        }
 
         let report = DailyReport(
             id: UUID(),
@@ -750,31 +754,6 @@ class HabitStore: ObservableObject {
             "What are you most proud of today?"
         ]
         return questions.randomElement() ?? "How did today go?"
-    }
-
-    // MARK: - Challenge Day Tracker
-    private func updateChallengeDay(for date: Date) {
-        guard userProfile.challengeDays > 0 else { return }
-
-        let entries = entriesForDate(date)
-        let active = entries.filter { $0.status != .skipped }
-        let allDone = !active.isEmpty && active.allSatisfy { $0.status == .completed }
-
-        if allDone {
-            userProfile.challengeCurrentDay += 1
-            userProfile.challengeBestDay = max(userProfile.challengeBestDay, userProfile.challengeCurrentDay)
-
-            // Challenge completed!
-            if userProfile.challengeCurrentDay >= userProfile.challengeDays {
-                // Award bonus XP/points for finishing
-                userProfile.totalXP += userProfile.challengeDays * 5
-                userProfile.totalPoints += userProfile.challengeDays * 2
-            }
-        } else {
-            // Missed — reset challenge day counter
-            userProfile.challengeCurrentDay = 0
-        }
-        saveUserProfile()
     }
 
     // MARK: - Achievement Management

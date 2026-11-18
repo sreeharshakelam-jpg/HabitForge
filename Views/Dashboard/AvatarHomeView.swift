@@ -12,6 +12,9 @@ struct AvatarHomeView: View {
     @State private var showWisdomLibrary = false
     @State private var showChallengeSetup = false
     @State private var showProfileSheet = false
+    @State private var showManageHabits = false
+    @State private var celebration: String? = nil
+    @AppStorage("avatarGender") private var genderRaw = "man"
 
     private var completedCount: Int {
         habitStore.todayEntries.filter { $0.status == .completed }.count
@@ -19,7 +22,7 @@ struct AvatarHomeView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ForgeColor.background.ignoresSafeArea()
+            ForgeAuroraBackground()
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: ForgeSpacing.md) {
@@ -29,20 +32,15 @@ struct AvatarHomeView: View {
                     // ★ The star: muscle-growing avatar that flexes on completion
                     AvatarHeroCard()
 
-                    // This week's streak strip
-                    WeekStreakStrip()
-
-                    // Physique progress toward next body stage
-                    PhysiqueProgressCard()
-
                     if habitStore.isInComebackMode {
                         ComebackBanner()
                     }
 
-                    // Daily wisdom
-                    DailyWisdomCard(quote: WisdomLibrary.quoteOfTheDay()) {
-                        showWisdomLibrary = true
-                    }
+                    // Daily points goal
+                    DailyPointsGoalBar()
+
+                    // Today's habits
+                    todaySection
 
                     // Challenge
                     if habitStore.userProfile.challengeDays > 0 {
@@ -69,11 +67,16 @@ struct AvatarHomeView: View {
                         .buttonStyle(.plain)
                     }
 
-                    // Daily points goal
-                    DailyPointsGoalBar()
+                    // This week's streak strip
+                    WeekStreakStrip()
 
-                    // Today's habits
-                    todaySection
+                    // Physique progress toward next body stage
+                    PhysiqueProgressCard()
+
+                    // Daily wisdom
+                    DailyWisdomCard(quote: WisdomLibrary.quoteOfTheDay()) {
+                        showWisdomLibrary = true
+                    }
 
                     // Psycho-Cybernetics self-image work
                     SelfImageStatementCard()
@@ -95,10 +98,29 @@ struct AvatarHomeView: View {
             }
             .animation(.spring(response: 0.4), value: gamificationEngine.activeNotifications.count)
             .padding(.top, 60)
+
+            if let message = celebration {
+                HabitCelebrationOverlay(
+                    gender: AvatarGender(rawValue: genderRaw) ?? .man,
+                    muscle: PhysiqueStage.muscleFactor(for: habitStore.userProfile.totalHabitsCompleted),
+                    message: message
+                )
+                .transition(.opacity)
+                .zIndex(10)
+            }
+        }
+        .onChange(of: completedCount) { oldValue, newValue in
+            guard newValue > oldValue else { return }
+            celebrate(perfectDay: habitStore.allCompletedToday)
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showAddHabit) {
             AddHabitView().environmentObject(habitStore)
+        }
+        .sheet(isPresented: $showManageHabits) {
+            HabitsListView()
+                .environmentObject(habitStore)
+                .environmentObject(gamificationEngine)
         }
         .sheet(isPresented: $showWisdomLibrary) {
             WisdomLibraryView()
@@ -113,6 +135,17 @@ struct AvatarHomeView: View {
         }
     }
 
+    private func celebrate(perfectDay: Bool) {
+        withAnimation(.easeOut(duration: 0.2)) {
+            celebration = HabitCelebrationOverlay.randomMessage(perfectDay: perfectDay)
+        }
+        ForgeHaptics.heavy()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { ForgeHaptics.success() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) {
+            withAnimation(.easeIn(duration: 0.35)) { celebration = nil }
+        }
+    }
+
     private var todaySection: some View {
         VStack(spacing: 10) {
             HStack {
@@ -124,6 +157,10 @@ struct AvatarHomeView: View {
                 Text("\(completedCount)/\(habitStore.todayEntries.count)")
                     .font(ForgeTypography.labelM)
                     .foregroundColor(ForgeColor.textSecondary)
+                Button("Manage") { showManageHabits = true }
+                    .font(ForgeTypography.labelS)
+                    .foregroundColor(ForgeColor.accent)
+                    .padding(.leading, 8)
             }
             .padding(.top, ForgeSpacing.sm)
 
@@ -148,7 +185,7 @@ struct AvatarHomeView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20, weight: .semibold))
-                    Text("Add Habit")
+                    Text(habitStore.habits.isEmpty ? "Create Your First Habit" : "Add Habit")
                         .font(ForgeTypography.h4)
                 }
                 .foregroundColor(ForgeColor.accent)

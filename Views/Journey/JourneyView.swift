@@ -8,7 +8,7 @@ struct JourneyView: View {
 
     var body: some View {
         ZStack {
-            ForgeColor.background.ignoresSafeArea()
+            ForgeAuroraBackground()
             VStack(spacing: 0) {
                 JourneyHeader(selectedTab: $selectedTab)
                 TabView(selection: $selectedTab) {
@@ -16,7 +16,6 @@ struct JourneyView: View {
                     ChainCalendarView().tag(1)
                     AccountabilityView().tag(2)
                     FourLawsView().tag(3)
-                    JourneyJournalView().tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
             }
@@ -29,8 +28,9 @@ struct JourneyView: View {
 
 private struct JourneyHeader: View {
     @Binding var selectedTab: Int
-    private let tabs = ["Path", "Chain", "Partners", "4 Laws", "Journal"]
-    private let icons = ["figure.walk", "link", "person.2.fill", "4.circle.fill", "book.fill"]
+    private let tabs = ["Path", "Chain", "Partners", "4 Laws"]
+    private let icons = ["figure.walk", "link", "person.2.fill", "4.circle.fill"]
+    @Namespace private var pill
 
     var body: some View {
         VStack(spacing: 0) {
@@ -50,30 +50,38 @@ private struct JourneyHeader: View {
             .padding(.top, 16)
             .padding(.bottom, 12)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(0..<tabs.count, id: \.self) { i in
-                        Button {
-                            withAnimation(.spring(response: 0.3)) { selectedTab = i }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: icons[i])
-                                    .font(.system(size: 12, weight: .semibold))
-                                Text(tabs[i])
-                                    .font(ForgeTypography.labelS)
-                            }
-                            .foregroundColor(selectedTab == i ? .white : ForgeColor.textSecondary)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule().fill(selectedTab == i ? ForgeColor.accent : ForgeColor.card)
-                            )
+            // Segmented control: all 4 visible at once, sliding highlight
+            HStack(spacing: 4) {
+                ForEach(0..<tabs.count, id: \.self) { i in
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selectedTab = i }
+                        ForgeHaptics.impact(.light)
+                    } label: {
+                        VStack(spacing: 3) {
+                            Image(systemName: icons[i])
+                                .font(.system(size: 14, weight: .semibold))
+                            Text(tabs[i])
+                                .font(ForgeTypography.labelXS)
                         }
-                        .buttonStyle(.plain)
+                        .foregroundColor(selectedTab == i ? .white : ForgeColor.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background {
+                            if selectedTab == i {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(ForgeColor.accentGradient)
+                                    .shadow(color: ForgeColor.accent.opacity(0.4), radius: 6, y: 2)
+                                    .matchedGeometryEffect(id: "pill", in: pill)
+                            }
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
-                .padding(.horizontal, ForgeSpacing.md)
             }
+            .padding(4)
+            .background(RoundedRectangle(cornerRadius: 16).fill(ForgeColor.card))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(ForgeColor.border, lineWidth: 1))
+            .padding(.horizontal, ForgeSpacing.md)
             .padding(.bottom, 12)
 
             Divider().opacity(0.3)

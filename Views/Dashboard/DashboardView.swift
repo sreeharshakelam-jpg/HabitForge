@@ -847,9 +847,10 @@ struct ChallengeBanner: View {
     @EnvironmentObject var habitStore: HabitStore
 
     var profile: UserProfile { habitStore.userProfile }
+    var day: Int { habitStore.challengeDayCount }
     var progress: Double {
         guard profile.challengeDays > 0 else { return 0 }
-        return Double(profile.challengeCurrentDay) / Double(profile.challengeDays)
+        return Double(day) / Double(profile.challengeDays)
     }
 
     var body: some View {
@@ -863,16 +864,15 @@ struct ChallengeBanner: View {
                     .foregroundColor(ForgeColor.accent)
                     .tracking(1)
                 Spacer()
-                Text("Day \(profile.challengeCurrentDay)")
+                Text("Day \(day)/\(profile.challengeDays)")
                     .font(.system(size: 16, weight: .black, design: .rounded))
-                    .foregroundColor(ForgeColor.textPrimary)
+                    .foregroundColor(.white)
             }
 
-            // Progress bar
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(ForgeColor.surfaceElevated)
+                        .fill(Color.white.opacity(0.12))
                     RoundedRectangle(cornerRadius: 4)
                         .fill(ForgeColor.accentGradient)
                         .frame(width: geo.size.width * progress)
@@ -881,17 +881,12 @@ struct ChallengeBanner: View {
             }
             .frame(height: 8)
 
-            HStack {
-                Text("\(Int(progress * 100))% complete")
-                    .font(ForgeTypography.labelXS)
-                    .foregroundColor(ForgeColor.textSecondary)
-                Spacer()
-                if profile.challengeBestDay > 0 && profile.challengeCurrentDay < profile.challengeBestDay {
-                    Text("Best: Day \(profile.challengeBestDay)")
-                        .font(ForgeTypography.labelXS)
-                        .foregroundColor(ForgeColor.warning)
-                }
-            }
+            Text(day >= profile.challengeDays
+                 ? "Challenge complete! You did it. 🏆"
+                 : "Complete 80% of today's habits to count the day")
+                .font(ForgeTypography.labelXS)
+                .foregroundColor(.white.opacity(0.7))
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(ForgeSpacing.md)
         .background(

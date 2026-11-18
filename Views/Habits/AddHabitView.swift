@@ -155,15 +155,15 @@ struct AddHabitView: View {
             type: selectedType,
             frequency: selectedFrequency,
             scheduledTime: hasScheduledTime ? scheduledTime : nil,
-            durationMinutes: hasDuration ? durationMinutes : nil,
+            durationMinutes: selectedType == .duration ? durationMinutes : nil,
             difficulty: selectedDifficulty,
             rewardPoints: pts,
             xpReward: xp,
             isActive: true,
             reminderMinutesBefore: reminderMinutesBefore,
             snoozeAllowed: snoozeAllowed,
-            targetValue: hasTarget ? targetValue : nil,
-            targetUnit: hasTarget ? targetUnit : nil,
+            targetValue: selectedType == .quantity ? targetValue : nil,
+            targetUnit: selectedType == .quantity ? targetUnit : nil,
             targetMinutesPerWeek: hasWeeklyTarget ? weeklyTargetMinutes : nil
         )
         habitStore.addHabit(habit)
@@ -420,7 +420,8 @@ struct SchedulePage: View {
                             .tracking(2)
 
                         HStack {
-                            Text("\(durationMinutes) minutes")
+                            Text(durationMinutes < 60 ? "\(durationMinutes) minutes"
+                                 : "\(durationMinutes / 60)h\(durationMinutes % 60 > 0 ? " \(durationMinutes % 60)m" : "")")
                                 .font(ForgeTypography.h3)
                                 .foregroundColor(ForgeColor.textPrimary)
                             Spacer()
@@ -428,7 +429,7 @@ struct SchedulePage: View {
                         Slider(value: Binding(
                             get: { Double(durationMinutes) },
                             set: { durationMinutes = Int($0) }
-                        ), in: 5...120, step: 5)
+                        ), in: 5...600, step: 5)
                         .tint(ForgeColor.accent)
                     }
                     .padding(ForgeSpacing.md)

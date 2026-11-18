@@ -24,7 +24,7 @@ struct MainTabView: View {
                 AvatarHomeView()
                     .tag(0)
                     .tabItem {
-                        Label("Avatar", systemImage: "figure.arms.open")
+                        Label("Home", systemImage: "figure.arms.open")
                     }
 
                 NavigationView {
@@ -35,22 +35,16 @@ struct MainTabView: View {
                     Label("Journey", systemImage: "figure.walk")
                 }
 
-                HabitsListView()
+                JournalTabView()
                     .tag(2)
                     .tabItem {
-                        Label("Virtues", systemImage: "sparkles")
+                        Label("Journal", systemImage: "book.fill")
                     }
 
                 ProfileView()
                     .tag(3)
                     .tabItem {
-                        Label("Forge", systemImage: "hammer.circle.fill")
-                    }
-
-                CoachView()
-                    .tag(4)
-                    .tabItem {
-                        Label("Mentor", systemImage: "brain.head.profile")
+                        Label("Profile", systemImage: "hammer.circle.fill")
                     }
             }
             .accentColor(ForgeColor.accent)
@@ -92,6 +86,28 @@ struct MainTabView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 showDailyCheckIn = true
             }
+        }
+    }
+}
+
+// MARK: - Journal Tab (own tab; was buried inside Journey)
+struct JournalTabView: View {
+    var body: some View {
+        ZStack {
+            ForgeAuroraBackground()
+            VStack(alignment: .leading, spacing: 2) {
+                Text("REFLECT")
+                    .font(ForgeTypography.labelXS)
+                    .foregroundColor(ForgeColor.textTertiary)
+                    .tracking(2)
+                Text("Journal")
+                    .font(ForgeTypography.h2)
+                    .foregroundColor(ForgeColor.textPrimary)
+                    .padding(.bottom, 8)
+                JourneyJournalView()
+            }
+            .padding(.top, 16)
+            .padding(.horizontal, ForgeSpacing.md)
         }
     }
 }
